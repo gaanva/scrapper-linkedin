@@ -25,12 +25,12 @@ public @Data class Scrap {
 	 * An IMPLICIT wait is to tell WebDriver to poll the DOM for a certain amount of time 
 	 * when trying to find an element or elements if they are not immediately available.
 	 */
-	private static Integer IMPLICIT_WAIT = 1; 
+	private static Integer IMPLICIT_WAIT = 2; 
 	/**
 	 * An EXPLICIT wait is code you define to wait for a certain condition to occur 
 	 * before proceeding further in the code.
 	 */
-	private static Integer EXPLICIT_WAIT = 1; 
+	private static Integer EXPLICIT_WAIT = 2; 
 	
 	//private static String PATH_GHOST_DRIVER = "/home/brunoli/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs";
 	private static String PATH_GHOST_DRIVER = "C:\\Users\\gvaldez\\drivers\\phantomjs.exe";

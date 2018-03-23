@@ -44,12 +44,14 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
 
 	// Condición por timeStamp
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = "//abbr[@data-utime>=";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
+	//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'cocacola')]//descendant::abbr[@data-utime<"1521072000"]
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = "')]//descendant::abbr[@data-utime>=";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = " and @data-utime<=";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4 = "]";
 
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(Long utimeINI, Long utimeFIN) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4;
 	}
 
 	/**
@@ -61,11 +63,12 @@ public final class FacebookConfig {
 	// ".//abbr[@data-utime=(min('"+FacebookConfig.uTIME_INI+"'),
 	// max('"+FacebookConfig.uTIME_FIN+"'))]";
 	// Esto me sirve para saber cuando debo seguir cargando más publicaciones.
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = ".//abbr[@data-utime<";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "')]//descendant::abbr[@data-utime<";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3 = "]";
 
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(Long utimeINI) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
 	}
 
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.

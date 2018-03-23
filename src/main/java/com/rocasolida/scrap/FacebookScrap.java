@@ -29,9 +29,8 @@ import com.rocasolida.entities.Publication;
 import lombok.Data;
 public @Data class FacebookScrap extends Scrap {
 
-	private Long timeStampCorte; // Un mínimo de fecha en la que tiene que correr. Por default, sería la fecha de
-									// Ejecución.
-
+	private Long timeStampCorte; // Un mínimo de fecha en la que tiene que correr.
+								
 	public FacebookScrap() {
 		super();
 	}
@@ -66,14 +65,12 @@ public @Data class FacebookScrap extends Scrap {
 		//Por lo visto: Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES UN PERFIL
 		//XPATH: //div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a
 		//getAttribute('data-tab-key') == 'timeline' (Biografía)
-		//getAttribute('data-tab-key') == 'friends'  (Biografía)
-		
-		//Asumo que SI (Encuentro:  INICIO || PUBLICACIONES || COMUNIDAD EN MENU DE LA IZQ) ES UNA PÁGINA. 
-		
+		//getAttribute('data-tab-key') == 'friends'
+		//ASUMO QUE SI (Encuentro:  INICIO || PUBLICACIONES || COMUNIDAD EN MENU DE LA IZQ) ES UNA PÁGINA.
 		if(this.existElement(null, "//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts' or @data-key='tab_community' or @data-key='tab_home']//descendant::a")){
 			return "PAGE";
 		}
-		
+		//Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES UN PERFIL
 		if(this.existElement(null, "//div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a")) {
 			return "PROFILE";
 		}
@@ -84,6 +81,7 @@ public @Data class FacebookScrap extends Scrap {
 	
 	
 	public List<Publication> obtainPublicationsLoggedIn(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+		
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
 		
 		if(publicationsElements != null){
@@ -101,7 +99,7 @@ public @Data class FacebookScrap extends Scrap {
 				System.out.println("[INFO] RELOAD GHOST WEBDRIVER...");
 				this.refresh();
 				System.out.println("[INFO] FIN RELOAD GHOST WEBDRIVER...");
-				System.out.println("[INFO] ME DIRIJO A: " + FacebookConfig.URL + facebookPage + publicationsImpl.get(i).getId());
+				System.out.println("[INFO] ME DIRIJO A: " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 	
 				try {
@@ -123,7 +121,7 @@ public @Data class FacebookScrap extends Scrap {
 	
 			return publicationsImpl;
 		}else {
-			System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES.");
+			System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
 			return null;
 		}
 	}
@@ -140,67 +138,52 @@ public @Data class FacebookScrap extends Scrap {
 					return null;
 				case "PAGE":
 					System.out.println("[INFO] Es una Página.");
-					return this.processPage(uTIME_INI, uTIME_FIN);
+					return this.processPagePosts(facebookPage, uTIME_INI, uTIME_FIN);
 				default:
 					System.out.println("[WARNING] No se reconoce el tipo de página para hacer SCRAP");
 					return null;
 			}
-			
 		}
-		
 		return null;
 	}		
 			
-	public List<WebElement> processPage(Long uTIME_INI, Long uTIME_FIN) {
-			
-		
-		
-		
-			//if(!this.existElement(null, FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)) {
-				this.scrollMainPublicationsPage(); //Dependiendo del sitio, la primer carga puede no traer publicaciones (Ej.: Herbalife tiene una sección de notas...).
-				System.out.println("Scroll 2");
-				this.scrollMainPublicationsPage();
-				System.out.println("Scroll 3");
-				this.scrollMainPublicationsPage();
-			//}		
-			System.out.println("TOTAL PUBLICACIONES: " + String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
-			// cargo publicaciones hasta que encuentro al menos 1 publicación, que tiene
-			// fecha de inicio menor a la uTimeIni.
-			while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(uTIME_INI))).size()) > 0)) {
-				// while(this.continueScroll(pubsLoaded, posIni)){
-				// while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>FacebookConfig.CANT_PUBLICATIONS_TO_BE_LOAD))
-				// {
-				// System.out.println("[INFO] WHILE DE ENCONTRAR PUBLICACIONES CON FECHA
-				// ANTERIOR A LA INICIAL INGRESADA");
-				
-				System.out.println("TOTAL PUBS:"+ String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER))));
-				/**
-				 * TODO Buscar una manera de que espere a que refresque la página luego de hacer
-				 * el primer scroll. Sino se ejecuta el scroll unas cuantas veces hasta que
-				 * muestra las publicaciones.
-				 */
-				if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
-					System.out.println("TOTAL PUBLICACIONES: " + String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
-					this.scrollMainPublicationsPage();
-				} else {
-					System.out.println("[ERROR] Se esperaba encontrar el botón de Show More. Expression: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
-					break;
+	public List<WebElement> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+		try {
+			this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0){
+				System.out.println("TOTAL PUBS:"+ String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
+				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
+					/**
+					 * TODO Buscar una manera de que espere a que termine el scroll para evitar
+					 * poner el sleep del proceso arbitrariamente.
+					 */
+					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
+						System.out.println("[INFO] INTENTANDO SCROLL...");
+						this.scrollMainPublicationsPage();
+					} else {
+						System.out.println("[ERROR] Se esperaba encontrar el botón de Show More. Expression: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
+						break;
+					}
 				}
-			}
-			
-			this.saveScreenShot("cargaPROFILEFACEBOOKS"+System.currentTimeMillis());
-			int match = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
-			if (match > 0) {
-				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
-				return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
-			} else {
-				System.out.println("NO SE EXTRAJERON COMENTARIOS CON EL FITROL > y < APLICADOS");
+			}else {
+				System.out.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION PARA MOSTRAR");
 				return null;
 			}
-		//}//else {
-			//return null;
-		//}
-
+		}catch(Exception e) {
+			System.out.println("[ERROR]");
+			e.printStackTrace();
+		}
+		
+		System.out.println("TOTAL PUBS para FILTRAR:"+ String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
+		
+		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
+		if (match > 0) {
+			System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
+			return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
+		} else {
+			System.out.println("[ERROR] NO SE ENCONTRARON PUBLICACIONES EN LA FECHA INDICADA.");
+			return null;
+		}
 	}
 	
 	private void scrollMainPublicationsPage() {
@@ -223,7 +206,7 @@ public @Data class FacebookScrap extends Scrap {
 	 */
 	public boolean continueScroll(List<WebElement> pubsLoaded, int posIni, Long uTIME_INI) {
 		for (int i = posIni; i < pubsLoaded.size(); i++) {
-			if (pubsLoaded.get(i).findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(uTIME_INI))).size() > 0) {
+			if (pubsLoaded.get(i).findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED("",uTIME_INI))).size() > 0) {
 				return false;
 			}
 		}
@@ -647,7 +630,7 @@ public @Data class FacebookScrap extends Scrap {
 				System.out.println("************** PUBLICATION " + j + " FIN	***************");
 			}
 		}else{
-			System.out.println("[INFO] PrintPublications(): NO SE ENCONTRARON PUBLICACIONES.");
+			System.out.println("[INFO] PrintPublications():LA LISTA DE PUBLICACIONES PARA IMPRIMIR ESTÁ VACÍA.");
 		}
 	}
 
