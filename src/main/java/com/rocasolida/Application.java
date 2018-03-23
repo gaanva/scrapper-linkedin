@@ -33,8 +33,11 @@ public class Application {
 		if (fs.login(access)) {
 			// fs.obtainPublicationsAndComments();
 			// fs.printPublications(fs.obtainPublicationsLoggedIn("mauriciomacri"));
-			fs.printPublications(fs.obtainPublicationsLoggedIn("Herbalife", uTIME_INI, uTIME_FIN));
-
+			//fs.printPublications(fs.obtainPublicationsLoggedIn("Herbalife", uTIME_INI, uTIME_FIN));
+			//fs.printPublications(fs.obtainPublicationsLoggedIn("The Rolling Stone", uTIME_INI, uTIME_FIN));
+			fs.printPublications(fs.obtainPublicationsLoggedIn("cocacola", uTIME_INI, uTIME_FIN));
+			//fs.printPublications(fs.obtainPublicationsLoggedIn("marcelotinelli", uTIME_INI, uTIME_FIN));
+			//fs.printPublications(fs.obtainPublicationsLoggedIn("brunoli", uTIME_INI, uTIME_FIN));
 		}
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever
 		// "phantomjs.exe".

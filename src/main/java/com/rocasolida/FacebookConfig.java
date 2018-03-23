@@ -52,6 +52,11 @@ public final class FacebookConfig {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
 
+	/**
+	 * Controlar que no tome el timestamp de un comentario!!!!
+	 * Controlar que la cantidad de publicaciones, no sean de solo las destacadas.
+	 */
+	
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION =
 	// ".//abbr[@data-utime=(min('"+FacebookConfig.uTIME_INI+"'),
 	// max('"+FacebookConfig.uTIME_FIN+"'))]";
@@ -60,7 +65,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
 
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(Long utimeINI) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
 
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
