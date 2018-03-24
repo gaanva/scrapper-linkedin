@@ -221,36 +221,47 @@ public @Data class FacebookScrap extends Scrap {
 	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression) {
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
-		System.out.println("[TIME] Extract COMMENT INIT:" + System.currentTimeMillis());
-		int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
-		System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
-		WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
-		this.moveTo(showMoreLink);
-
-		showMoreLink.click();
-		int cantReintentos = 0;
-
-		while (cantReintentos < 2) {
-			showMoreLink = container.findElement(By.xpath(xPathExpression));
+		
+		//Si existe el botón de "Ver Más mensajes"
+		if(container.findElements(By.xpath(xPathExpression)).size()>0){
+			System.out.println("[TIME] Extract COMMENT INIT:" + System.currentTimeMillis());
+			//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
+			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
+			System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
+			
+			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
 			this.moveTo(showMoreLink);
 			showMoreLink.click();
-			if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
-				cantReintentos = 0;
-				cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
-				if (cantIniComentarios > 2200) {
-					break;
-				}
-			} else {
-				cantReintentos++;
-			}
-		}
+			int cantReintentos = 0;
 
+			while (cantReintentos < 2) {
+				try {	
+					showMoreLink = container.findElement(By.xpath(xPathExpression));
+					this.moveTo(showMoreLink);
+					showMoreLink.click();
+					if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
+						cantReintentos = 0;
+						//cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+						cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
+						if (cantIniComentarios > 2200) {
+							break;
+						}
+					} else {
+						cantReintentos++;
+					}
+				}catch (Exception e){
+					cantReintentos++; 
+				}
+			}
+		}else {
+			System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
+		}
+		
 		System.out.println("[INFO] se cargaron todos los mensajes.");
 		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
 
-		// comentarios =
-		// container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_BLOCK));
-		comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV));
+		comentarios =container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_BLOCK));
+		//comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV));
 		System.out.println("[INFO] PROCESANDO: " + comentarios.size() + " COMENTARIOS.");
 		for (int j = 0; j < comentarios.size(); j++) {
 			comments.add(this.extractCommentData(comentarios.get(j)));

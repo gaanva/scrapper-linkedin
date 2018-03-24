@@ -88,8 +88,12 @@ public final class FacebookConfig {
 	 * COMENTARIOS
 	 */
 	public static String XPATH_COMMENTS_CONTAINER = ".//div[contains(@class,'UFIContainer')]"; // Esto agrupa a TODOS los comentarios/Replies
-
-	public static String XPATH_COMMENT_ROOT_DIV = ".//div[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
+	
+	////div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
+	//public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
+	
+	////div[contains(@class,'UFIContainer')]//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]//div[@class='UFICommentContent']
+	public static String XPATH_COMMENT_ROOT_DIV = ".//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]";
 	public static String XPATH_REPLY_ROOT_DIV = ".//div[@class=' UFIReplyList']";
 	public static String XPATH_COMMENTS_AND_REPLIES_DIVS = "//*[starts-with(@class,'UFIRow UFIComment') or contains(@class,'UFIReplyList')]";
 
@@ -100,7 +104,7 @@ public final class FacebookConfig {
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]//*";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
-	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[contains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
+	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
 
 	// div[contains(@class,' UFIReplyList')]
 
