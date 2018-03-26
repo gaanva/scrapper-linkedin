@@ -81,13 +81,9 @@ public @Data class FacebookScrap extends Scrap {
 	
 	
 	public List<Publication> obtainPublicationsLoggedIn(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
-		
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
-		
 		if(publicationsElements != null){
-				
 			List<Publication> publicationsImpl = new ArrayList<Publication>();
-	
 			for (int i = 0; i < publicationsElements.size(); i++) {
 				System.out.println("[INFO] EXTRAYENDO DATOS DE LA PUBLICACION NRO#" + i);
 				// Extraigo los datos de las publicaciones.
@@ -101,12 +97,6 @@ public @Data class FacebookScrap extends Scrap {
 				System.out.println("[INFO] FIN RELOAD GHOST WEBDRIVER...");
 				System.out.println("[INFO] ME DIRIJO A: " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-	
-				try {
-					this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_CLOSE_BUTTON)).click();
-				} catch (Exception e) {
-					System.out.println("[INFO] NO SE PUDO HACER CLICK EN CERRAR (X).");
-				}
 	
 				List<WebElement> pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
 				System.out.println("[INFO] PUBLICATION TITLE: " + publicationsImpl.get(i).getTitulo());
@@ -224,7 +214,6 @@ public @Data class FacebookScrap extends Scrap {
 		
 		//Si existe el botón de "Ver Más mensajes"
 		if(container.findElements(By.xpath(xPathExpression)).size()>0){
-			System.out.println("[TIME] Extract COMMENT INIT:" + System.currentTimeMillis());
 			//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
 			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
 			System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
@@ -272,6 +261,8 @@ public @Data class FacebookScrap extends Scrap {
 		System.out.println("[TIME] Extract COMMENT FIN: " + System.currentTimeMillis());
 		return comments;
 	}
+	
+	
 
 	/**
 	 * Controla que el link_click al "Ver Más" en Comentarios, devuelva algo.
@@ -379,7 +370,6 @@ public @Data class FacebookScrap extends Scrap {
 
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
-		System.out.println("[TIME] Extract INIT: " + System.currentTimeMillis());
 		/**
 		 * Extraigo ID del post
 		 */
@@ -411,20 +401,19 @@ public @Data class FacebookScrap extends Scrap {
 		 * OWNER La pubicación siempre tiene un OWNER.
 		 */
 		aux.setOwner(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_OWNER)).getText());// .getAttribute("aria-label"));
+		
 		/**
-		 * DATETIME Tener en cuenta que es GMT+4, porque es el del usuario. (controlar
-		 * cuando la cuenta a scrapear sea de otro país, qué muestra? la del usuario que
-		 * consulta o la del owner de la cuenta?.) TODO Si son posts, anteriores al día
-		 * de la fecha, el formato del String cambia a: martes, 6 de marzo de 2018 a las
-		 * 6:59
+		 * DATETIME
 		 */
 		String d = (publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title");
+		//martes, 6 de marzo de 2018 a las 6:59 --> 03/06/2018 06:59
+		d = this.dateFormat(d);
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 		try {
 			Date date = simpleDateFormat.parse(d);
 			aux.setDateTime(date);
 		} catch (ParseException ex) {
-			System.out.println("Exception " + ex);
+			System.out.println("NO SE PUDO CONVERTIR EN DATE EL STRING DEL POST "+ d +" Stack Error"+ ex);
 		}
 
 		/**
@@ -443,7 +432,6 @@ public @Data class FacebookScrap extends Scrap {
 		} else {
 			aux.setCantShare(0);
 		}
-		System.out.println("[TIME] Extract FIN: " + System.currentTimeMillis());
 		return aux;
 	}
 
@@ -677,5 +665,112 @@ public @Data class FacebookScrap extends Scrap {
 		}
 		
 		return true;	
+	}
+	
+	
+	private String monthHelper(String month) {
+		String mes="";
+		switch(month) {
+	        case "january":
+	        case "enero":
+	        case "jan":
+	            mes="01";
+	        break;
+	
+	        case "febuary":
+	        case "febrero":
+	        case "feb":
+	        	mes="02";
+	        break;
+	
+	        case "march":
+	        case "marzo":
+	        case "mar":
+	        	mes="03";
+	        break;
+	
+	        case "april":
+	        case "apr":
+	        case "abril":
+	        	mes="04";
+	        break;
+	
+	        case "may":
+	        case "mayo":
+	        	mes="05";
+	        break;
+	
+	        case "june":
+	        case "jun":
+	        case "junio":
+	        	mes="06";
+	        break;
+	
+	        case "july":
+	        case "jul":
+	        case "julio":
+	        	mes="07";
+	        break;
+	
+	        case "august":
+	        case "aug":
+	        case "agosto":
+	        	mes="08";
+	        break;
+	
+	        case "september":
+	        case "sep":
+	        case "sept":
+	        case "septiembre":
+	        	mes="09";
+	        break;
+	
+	        case "october":
+	        case "oct":
+	        case "octubre":
+	        	mes="10";
+	        break;
+	
+	        case "november":
+	        case "nov":
+	        case "noviembre":
+	        	mes="11";
+	        break;
+	
+	        case "december":
+	        case "dec":
+	        case "diciembre":
+	        	mes="12";
+	        break;
+        }
+		
+		return mes;
+
+	}
+
+	private String dateFormat(String d) {
+		/**
+		 * DATETIME Tener en cuenta que es GMT+4, porque es el del usuario. (controlar
+		 * cuando la cuenta a scrapear sea de otro país, qué muestra? la del usuario que
+		 * consulta o la del owner de la cuenta?.) HECHO: Si son posts, anteriores al día
+		 * de la fecha, el formato del String cambia a: martes, 6 de marzo de 2018 a las
+		 * 6:59
+		 * De lo contrario el formato que se parsea bien es este: 24/03/2018 22:33
+		 */
+		
+		if(d.length()>"MM/dd/yyyy HH:mm".length()) {
+			String[] stringArrayDate = d.split("de ");
+			
+			String dia = (stringArrayDate[0].substring((stringArrayDate[0].indexOf(" ")+1), (stringArrayDate[0].indexOf(" ")+3)));
+			dia = (dia.length()==1)?"0"+dia:dia;
+			
+			String mes = this.monthHelper(stringArrayDate[1].trim());
+			String anio = stringArrayDate[2].substring(0,stringArrayDate[2].indexOf(" "));
+			String HHmm = stringArrayDate[2].substring(stringArrayDate[2].length()-5).trim();
+			
+			d = mes+"/"+dia+"/"+anio+" "+HHmm;
+		}
+		
+		return d;
 	}
 }
