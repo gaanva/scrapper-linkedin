@@ -88,12 +88,15 @@ public final class FacebookConfig {
 	 * COMENTARIOS
 	 */
 	public static String XPATH_COMMENTS_CONTAINER = ".//div[contains(@class,'UFIContainer')]"; // Esto agrupa a TODOS los comentarios/Replies
-	
+	public static String XPATH_COMMENTS_CONTAINER_NL =".//a[contains(@href,'comment_tracking')]";
 	////div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
 	//public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
 	
 	////div[contains(@class,'UFIContainer')]//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]//div[@class='UFICommentContent']
 	public static String XPATH_COMMENT_ROOT_DIV = ".//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]";
+	////div[contains(@class,'userContentWrapper') and .//span[contains(@class,'fsm fwn fcg')]//a[contains(@href,'1955574351421677')]]//div[@class='UFIList']/node()[last()]/node()/node()
+	
+	
 	public static String XPATH_REPLY_ROOT_DIV = ".//div[@class=' UFIReplyList']";
 	public static String XPATH_COMMENTS_AND_REPLIES_DIVS = "//*[starts-with(@class,'UFIRow UFIComment') or contains(@class,'UFIReplyList')]";
 

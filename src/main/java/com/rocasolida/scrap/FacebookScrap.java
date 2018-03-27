@@ -102,13 +102,25 @@ public @Data class FacebookScrap extends Scrap {
 				System.out.println("[INFO] PUBLICATION TITLE: " + publicationsImpl.get(i).getTitulo());
 				// if(this.existElement(publicationsElements.get(i),
 				// FacebookConfig.XPATH_COMMENTS_CONTAINER)) {
-	
+				
 				System.out.println("[INFO] EXTRAYENDO COMENTARIOS DE LA PUBLICACIÓN");
-				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER)) {
-					publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
+					try {
+						pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+						
+					}catch (Exception e){
+						System.out.println("[ERROR] Click en comment_tracking not logged in!");
+						System.out.println("error desc: ");
+						this.saveScreenShot("clickTckMsg");
+					}
+				}
+				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER+"//*")) {
+					publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER+"//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+				}else {
+					System.out.println("[INFO] la publicacion no tiene actividad.");
 				}
 			}
-	
+			
 			return publicationsImpl;
 		}else {
 			System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
@@ -214,8 +226,8 @@ public @Data class FacebookScrap extends Scrap {
 		
 		//Si existe el botón de "Ver Más mensajes"
 		if(container.findElements(By.xpath(xPathExpression)).size()>0){
-			//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
-			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
+			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
+			//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
 			System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
 			
 			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
@@ -230,8 +242,8 @@ public @Data class FacebookScrap extends Scrap {
 					showMoreLink.click();
 					if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
 						cantReintentos = 0;
-						//cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
-						cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
+						cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+						//cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
 						if (cantIniComentarios > 2200) {
 							break;
 						}
@@ -248,9 +260,11 @@ public @Data class FacebookScrap extends Scrap {
 		
 		System.out.println("[INFO] se cargaron todos los mensajes.");
 		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
-
+		
 		comentarios =container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_BLOCK));
-		//comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV));
+		//System.out.println("Comentarios: "+this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
+		//comentarios = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV));
+		//container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
 		System.out.println("[INFO] PROCESANDO: " + comentarios.size() + " COMENTARIOS.");
 		for (int j = 0; j < comentarios.size(); j++) {
 			comments.add(this.extractCommentData(comentarios.get(j)));
@@ -262,8 +276,6 @@ public @Data class FacebookScrap extends Scrap {
 		return comments;
 	}
 	
-	
-
 	/**
 	 * Controla que el link_click al "Ver Más" en Comentarios, devuelva algo.
 	 * 
@@ -279,6 +291,7 @@ public @Data class FacebookScrap extends Scrap {
 	 */
 	public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) {
 		if (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > cantIniComentarios)) {
+		//if (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size() > cantIniComentarios)) {
 			try {
 				// System.out.println("[INFO]Esperando carga de
 				// comentarios..."+System.currentTimeMillis());
@@ -291,15 +304,18 @@ public @Data class FacebookScrap extends Scrap {
 		}
 
 		if (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > cantIniComentarios)) {
+		//if (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size() > cantIniComentarios)) {
 			System.out.println("[INFO] El Click no descargó nuevos comentarios");
 			return false;
 		} else {
 			System.out.println("[INFO] El click trajo nuevos comments: +" + ((container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()) - cantIniComentarios));
+			//System.out.println("[INFO] El click trajo nuevos comments: +" + ((container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size()) - cantIniComentarios));
 			try {
 				// System.out.println("[INFO]Esperando carga de
 				// comentarios..."+System.currentTimeMillis());
 				Thread.sleep(800);
 				System.out.println("[INFO] TOTAL comments: +" + (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()));
+				//System.out.println("[INFO] TOTAL comments: +" + (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size()));
 				// System.out.println("[INFO]FIN espera"+System.currentTimeMillis());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -325,13 +341,16 @@ public @Data class FacebookScrap extends Scrap {
 			auxComment.setMensaje("");
 		}
 		// Usuario
-		String ini = "id=";
-		String fin = "&";
-		String pathUserID = comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
-		// System.out.println("USERID CORTADO: " +
-		// pathUserID.substring(pathUserID.indexOf(ini)+(ini.length()+1),pathUserID.indexOf(fin)));
-		auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
+		if(this.getAccess()!=null) {
+			String ini = "id=";
+			String fin = "&";
+			String pathUserID = comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
+			// System.out.println("USERID CORTADO: " +
+			// pathUserID.substring(pathUserID.indexOf(ini)+(ini.length()+1),pathUserID.indexOf(fin)));
+			auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
 
+		}
+		
 		// Utime
 		// System.out.println("USTIME: " +
 		// comentario.findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime"));
@@ -436,6 +455,7 @@ public @Data class FacebookScrap extends Scrap {
 	}
 
 	/**
+	 * SIN LOGIN
 	 * por el momento sin uso.
 	 */
 	public void obtainPublicationsAndCommentsNotLoggedIn(String facebookPage) {
@@ -636,7 +656,7 @@ public @Data class FacebookScrap extends Scrap {
 	private void saveScreenShot(String name) {
 		File scrFile = ((TakesScreenshot) this.getDriver()).getScreenshotAs(OutputType.FILE);
 		try {
-			FileUtils.copyFile(scrFile, new File("c:\\tmp\\" + name + ".png"));
+			FileUtils.copyFile(scrFile, new File("c:\\tmp\\" + name + System.currentTimeMillis() + ".png"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

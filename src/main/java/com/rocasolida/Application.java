@@ -20,24 +20,28 @@ public class Application {
 		 * ); //Creo el webdriver WebDriver driver = new PhantomJSDriver(capabilities);
 		 * //Accedo a la página que quiero scrapear
 		 */
-		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
-		FacebookScrap fs = new FacebookScrap();
-		System.out.println("[APP]Por hacer login");
-
-//		Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs del 14/03
-//		Long uTIME_FIN = 1521072000L; // 03/14/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 15/03
-		Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
-		Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
+		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		Credential access = null;
 		
-
-		if (fs.login(access)) {
-			// fs.obtainPublicationsAndComments();
-			//fs.printPublications(fs.obtainPublicationsLoggedIn("mauriciomacri",uTIME_INI, uTIME_FIN));
+		//		Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs del 14/03
+		//		Long uTIME_FIN = 1521072000L; // 03/14/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 15/03
+				Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
+				Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
+		
+		FacebookScrap fs = new FacebookScrap();
+		if(access != null){
+			System.out.println("[APP]Por hacer login");		
+			if (fs.login(access)) {
+				// fs.obtainPublicationsAndComments();
+				//fs.printPublications(fs.obtainPublicationsLoggedIn("mauriciomacri",uTIME_INI, uTIME_FIN));
+				fs.printPublications(fs.obtainPublicationsLoggedIn("HerbalifeLatino", uTIME_INI, uTIME_FIN));
+				//fs.printPublications(fs.obtainPublicationsLoggedIn("The Rolling Stone", uTIME_INI, uTIME_FIN));
+				//fs.printPublications(fs.obtainPublicationsLoggedIn("cocacola", uTIME_INI, uTIME_FIN));
+				//fs.printPublications(fs.obtainPublicationsLoggedIn("marcelotinelli", uTIME_INI, uTIME_FIN));
+				//fs.printPublications(fs.obtainPublicationsLoggedIn("brunoli", uTIME_INI, uTIME_FIN));
+			}
+		}else {
 			fs.printPublications(fs.obtainPublicationsLoggedIn("HerbalifeLatino", uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublicationsLoggedIn("The Rolling Stone", uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublicationsLoggedIn("cocacola", uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublicationsLoggedIn("marcelotinelli", uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublicationsLoggedIn("brunoli", uTIME_INI, uTIME_FIN));
 		}
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever
 		// "phantomjs.exe".
