@@ -20,8 +20,8 @@ public class Application {
 		 * ); //Creo el webdriver WebDriver driver = new PhantomJSDriver(capabilities);
 		 * //Accedo a la página que quiero scrapear
 		 */
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
-		Credential access = null;
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		//Credential access = null;
 		
 		//		Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs del 14/03
 		//		Long uTIME_FIN = 1521072000L; // 03/14/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 15/03

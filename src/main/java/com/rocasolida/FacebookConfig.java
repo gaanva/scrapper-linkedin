@@ -105,7 +105,7 @@ public final class FacebookConfig {
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
-	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]//*";
+	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
 

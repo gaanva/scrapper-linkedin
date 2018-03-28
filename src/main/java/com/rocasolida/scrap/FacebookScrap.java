@@ -104,14 +104,18 @@ public @Data class FacebookScrap extends Scrap {
 				// FacebookConfig.XPATH_COMMENTS_CONTAINER)) {
 				
 				System.out.println("[INFO] EXTRAYENDO COMENTARIOS DE LA PUBLICACIÓN");
-				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
-					try {
-						pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-						
-					}catch (Exception e){
-						System.out.println("[ERROR] Click en comment_tracking not logged in!");
-						System.out.println("error desc: ");
-						this.saveScreenShot("clickTckMsg");
+				if(this.getAccess()==null) {
+					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
+						try {
+							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							
+						}catch (Exception e){
+							System.out.println("[ERROR] Click en comment_tracking not logged in!");
+							System.out.println("error desc: ");
+							this.saveScreenShot("clickTckMsg");
+						}
+					}else {
+						System.out.println("[INFO] NO SE ENCONTRÓ LA PARTE DE MENSAJES SIN LOGIN");
 					}
 				}
 				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER+"//*")) {
@@ -335,7 +339,12 @@ public @Data class FacebookScrap extends Scrap {
 
 		// Mensaje
 		if (comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size() > 0) {
-			auxComment.setMensaje(comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+			String aux="";
+			for(int i=0; i<comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size(); i++) {
+				aux += comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).get(i).getText();
+			}
+			auxComment.setMensaje(aux);
+			//auxComment.setMensaje(comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
 		} else {
 			// Puede ser porque postea solo una imagen...
 			auxComment.setMensaje("");
@@ -425,15 +434,7 @@ public @Data class FacebookScrap extends Scrap {
 		 * DATETIME
 		 */
 		String d = (publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title");
-		//martes, 6 de marzo de 2018 a las 6:59 --> 03/06/2018 06:59
-		d = this.dateFormat(d);
-		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
-		try {
-			Date date = simpleDateFormat.parse(d);
-			aux.setDateTime(date);
-		} catch (ParseException ex) {
-			System.out.println("NO SE PUDO CONVERTIR EN DATE EL STRING DEL POST "+ d +" Stack Error"+ ex);
-		}
+		aux.setDateTime(d);
 
 		/**
 		 * CANTIDAD DE REPRODUCCIONES
@@ -502,14 +503,16 @@ public @Data class FacebookScrap extends Scrap {
 				 * 6:59
 				 */
 				String d = (publicationsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title");
-				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+				/*SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 				try {
 					Date date = simpleDateFormat.parse(d);
-					aux.setDateTime(date);
+				*/
+				aux.setDateTime(d);	
+				/*
 				} catch (ParseException ex) {
 					System.out.println("Exception " + ex);
 				}
-
+				*/
 				/**
 				 * CANTIDAD DE REPRODUCCIONES
 				 */
