@@ -9,7 +9,7 @@ public @Data class Publication {
 	private String Id;
 	private String owner;
 	private Long timeStamp;
-	private Date dateTime;
+	private String dateTime;
 	private String titulo;
 	private Integer cantShare;
 	private Integer cantReproducciones;
