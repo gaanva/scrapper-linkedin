@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -39,6 +40,7 @@ public @Data class FacebookScrap extends Scrap {
 
 	public boolean login(Credential access) {
 		if (this.navigateTo(FacebookConfig.URL)) {
+			this.saveScreenShot("LOGIN");
 			if (this.existElement(null, FacebookConfig.XPATH_BUTTON_LOGIN)) {
 				WebElement formLogin = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_FORM_LOGIN));
 				formLogin.findElement(By.xpath(FacebookConfig.XPATH_INPUT_MAIL_LOGIN)).sendKeys(access.getUser());
@@ -100,7 +102,6 @@ public @Data class FacebookScrap extends Scrap {
 				System.out.println("[INFO] FIN RELOAD GHOST WEBDRIVER...");
 				System.out.println("[INFO] ME DIRIJO A: " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-
 				List<WebElement> pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
 				System.out.println("[INFO] PUBLICATION TITLE: " + publicationsImpl.get(i).getTitulo());
 				// if(this.existElement(publicationsElements.get(i),
@@ -121,6 +122,17 @@ public @Data class FacebookScrap extends Scrap {
 						System.out.println("[INFO] NO SE ENCONTRÓ LA PARTE DE MENSAJES SIN LOGIN");
 					}
 				}
+				
+				if(this.getDriver().findElements(By.xpath("//a[@class='_xlt _418x']")).size()>0) {
+					this.saveScreenShot("ANTES_SCAPE_POST");
+					this.getActions().sendKeys(Keys.ESCAPE).perform();
+					System.out.println("Se presiona SCAPE");
+					this.getActions().sendKeys(Keys.ESCAPE).perform();
+					System.out.println("Se presiona SCAPE");
+					this.saveScreenShot("DSPS_SCAPE_POST");
+				}
+				
+				
 				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 					publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
 				} else {
@@ -158,25 +170,41 @@ public @Data class FacebookScrap extends Scrap {
 
 	public List<WebElement> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
 		try {
-			this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
-			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
-				System.out.println("TOTAL PUBS:" + String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
-				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
-					/**
-					 * TODO Buscar una manera de que espere a que termine el scroll para evitar
-					 * poner el sleep del proceso arbitrariamente.
-					 */
-					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
-						System.out.println("[INFO] INTENTANDO SCROLL...");
-						this.scrollMainPublicationsPage();
-					} else {
-						System.out.println("[ERROR] Se esperaba encontrar el botón de Show More. Expression: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
-						break;
-					}
+			try {
+				
+				if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
+					//Pone un frame cuando el browser te pide notificaciones...
+					this.getActions().sendKeys(Keys.ESCAPE).perform();
 				}
-			} else {
-				System.out.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION PARA MOSTRAR");
-				return null;
+				this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
+				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
+					System.out.println("TOTAL PUBS:" + String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
+					while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
+						/**
+						 * TODO Buscar una manera de que espere a que termine el scroll para evitar
+						 * poner el sleep del proceso arbitrariamente.
+						 */
+						if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
+							System.out.println("[INFO] INTENTANDO SCROLL...");
+							this.scrollMainPublicationsPage();
+						} else {
+							System.out.println("[ERROR] Se esperaba encontrar el botón de Show More. Expression: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
+							break;
+						}
+					}
+				} else {
+					System.out.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION PARA MOSTRAR");
+					return null;
+				}
+			}catch(Exception e) {
+				
+				//mE MUESTRA ESTE ERROR: is not clickable at point (258.5,358.6333312988281) because another element <div class="_3ixn"> obscures it
+				//WebElement aux = this.getDriver().findElement(By.xpath("//div[@class='_3ixn']"));
+				this.saveScreenShot("LOG_IR_PUBLICACIONES_ANTES");
+				this.getActions().sendKeys(Keys.ESCAPE).perform();
+				this.saveScreenShot("LOG_IR_PUBLICACIONES_DESPUES");
+				System.out.println("[ERROR] al acceder al link de las publicaciones. Ver PRINT: LOG_IR_PUBLICACIONES");
+				e.printStackTrace();
 			}
 		} catch (Exception e) {
 			System.out.println("[ERROR]");
@@ -239,6 +267,8 @@ public @Data class FacebookScrap extends Scrap {
 			System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
 
 			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
+			this.saveScreenShot("CLICK_MOREMENSAJES");
+			
 			this.moveTo(showMoreLink);
 			showMoreLink.click();
 			int cantReintentos = 0;
@@ -406,8 +436,8 @@ public @Data class FacebookScrap extends Scrap {
 	}
 
 	public void moveTo(WebElement element) {
-		this.getActions().moveToElement(element);
-		this.getActions().perform();
+		this.getActions().moveToElement(element).perform();
+		//this.getActions().perform();
 	}
 
 	public Publication extractPublicationData(WebElement publication) {
