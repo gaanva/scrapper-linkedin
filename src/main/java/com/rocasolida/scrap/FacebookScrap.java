@@ -93,7 +93,7 @@ public @Data class FacebookScrap extends Scrap {
 			for (int i = 0; i < publicationsImpl.size(); i++) {
 				// for (int i = 0; i < 1; i++) {
 				System.out.println("[INFO] RELOAD GHOST WEBDRIVER...");
-				this.refresh();
+//				this.refresh();
 				System.out.println("[INFO] FIN RELOAD GHOST WEBDRIVER...");
 				System.out.println("[INFO] ME DIRIJO A: " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
@@ -723,24 +723,42 @@ public @Data class FacebookScrap extends Scrap {
 
 	}
 
+	public static void main(String args[]) {
+		try {
+			String a = "Thursday, March 15, 2018";
+			SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM d, yyyy");
+			Date date = sdf.parse(a);
+			System.out.println(date);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
 	private String dateFormat(String d) {
 		/**
 		 * DATETIME Tener en cuenta que es GMT+4, porque es el del usuario. (controlar cuando la cuenta a scrapear sea de otro país, qué muestra? la del usuario que consulta o la del owner de la cuenta?.) HECHO: Si son posts, anteriores al día de la fecha, el formato del String cambia a: martes, 6 de marzo de 2018 a las 6:59 De lo contrario el formato que se parsea bien es este: 24/03/2018 22:33
+		 *
+		 *
+		 * Thursday, March 15, 2018 at 11:13am
+		 *
 		 */
+		try {
+			if (d.length() > "MM/dd/yyyy HH:mm".length()) {
+				String[] stringArrayDate = d.split("de ");
 
-		if (d.length() > "MM/dd/yyyy HH:mm".length()) {
-			String[] stringArrayDate = d.split("de ");
+				String dia = (stringArrayDate[0].substring((stringArrayDate[0].indexOf(" ") + 1), (stringArrayDate[0].indexOf(" ") + 3)));
+				dia = (dia.length() == 1) ? "0" + dia : dia;
 
-			String dia = (stringArrayDate[0].substring((stringArrayDate[0].indexOf(" ") + 1), (stringArrayDate[0].indexOf(" ") + 3)));
-			dia = (dia.length() == 1) ? "0" + dia : dia;
+				String mes = this.monthHelper(stringArrayDate[1].trim());
+				String anio = stringArrayDate[2].substring(0, stringArrayDate[2].indexOf(" "));
+				String HHmm = stringArrayDate[2].substring(stringArrayDate[2].length() - 5).trim();
 
-			String mes = this.monthHelper(stringArrayDate[1].trim());
-			String anio = stringArrayDate[2].substring(0, stringArrayDate[2].indexOf(" "));
-			String HHmm = stringArrayDate[2].substring(stringArrayDate[2].length() - 5).trim();
-
-			d = mes + "/" + dia + "/" + anio + " " + HHmm;
+				d = mes + "/" + dia + "/" + anio + " " + HHmm;
+			}
+			return d;
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
-
-		return d;
+		return "02/11/2018 16:44";
 	}
 }

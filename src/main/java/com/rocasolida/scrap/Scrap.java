@@ -1,5 +1,6 @@
 package com.rocasolida.scrap;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -61,6 +62,7 @@ public @Data class Scrap {
 			this.driver = new PhantomJSDriver(this.getDriverCapabilities());
 			this.configureDriver();
 		} else if (driverType != null && driverType.equals(DriverType.FIREFOX_HEADLESS)) {
+			System.setProperty("webdriver.gecko.driver", "C:\\Users\\bruno\\git\\scrapper-facebook\\drivers\\binaries\\windows\\marionette\\64bit\\geckodriver.exe");
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
 			firefoxBinary.addCommandLineOptions("--headless");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
