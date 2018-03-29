@@ -79,7 +79,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
 	public static String XPATH_PUBLICATION_CANT_SHARE = ".//a[contains(@class,'UFIShareLink')]";
 
-	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//a[contains(@class,'UFIPagerLink')]";
+	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
 
 	public static String XPATH_PUBLICATION_VER_RESPUESTAS = ".//a[contains(@class,'UFICommentLink')]";
 	/** DATOS DE LOS MENSAJES **/
