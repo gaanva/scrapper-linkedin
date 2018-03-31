@@ -62,7 +62,7 @@ public @Data class Scrap {
 			this.driver = new PhantomJSDriver(this.getDriverCapabilities());
 			this.configureDriver();
 		} else if (driverType != null && driverType.equals(DriverType.FIREFOX_HEADLESS)) {
-			System.setProperty("webdriver.gecko.driver", "drivers/binaries/windows/marionette/64bit/geckodriver.exe");
+			System.setProperty("webdriver.gecko.driver", "drivers2/geckodriver.exe");
 			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
