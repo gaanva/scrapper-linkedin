@@ -33,10 +33,10 @@ public @Data class Scrap {
 	 */
 	private static Integer EXPLICIT_WAIT = 5;
 
-	//private static String PATH_GHOST_DRIVER = "/home/brunoli/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs";
+	// private static String PATH_GHOST_DRIVER = "/home/brunoli/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs";
 	private static String PATH_GHOST_DRIVER = "drivers/binaries/windows/phantomjs/64bit/phantomjs.exe";
 	private static String SETTINGS_USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36";
-	//private static String SETTINGS_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
+	// private static String SETTINGS_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
 
 	private static String SETTINGS_LOAD_IMAGE = "false";
 	private static String NAVIGATION_DATA_PATH = "C:\\tmp\\"; // Guarda datos de la navegación. Session, Cookies, etc.
@@ -63,6 +63,8 @@ public @Data class Scrap {
 			this.configureDriver();
 		} else if (driverType != null && driverType.equals(DriverType.FIREFOX_HEADLESS)) {
 			System.setProperty("webdriver.gecko.driver", "drivers/binaries/windows/marionette/64bit/geckodriver.exe");
+			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
+			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
 			firefoxBinary.addCommandLineOptions("--headless");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();

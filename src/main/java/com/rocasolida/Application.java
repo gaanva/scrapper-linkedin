@@ -21,8 +21,8 @@ public class Application {
 		 * ); //Creo el webdriver WebDriver driver = new PhantomJSDriver(capabilities);
 		 * //Accedo a la página que quiero scrapear
 		 */
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
-		Credential access = null;
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+//		Credential access = null;
 
 		// Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs
 		// del 14/03
@@ -39,7 +39,7 @@ public class Application {
 				// fs.obtainPublicationsAndComments();
 				// fs.printPublications(fs.obtainPublicationsLoggedIn("mauriciomacri",uTIME_INI,
 				// uTIME_FIN));
-				fs.printPublications(fs.obtainPublicationsLoggedIn("HerbalifeLatino", uTIME_INI, uTIME_FIN));
+				fs.printPublications(fs.obtainPublications("HerbalifeLatino", uTIME_INI, uTIME_FIN));
 				// fs.printPublications(fs.obtainPublicationsLoggedIn("The Rolling Stone",
 				// uTIME_INI, uTIME_FIN));
 				// fs.printPublications(fs.obtainPublicationsLoggedIn("cocacola", uTIME_INI,
@@ -50,7 +50,7 @@ public class Application {
 				// uTIME_FIN));
 			}
 		} else {
-			fs.printPublications(fs.obtainPublicationsLoggedIn("HerbalifeLatino", uTIME_INI, uTIME_FIN));
+			fs.printPublications(fs.obtainPublications("HerbalifeLatino", uTIME_INI, uTIME_FIN));
 		}
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever
 		// "phantomjs.exe".

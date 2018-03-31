@@ -85,7 +85,7 @@ public @Data class FacebookScrap extends Scrap {
 
 	}
 
-	public List<Publication> obtainPublicationsLoggedIn(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+	public List<Publication> obtainPublications(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
 		if (publicationsElements != null) {
 			List<Publication> publicationsImpl = new ArrayList<Publication>();
