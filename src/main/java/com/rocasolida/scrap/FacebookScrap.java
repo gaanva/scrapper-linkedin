@@ -85,13 +85,22 @@ public @Data class FacebookScrap extends Scrap {
 	}
 
 	public List<Publication> obtainPublications(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+		//Obtengo todas las publicaciones que tienen fecha del post mayor a la fecha inicial...
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
+		
 		if (publicationsElements != null) {
 			List<Publication> publicationsImpl = new ArrayList<Publication>();
 			for (int i = 0; i < publicationsElements.size(); i++) {
 				System.out.println("[INFO] EXTRAYENDO DATOS DE LA PUBLICACION NRO#" + i);
 				// Extraigo los datos de las publicaciones.
-				publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
+				this.saveScreenShot("Publication_"+i+"_");
+				if(this.waitForJStoLoad()) {
+					publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
+				}else {
+					System.out.println("[ERROR] PROBLEMAS AL BUSCAR EL POST");
+					this.saveScreenShot("problemaLevantarPostData");
+				}
+				
 			}
 
 			for (int i = 0; i < publicationsImpl.size(); i++) {
@@ -184,6 +193,7 @@ public @Data class FacebookScrap extends Scrap {
 					System.out.println("[INFO] cerrando overlay de la carga...");
 					this.getActions().sendKeys(Keys.ESCAPE).perform();
 				}
+				
 				this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
 				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
 					System.out.println("TOTAL PUBS:" + String.valueOf(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()));
@@ -323,7 +333,7 @@ public @Data class FacebookScrap extends Scrap {
 		System.out.println("[INFO] se cargaron todos los mensajes.");
 		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
 
-		comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_BLOCK));
+		comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 		// System.out.println("Comentarios:
 		// "+this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
 		// comentarios =

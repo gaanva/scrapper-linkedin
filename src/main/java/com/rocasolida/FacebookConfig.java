@@ -100,8 +100,9 @@ public final class FacebookConfig {
 	public static String XPATH_REPLY_ROOT_DIV = ".//div[@class=' UFIReplyList']";
 	public static String XPATH_COMMENTS_AND_REPLIES_DIVS = "//*[starts-with(@class,'UFIRow UFIComment') or contains(@class,'UFIReplyList')]";
 
-	public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
-	public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody')]";
+	//public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
+	//public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
+	public static String XPATH_COMMENTS = ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]";
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
