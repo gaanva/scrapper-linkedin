@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
@@ -95,6 +97,7 @@ public @Data class FacebookScrap extends Scrap {
 				// Extraigo los datos de las publicaciones.
 				this.saveScreenShot("Publication_"+i+"_");
 				if(this.waitForJStoLoad()) {
+					//this.moveTo(publicationsElements.get(i));
 					publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
 				}else {
 					System.out.println("[ERROR] PROBLEMAS AL BUSCAR EL POST");
@@ -111,21 +114,34 @@ public @Data class FacebookScrap extends Scrap {
 					System.out.println("[INFO] PHANTOMJS FIN RELOAD GHOST WEBDRIVER...");
 				}
 				System.out.println("[INFO] VOY A CARGAR solo EL POST EN UNA NUEVA PÁGINA: " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+				//System.out.println("[INFO] VOY A CARGAR solo EL POST EN UNA NUEVA PÁGINA: " + publicationsImpl.get(i).getId());
 				this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-				List<WebElement> pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
+				//this.getDriver().navigate().to(publicationsImpl.get(i).getId());
+				
+				//Hago una espera para que cargue la página
+				if(!this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed()){
+					System.out.println("El post no está visble en la página... se hace una espera...");
+					this.waitForJStoLoad();
+					
+				}
+				
+				
+				this.saveScreenShot("PaginaPOSTCargada");
+				
+				List<WebElement> pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"));
 				//System.out.println("[INFO] PUBLICATION TITLE: " + publicationsImpl.get(i).getTitulo());
 				// if(this.existElement(publicationsElements.get(i),
 				// FacebookConfig.XPATH_COMMENTS_CONTAINER)) {
 
 				System.out.println("[INFO] EXTRAYENDO COMENTARIOS DE LA PUBLICACIÓN");
-				if (this.getAccess() == null) {
+				if(this.getAccess() == null) {
 					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 						try {
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 
 						} catch (Exception e) {
 							System.err.println("[ERROR] Click en comment_tracking not logged in!");
-							System.err.println("error desc: ");
+							System.err.println("error cause by: " + e.getCause());
 							this.saveScreenShot("clickTckMsg");
 						}
 					} else {
@@ -133,23 +149,28 @@ public @Data class FacebookScrap extends Scrap {
 					}
 				}
 				
-				if(this.getDriver().findElements(By.xpath("//a[@class='_xlt _418x']")).size()>0) {
-					System.out.println("[INFO] SE EJECUTÓ CONTENIDO OVERLAY. SE CIERRA CON SCAPE...");
-					this.saveScreenShot("ANTES_SCAPE_POST");
-					this.getActions().sendKeys(Keys.ESCAPE).perform();
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				//if(this.getDriver().findElements(By.xpath("//a[@class='_xlt _418x']")).size()>0) {
+				if(this.getAccess() != null){
+					if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
+						System.out.println("[INFO] SE EJECUTÓ CONTENIDO OVERLAY. SE CIERRA CON SCAPE...");
+						this.saveScreenShot("ANTES_SCAPE_POST");
+						this.getActions().sendKeys(Keys.ESCAPE).perform();
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						this.getActions().sendKeys(Keys.ESCAPE).perform();
+						this.waitForJStoLoad();
+						this.saveScreenShot("DSPS_SCAPE_POST");
+						System.out.println("[INFO] FIN SCAPE...");
 					}
-					this.getActions().sendKeys(Keys.ESCAPE).perform();
-					this.saveScreenShot("DSPS_SCAPE_POST");
-					System.out.println("[INFO] FIN SCAPE...");
 				}
 				
 				
 				if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
+					this.TipoCargaComentarios(pubsNew.get(0), 3);
 					publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
 				} else {
 					System.out.println("[INFO] la publicacion no tiene actividad.");
@@ -161,6 +182,10 @@ public @Data class FacebookScrap extends Scrap {
 			System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
 			return null;
 		}
+	}
+	
+	public void loadPageLikes() {
+		
 	}
 
 	public List<WebElement> inicializePublicationsToBeLoad(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
@@ -510,14 +535,26 @@ public @Data class FacebookScrap extends Scrap {
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
 		/**
-		 * Extraigo ID del post
+		 * Extraigo LINK del post, que es su ID.
 		 */
+		
+		this.saveScreenShot("idPub");
+		if(this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"))=="") {
+			System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+		}else {
+			aux.setId(this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href")));
+		}
+		
+		/*
 		String anchor = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
 		// POST ID: https://www.facebook.com/mauriciomacri/videos/10156385274043478/
 		String[] stringArray = anchor.split("/");
+		for(int i=0; i<stringArray.length; i++) {
+			System.out.println("[EXTRAYENDO ID] "+ stringArray[i]);
+		}
 		// System.out.println("POST ID: " + stringArray[stringArray.length-1]);
 		aux.setId(stringArray[stringArray.length - 1]);
-
+		 */
 		/**
 		 * TIMESTAMP El timestamp viene en GMT.
 		 */
@@ -921,4 +958,59 @@ public @Data class FacebookScrap extends Scrap {
 		}
 		return "02/11/2018 16:44";
 	}
+
+
+	//"opt=1: Comentarios Relevantes" --> Es el filtro por default que tienen todos los posts de Facebook.
+	//"opt=2: Más Recientes"  --> Cuando se actualice un post
+	//"opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
+	private void TipoCargaComentarios(WebElement Post, int option) {
+		try {
+			//Puede que se abra automáticamente el Enviar mensajes al dueño de la página.
+			if(this.getAccess()!=null) {
+				if(this.getDriver().findElements(By.xpath("//a[@class='_3olu _3olv close button _4vu4']")).size()>0) {
+					this.getDriver().findElement(By.xpath("//a[@class='_3olu _3olv close button _4vu4']")).click();
+				}
+			}
+			
+			
+			this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
+			Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+			//Esto abre un Context Option...
+			//Espero a que se abra...
+			if(this.waitForJStoLoad()) {
+				//Selecciono la opción "Comentarios relevantes no filtrados"
+				this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")));
+				this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
+				if(this.waitForJStoLoad()) {
+					System.out.println("[INFO] SE MODIFICÓ LA LISTA DE COMENTARIOS...");
+				}else {
+					System.out.println("[INFO] SELECCIONADA LA OPOCIÓN.");
+				}
+			}else {
+				
+			}
+		}catch(Exception e) {
+			System.out.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
+			e.printStackTrace();
+		}
+		
+		this.saveScreenShot("tipoDeComentariosSeleccionado");
+		
+	}
+	
+	public String regexPostID(String link) {
+		//www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
+		//www.facebook.com/teamisurus/posts/2143052825719776
+		String[] stringArray = link.split("/");
+		Pattern pat = Pattern.compile("[0-9]{16}");
+		for(int i=0; i<stringArray.length; i++) {
+			Matcher mat = pat.matcher(stringArray[i]);
+		    if(mat.matches()) {
+		        System.out.println("[INFO] Post ID: " + stringArray[i]);
+		        return stringArray[i];
+		    }
+		}
+		return ""; 
+	}
+
 }
