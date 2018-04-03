@@ -48,7 +48,7 @@ public class ApplicationTest {
 		Long uTIME_INI = getFecha("24/3/2018 00:00");
 		Long uTIME_FIN = getFecha("24/3/2018 23:59");
 		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
-		List<Publication> publications = fs.obtainPublications("teamisurus", uTIME_INI, uTIME_FIN);
+		List<Publication> publications = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN).getPublications();
 		System.out.println(publications);
 		fs.quit();
 		assertNotNull(publications);

@@ -6,5 +6,6 @@ import lombok.Data;
 
 public @Data class Page {
 	List<Publication> publications;
-	List<Reaction> reactions;
+	int likes;
+	int followers;
 }

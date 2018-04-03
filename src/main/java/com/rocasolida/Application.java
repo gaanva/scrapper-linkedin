@@ -1,6 +1,7 @@
 package com.rocasolida;
 
 import com.rocasolida.entities.Credential;
+import com.rocasolida.entities.Page;
 import com.rocasolida.scrap.FacebookScrap;
 import com.rocasolida.scrap.util.DriverType;
 
@@ -31,31 +32,33 @@ public class Application {
 		Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
 
-		//FacebookScrap fs = new FacebookScrap(DriverType.PHANTOM_JS);
+		Long uTIME_COMMENTS_INI = 1521158400L;
+		
 		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				// fs.obtainPublicationsAndComments();
-				// fs.printPublications(fs.obtainPublicationsLoggedIn("mauriciomacri",uTIME_INI,uTIME_FIN));
-				//fs.printPublications(fs.obtainPublications("HerbalifeLatino", uTIME_INI, uTIME_FIN));
-				//fs.printPublications(fs.obtainPublications("HerbalifeLatino", uTIME_INI, uTIME_FIN));
-				fs.printPublications(fs.obtainPublications("teamisurus", uTIME_INI, uTIME_FIN));
-				// fs.printPublications(fs.obtainPublications("The Rolling Stone",uTIME_INI, uTIME_FIN));
-				//fs.printPublications(fs.obtainPublications("cocacola", uTIME_INI,uTIME_FIN));
-				//fs.printPublications(fs.obtainPublications("marcelotinelli",uTIME_INI, uTIME_FIN));
-				// fs.printPublications(fs.obtainPublications("brunoli", uTIME_INI,uTIME_FIN));
+				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
+				fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN);
+				
+			}else {
+				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			//fs.printPublications(fs.obtainPublications("teamisurus", uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublications("HerbalifeLatino", uTIME_INI, uTIME_FIN));
-			// fs.printPublications(fs.obtainPublications("The Rolling Stone",
-			// uTIME_INI, uTIME_FIN));
-			//fs.printPublications(fs.obtainPublications("cocacola", uTIME_INI,uTIME_FIN));
-			//fs.printPublications(fs.obtainPublications("marcelotinelli",uTIME_INI, uTIME_FIN));
-			// fs.printPublications(fs.obtainPublications("brunoli", uTIME_INI, uTIME_FIN));
-			fs.printPublications(fs.obtainPublications("teamisurus", uTIME_INI, uTIME_FIN));
+			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
+			fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN);
 		}
+		
+		fs.printPage(fs.getPage());
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever
 		// "phantomjs.exe".
 		fs.quit();
