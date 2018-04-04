@@ -174,6 +174,16 @@ public @Data class FacebookScrap extends Scrap {
 					}
 					
 					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
+						if(this.getAccess()==null) {
+							try {
+								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+								}
+							}catch(Exception e) {
+								//e.printStackTrace();
+								this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+							}
+						}
 						this.TipoCargaComentarios(pubsNew.get(0), 3);
 						System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
 						publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
@@ -345,7 +355,7 @@ public @Data class FacebookScrap extends Scrap {
 	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression) {
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
-
+		
 		// Si existe el botón de "Ver Más mensajes"
 		if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
 			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
@@ -543,9 +553,23 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 	}
 
 	public void moveTo(WebElement element) {
+		if(this.getAccess()==null) {
+			try {
+				if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+				}
+			}catch(Exception e) {
+				//e.printStackTrace();
+				this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+			}
+		}
 		if(this.getDriverType().equals(DriverType.FIREFOX_HEADLESS)) {
-			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
-			//System.out.println("SCROLL_INTO_ELEMENT");
+			if(this.getAccess()==null) {
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
+			}else {
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
+				//System.out.println("SCROLL_INTO_ELEMENT");
+			}
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
@@ -578,6 +602,7 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			*/
 		}
 		
+		this.saveScreenShot("MOVETO_");
 		//this.getActions().perform();
 	}
 
@@ -1026,13 +1051,51 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			}
 			
 			
+			if(this.getAccess()==null) {
+				try {
+					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+				}catch(Exception e) {
+					//e.printStackTrace();
+					this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+				}
+			}
+			
+			if(this.getAccess()==null) {
+				try {
+					if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+						this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+					}
+				}catch(Exception e) {
+					//e.printStackTrace();
+					this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+				}
+			}
+			
 			this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
 			Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 			//Esto abre un Context Option...
 			//Espero a que se abra...
 			if(this.waitForJStoLoad()) {
+				
+				
+
+				if(this.getAccess()==null) {
+					try {
+						if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+							this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+						}
+					}catch(Exception e) {
+						//e.printStackTrace();
+						this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+					}
+				}
+				
+				
+				
+				
+				
 				//Selecciono la opción "Comentarios relevantes no filtrados"
-				this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")));
+				//this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")));
 				this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
 				this.waitForJStoLoad();
 				/*
