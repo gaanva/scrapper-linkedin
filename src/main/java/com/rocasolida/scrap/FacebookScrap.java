@@ -142,6 +142,7 @@ public @Data class FacebookScrap extends Scrap {
 					if(this.getAccess() == null) {
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							try {
+								this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 
 							} catch (Exception e) {
@@ -355,7 +356,9 @@ public @Data class FacebookScrap extends Scrap {
 	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression) {
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
-		
+		if(container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size()>0) {
+			System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
+		}
 		// Si existe el botón de "Ver Más mensajes"
 		if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
 			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
@@ -565,13 +568,14 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 		}
 		if(this.getDriverType().equals(DriverType.FIREFOX_HEADLESS)) {
 			if(this.getAccess()==null) {
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
+				//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
 			}else {
 				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
 				//System.out.println("SCROLL_INTO_ELEMENT");
 			}
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(300);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
