@@ -142,12 +142,15 @@ public @Data class FacebookScrap extends Scrap {
 					if(this.getAccess() == null) {
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							try {
-								this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 
 							} catch (Exception e) {
-								System.err.println("[ERROR] Click en comment_tracking not logged in!");
-								System.err.println("error cause by: " + e.getCause());
+								//System.err.println("[ERROR] Click en comment_tracking not logged in!");
+								//e.printStackTrace();
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 								this.saveScreenShot("clickTckMsg");
 							}
 						} else {
@@ -182,7 +185,7 @@ public @Data class FacebookScrap extends Scrap {
 								}
 							}catch(Exception e) {
 								//e.printStackTrace();
-								this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 							}
 						}
 						this.TipoCargaComentarios(pubsNew.get(0), 3);
@@ -256,8 +259,9 @@ public @Data class FacebookScrap extends Scrap {
 				}
 				
 				try {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
 					this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
-					Thread.sleep(1000);
+					//Thread.sleep(1000);
 				}catch(Exception e) {
 					System.out.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
 					this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
@@ -362,28 +366,22 @@ public @Data class FacebookScrap extends Scrap {
 		// Si existe el botón de "Ver Más mensajes"
 		if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
 			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
-			// int cantIniComentarios =
-			// container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
-			//System.out.println("[INFO] CANTIDAD DE COMENTARIOS INICIAL = " + cantIniComentarios);
 			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
-			//this.saveScreenShot("CLICK_MOREMENSAJES");
 			this.moveTo(showMoreLink);
-			//this.saveScreenShot("AFTER_MOVETO");
-			
 			try {
 				showMoreLink.click();
 				//this.saveScreenShot("AFTER_1click_OK");
 			} catch(Exception e) {
 				this.moveTo(showMoreLink);
-				this.saveScreenShot("[ERROR]AFTER_1click");
 				showMoreLink.click();
-				this.saveScreenShot("[ERROR]AFTER_2click");
+				this.saveScreenShot("[ERROR]click_verMAsMsgs");
 			}
 			
 			int cantReintentos = 0;
 
-			while (cantReintentos < 2) {
+			while (cantReintentos < 5) {
 				try {
+					//Si existe el botón mostrar más...
 					if(container.findElements(By.xpath(xPathExpression)).size()>0) {
 						showMoreLink = container.findElement(By.xpath(xPathExpression));
 						this.moveTo(showMoreLink);
@@ -402,11 +400,12 @@ public @Data class FacebookScrap extends Scrap {
 							cantReintentos++;
 						}
 					}else {
-						this.saveScreenShot("desapareció_btnShowMoreMsgs");
 						break;
 					}
 					
 				} catch (Exception e) {
+					//this.saveScreenShot("elementStale_");
+					//System.out.println("ERROR: " + e.toString());
 					cantReintentos++;
 				}
 			}
@@ -475,23 +474,6 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			System.out.println("[INFO] El Click no descargó nuevos comentarios");
 			return false;
 		} else {
-			System.out.print("+" + ((container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()) - cantIniComentarios));
-			// System.out.println("[INFO] El click trajo nuevos comments: +" +
-			// ((container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size())
-			// - cantIniComentarios));
-			try {
-				// System.out.println("[INFO]Esperando carga de
-				// comentarios..."+System.currentTimeMillis());
-				Thread.sleep(200);
-				//System.out.println("[INFO] TOTAL comments: +" + (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()));
-				// System.out.println("[INFO] TOTAL comments: +" +
-				// (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size()));
-				// System.out.println("[INFO]FIN espera"+System.currentTimeMillis());
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 			return true;
 		}
 	}
@@ -556,26 +538,27 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 	}
 
 	public void moveTo(WebElement element) {
-		if(this.getAccess()==null) {
+		if(this.getAccess()==null && this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
 			try {
-				if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+				//if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
 					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-				}
+				//}
 			}catch(Exception e) {
 				//e.printStackTrace();
-				this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+				//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 			}
 		}
+		
 		if(this.getDriverType().equals(DriverType.FIREFOX_HEADLESS)) {
 			if(this.getAccess()==null) {
-				//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
+				//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
 			}else {
 				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
 				//System.out.println("SCROLL_INTO_ELEMENT");
 			}
 			try {
-				Thread.sleep(300);
+				Thread.sleep(100);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
@@ -585,12 +568,12 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			//this.getActions().sendKeys(Keys.SPACE).perform();
 		}
 		
-		try {
-			this.getActions().moveToElement(element).perform();
-		} catch(Exception e) {
-			System.out.println("[WARN] DESAPARECIO O SE ACTUALIZÓ EL ELEMENTO.");
+		//try {
+			//this.getActions().moveToElement(element).perform();
+		//} catch(Exception e) {
+			//System.out.println("[WARN] DESAPARECIO O SE ACTUALIZÓ EL ELEMENTO.");
 			//e.printStackTrace();
-			this.saveScreenShot("ELEMENTStale");
+			//this.saveScreenShot("ELEMENTStale");
 			/*
 			((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
 			this.waitForJStoLoad();
@@ -604,9 +587,9 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			this.saveScreenShot("TOTAL_SCROLL_");
 			this.getActions().moveToElement(element).perform();
 			*/
-		}
+		//}
 		
-		this.saveScreenShot("MOVETO_");
+		//this.saveScreenShot("MOVETO_");
 		//this.getActions().perform();
 	}
 
@@ -853,13 +836,20 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 	private void clickViewMoreTextContent(WebElement element, String xpathExpression) {
 		boolean verMasClicked = false;
 		while (this.existElement(element, xpathExpression) && (!verMasClicked)) {
-			WebElement we = element.findElement(By.xpath(xpathExpression));
-			if (we.isDisplayed()) {
-				we.click();
-				verMasClicked = true;
-			} else {
-				System.out.println("[ERROR] VER MAS TITLE NOT DISPLAYED");
-
+			try {
+				WebElement we = element.findElement(By.xpath(xpathExpression));
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", we);
+				//this.moveTo(we);
+				if (we.isDisplayed()) {
+					we.click();
+					verMasClicked = true;
+				} else {
+					System.out.println("[ERROR] VER MAS TITLE NOT DISPLAYED");
+	
+				}
+			}catch(Exception w) {
+				this.saveScreenShot("Err_ViewMoreText");
+				break;
 			}
 		}
 
@@ -1055,12 +1045,12 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			}
 			
 			
-			if(this.getAccess()==null) {
+			if(this.getAccess()==null && this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
 				try {
 					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 				}catch(Exception e) {
 					//e.printStackTrace();
-					this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+					//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 				}
 			}
 			
@@ -1071,12 +1061,13 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 					}
 				}catch(Exception e) {
 					//e.printStackTrace();
-					this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+					//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 				}
 			}
 			
 			this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
 			Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+			this.saveScreenShot("OPT_VERCOMENTARIOS");
 			//Esto abre un Context Option...
 			//Espero a que se abra...
 			if(this.waitForJStoLoad()) {
@@ -1090,7 +1081,7 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 						}
 					}catch(Exception e) {
 						//e.printStackTrace();
-						this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+						//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 					}
 				}
 				
@@ -1102,6 +1093,8 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 				//this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")));
 				this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
 				this.waitForJStoLoad();
+				
+				this.saveScreenShot("AFTER_OPT_VERCOMENTARIOS");
 				/*
 				if(this.waitForJStoLoad()) {
 					System.out.println("[INFO] SE MODIFICÓ LA LISTA DE COMENTARIOS...");
