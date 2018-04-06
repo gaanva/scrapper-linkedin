@@ -99,19 +99,16 @@ public @Data class FacebookScrap extends Scrap {
 	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
 		//Obtengo todas las publicaciones que tienen fecha del post mayor a la fecha inicial...
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
-		
-		
 		if (publicationsElements != null) {
 			List<Publication> publicationsImpl = new ArrayList<Publication>();
-			
 			//Se extraen datos del POST
 			for (int i = 0; i < publicationsElements.size(); i++) {
 				if(this.waitForJStoLoad()) {
 					this.moveTo(publicationsElements.get(i));
 					publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
 				}else {
-					System.out.println("[ERROR] PROBLEMAS AL BUSCAR EL POST");
-					this.saveScreenShot("problemaLevantarPostData");
+					System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
+					this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
 				}
 				
 			}
@@ -123,16 +120,19 @@ public @Data class FacebookScrap extends Scrap {
 					System.out.println("[INFO] PHANTOMJS FIN RELOAD GHOST WEBDRIVER...");
 				}
 				
-				System.out.println("[INFO] EXTRAYENDO DATOS DE LA PUBLICACION NRO#" + i + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+				//Acá debería no ir a este post, e ir al listado.
+				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i+1) + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				try {
-					if(this.getAccess()!=null) {
+					//if(this.getAccess()!=null) {
 						this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-					}
+					//}
 					
 				} catch(Exception e) {
 					System.out.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
 					this.saveScreenShot("ERR_ACCESO_POST");
 				}
+				
+				
 				//Hago una espera para que cargue la página
 				if(!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"))).size()>0)){
 					//System.out.println("El post no está visble en la página... se hace una espera...");
@@ -143,14 +143,7 @@ public @Data class FacebookScrap extends Scrap {
 				try {
 					//Controla que no tire el popup de login
 					if(this.getAccess()==null) {
-						try {
-							if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-								this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-							}
-						}catch(Exception e) {
-							//e.printStackTrace();
-							this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
-						}
+						this.checkAndClosePopupLogin();
 					}
 					
 					pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"));
@@ -177,25 +170,16 @@ public @Data class FacebookScrap extends Scrap {
 					
 					if(this.getAccess() == null) {
 						if(this.getAccess()==null) {
-							try {
-								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-								}
-							}catch(Exception e) {
-								//e.printStackTrace();
-								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
-							}
+							this.checkAndClosePopupLogin();
 						}
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							//Hacer 1 scroll
-							this.scrollMainPublicationsPage();
-							this.scrollMainPublicationsPage();
-							this.scrollMainPublicationsPage();
+							//this.scrollMainPublicationsPage();
+							//this.scrollMainPublicationsPage();
+							//this.scrollMainPublicationsPage();
 							this.saveScreenShot("SXROLL_POST0");
 							try {
-								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-								}
+								this.checkAndClosePopupLogin();
 							}catch(Exception e) {
 								//e.printStackTrace();
 								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
@@ -203,8 +187,23 @@ public @Data class FacebookScrap extends Scrap {
 							
 							System.out.println("SCROLL.....");
 							this.saveScreenShot("SXROLL_POST1");
-							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-							
+							try {	
+								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+							}catch(Exception e){
+								if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+									this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								}
+								try {	
+									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+									publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+								}catch(Exception e1){
+									System.out.println("No se pudo seleccionar la parte de comentarios del Post " + e.getClass().getSimpleName());
+									this.saveScreenShot("ElementClickInterceptedException");
+									e1.printStackTrace();
+								}
+								
+							}
 							/*
 							try {
 								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
@@ -220,29 +219,22 @@ public @Data class FacebookScrap extends Scrap {
 							}
 							*/
 						} else {
-							System.out.println("[INFO] NO SE ENCONTRÓ LA PARTE DE MENSAJES (SIN LOGIN)");
+							System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS (SIN LOGIN)");
+							return null;
 						}
-					}
-					
-					
-					
-					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
-						if(this.getAccess()==null) {
-							try {
-								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-								}
-							}catch(Exception e) {
-								//e.printStackTrace();
-								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
-							}
+					}else {
+						publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+						/*
+						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
+							this.TipoCargaComentarios(pubsNew.get(0), 3);
+							System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
+							publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+						} else {
+							System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
+							this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
+							return null;
 						}
-						this.TipoCargaComentarios(pubsNew.get(0), 3);
-						System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
-						publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
-					} else {
-						System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
-						this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
+						*/
 					}
 					
 					this.page.setPublications(publicationsImpl);
@@ -261,7 +253,19 @@ public @Data class FacebookScrap extends Scrap {
 		}
 	}
 	
-	public void updatePageLikes() {
+	public List<Comment> extractPubComments(WebElement pub) {
+		if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
+			this.TipoCargaComentarios(pub, 3);
+			System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
+			return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+		} else {
+			System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
+			this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
+			return null;
+		}
+	}
+	
+ 	public void updatePageLikes() {
 		try {
 			this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='_4-u2 _6590 _3xaf _4-u8']")));
 			List<WebElement> likesAndFollowers = this.getDriver().findElements(By.xpath("//div[@class='_4-u2 _6590 _3xaf _4-u8']/div[@class='_2pi9 _2pi2']"));
@@ -302,47 +306,11 @@ public @Data class FacebookScrap extends Scrap {
 		try {
 			try {
 				
-				if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
-					//Pone un frame cuando el browser te pide notificaciones...
-					System.out.println("[INFO] Se detectó overlay al cargar... cerrando overlay de la carga...");
-					this.getActions().sendKeys(Keys.ESCAPE).perform();
-				}
+				this.overlayHandler();
+				this.goToPublicationsSection();
 				
-				if(this.getAccess() == null) {
-					String posts = this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).getAttribute("href");
-					this.navigateTo(posts);
-				}else {
-					try {
-						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
-						this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
-				
-					}catch(Exception e) {
-						System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
-						this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
-					}
-					
-				}
-				/*
-				try {
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
-					this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
-					//Thread.sleep(1000);
-				}catch(Exception e) {
-					try {
-						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
-						this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
-					}catch(Exception e1) {
-						System.out.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
-						this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
-					}
-					
-				}
-				*/
-				
-				System.out.println("[INFO] LEYENDO PUBLICACIONES....");
-				this.saveScreenShot("LEYENDO_PUBLICACIONES");
+				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
 				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
-					//this.saveScreenShot("CARGA_POST");
 					while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
 						/**
 						 * TODO Buscar una manera de que espere a que termine el scroll para evitar
@@ -358,7 +326,7 @@ public @Data class FacebookScrap extends Scrap {
 					}
 					System.out.println("|FIN|");
 				} else {
-					System.out.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION PARA MOSTRAR");
+					System.out.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
 					this.saveScreenShot("PAGINA_SIN_PUBS");
 					return null;
 				}
@@ -371,21 +339,42 @@ public @Data class FacebookScrap extends Scrap {
 			this.saveScreenShot("ERR_INESPERADO");
 			return null;
 		}
-
+		//RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return this.filterPostsByUTIME(facebookPage, uTIME_INI, uTIME_FIN);
-		/*	
-		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
-		if (match > 0) {
-			System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
-			return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
-		} else {
-			System.out.println("[ERROR] NO SE ENCONTRARON PUBLICACIONES EN LA FECHA INDICADA.");
-			return null;
-		}
-		*/
+		
 	}
 	
+	public void overlayHandler() {
+		if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
+			//Pone un frame cuando el browser te pide notificaciones...
+			System.out.println("[INFO] Se detectó overlay al cargar... cerrando overlay de la carga...");
+			try{
+				this.getActions().sendKeys(Keys.ESCAPE).perform();
+			}catch(Exception e) {
+				System.err.println("[ERROR] NO SE PUDO CERRAR EL OVERLAY.");
+			}
+		}
+	}
 	
+	public void goToPublicationsSection() {
+		if(this.getAccess() == null) {
+			String posts = this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).getAttribute("href");
+			//ACcedo por la URL, puede que el elemento nunca me quede visible.
+			this.navigateTo(posts);
+		}else {
+			try {
+				//Accedo por el click en el menú opción "Publicaciones"
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
+				this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
+		
+			}catch(Exception e) {
+				System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
+				this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+			}
+			
+		}
+	}
+
 	public List<WebElement> filterPostsByUTIME(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
 		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
 		if (match > 0) {
@@ -610,86 +599,55 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 
 		return wait.until(jsLoad);
 	}
+	
+	
+	
+	
 
 	public void moveTo(WebElement element) {
-		if(this.getAccess()==null && this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+		//Se fija si al hacer un scroll, antes o despues, aparea el botn de cerrar.
+		if(this.getAccess() == null) {
+			this.checkAndClosePopupLogin();
+		}
+		
+		if(this.getAccess()==null) {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
+			//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+		}else {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
+			//System.out.println("SCROLL_INTO_ELEMENT");
+		}
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			// e.printStackTrace();
+			System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
+		}
+	}
+	
+	public void checkAndClosePopupLogin() {
+		if(this.existElement(null, "//a[@id='expanding_cta_close_button']")) {
 			try {
-				//if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-				//}
+				this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 			}catch(Exception e) {
 				//e.printStackTrace();
 				//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 			}
 		}
-		
-		if(this.getDriverType().equals(DriverType.FIREFOX_HEADLESS)) {
-			if(this.getAccess()==null) {
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
-				//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
-			}else {
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
-				//System.out.println("SCROLL_INTO_ELEMENT");
-			}
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
-			}
-			//this.saveScreenShot("SCROLL_INTO_ELEMENT");
-			//this.getActions().sendKeys(Keys.SPACE).perform();
-		}
-		
-		//try {
-			//this.getActions().moveToElement(element).perform();
-		//} catch(Exception e) {
-			//System.out.println("[WARN] DESAPARECIO O SE ACTUALIZÓ EL ELEMENTO.");
-			//e.printStackTrace();
-			//this.saveScreenShot("ELEMENTStale");
-			/*
-			((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-			this.waitForJStoLoad();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				// e.printStackTrace();
-				System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
-			}
-			this.saveScreenShot("TOTAL_SCROLL_");
-			this.getActions().moveToElement(element).perform();
-			*/
-		//}
-		
-		//this.saveScreenShot("MOVETO_");
-		//this.getActions().perform();
 	}
 
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
+		this.saveScreenShot("EXTRACT_PUB_DATA");
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
-		
-		this.saveScreenShot("idPub");
 		if(this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"))=="") {
 			System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
 		}else {
 			aux.setId(this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href")));
 		}
-		
-		/*
-		String anchor = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
-		// POST ID: https://www.facebook.com/mauriciomacri/videos/10156385274043478/
-		String[] stringArray = anchor.split("/");
-		for(int i=0; i<stringArray.length; i++) {
-			System.out.println("[EXTRAYENDO ID] "+ stringArray[i]);
-		}
-		// System.out.println("POST ID: " + stringArray[stringArray.length-1]);
-		aux.setId(stringArray[stringArray.length - 1]);
-		 */
 		/**
 		 * TIMESTAMP El timestamp viene en GMT.
 		 */
@@ -936,9 +894,9 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 		if (page.getPublications() != null) {
 			System.out.println("SE ENCONTRARON UN TOTAL DE " + page.getPublications().size() + "PUBLICACIONES");
 			for (int j = 0; j < page.getPublications().size(); j++) {
-				System.out.println("============== PUBLICATION " + j + " INICIO	===============");
+				System.out.println("============== PUBLICATION " + (j+1) + " INICIO	===============");
 				System.out.println(page.getPublications().get(j).toString());
-				System.out.println("************** PUBLICATION " + j + " FIN	***************");
+				System.out.println("************** PUBLICATION " + (j+1) + " FIN	***************");
 			}
 		} else {
 			System.out.println("[INFO] PrintPage():LA LISTA DE PUBLICACIONES PARA IMPRIMIR ESTÁ VACÍA.");
@@ -1166,9 +1124,11 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 				if(this.getAccess()==null) {
 					try {
 						if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+							/*
 							this.scrollMainPublicationsPage();
 							this.scrollMainPublicationsPage();
 							this.scrollMainPublicationsPage();
+							*/
 							System.out.println("SCROLL");
 							this.moveTo(this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")));
 							System.out.println("Cerrando popup login!");
@@ -1189,7 +1149,22 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 				
 				//Selecciono la opción "Comentarios relevantes no filtrados"
 				//this.moveTo(this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")));
-				this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
+				/*
+				 * this.scrollMainPublicationsPage();
+				this.saveScreenShot("SCROLL1");
+				this.scrollMainPublicationsPage();
+				this.saveScreenShot("SCROLL2");
+				this.scrollMainPublicationsPage();
+				*/
+				this.saveScreenShot("SCROLL3");
+				try {
+					this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
+				}catch(Exception e1) {
+					if(e1.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+						this.getActions().sendKeys(Keys.SPACE);
+						this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
+					}
+				}
 				this.waitForJStoLoad();
 				
 				this.saveScreenShot("AFTER_OPT_VERCOMENTARIOS");
