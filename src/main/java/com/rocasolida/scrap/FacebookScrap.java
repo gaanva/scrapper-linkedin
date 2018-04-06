@@ -125,38 +125,35 @@ public @Data class FacebookScrap extends Scrap {
 				
 				System.out.println("[INFO] EXTRAYENDO DATOS DE LA PUBLICACION NRO#" + i + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				try {
-					this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+					if(this.getAccess()!=null) {
+						this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+					}
+					
 				} catch(Exception e) {
 					System.out.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
 					this.saveScreenShot("ERR_ACCESO_POST");
 				}
 				//Hago una espera para que cargue la página
-				if(!this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed()){
+				if(!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"))).size()>0)){
 					//System.out.println("El post no está visble en la página... se hace una espera...");
 					this.waitForJStoLoad();
 				}
 				
 				List<WebElement> pubsNew;
 				try {
-					pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"));
-					if(this.getAccess() == null) {
-						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
-							try {
-								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
-								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
-								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-
-							} catch (Exception e) {
-								//System.err.println("[ERROR] Click en comment_tracking not logged in!");
-								//e.printStackTrace();
-								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
-								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-								this.saveScreenShot("clickTckMsg");
+					//Controla que no tire el popup de login
+					if(this.getAccess()==null) {
+						try {
+							if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+								this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 							}
-						} else {
-							System.out.println("[INFO] NO SE ENCONTRÓ LA PARTE DE MENSAJES (SIN LOGIN)");
+						}catch(Exception e) {
+							//e.printStackTrace();
+							this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 						}
 					}
+					
+					pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]"));
 					
 					//if(this.getDriver().findElements(By.xpath("//a[@class='_xlt _418x']")).size()>0) {
 					if(this.getAccess() != null){
@@ -176,6 +173,58 @@ public @Data class FacebookScrap extends Scrap {
 							//System.out.println("[INFO] FIN SCAPE...");
 						}
 					}
+					
+					
+					if(this.getAccess() == null) {
+						if(this.getAccess()==null) {
+							try {
+								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+								}
+							}catch(Exception e) {
+								//e.printStackTrace();
+								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+							}
+						}
+						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
+							//Hacer 1 scroll
+							this.scrollMainPublicationsPage();
+							this.scrollMainPublicationsPage();
+							this.scrollMainPublicationsPage();
+							this.saveScreenShot("SXROLL_POST0");
+							try {
+								if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+									this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+								}
+							}catch(Exception e) {
+								//e.printStackTrace();
+								//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+							}
+							
+							System.out.println("SCROLL.....");
+							this.saveScreenShot("SXROLL_POST1");
+							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							
+							/*
+							try {
+								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								
+							} catch (Exception e) {
+								//System.err.println("[ERROR] Click en comment_tracking not logged in!");
+								//e.printStackTrace();
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								this.saveScreenShot("clickTckMsg1");
+							}
+							*/
+						} else {
+							System.out.println("[INFO] NO SE ENCONTRÓ LA PARTE DE MENSAJES (SIN LOGIN)");
+						}
+					}
+					
+					
 					
 					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 						if(this.getAccess()==null) {
@@ -200,6 +249,7 @@ public @Data class FacebookScrap extends Scrap {
 
 				}catch(Exception e) {
 					System.out.println("[ERROR] AL ACCEDER AL POST.");
+					e.printStackTrace();
 					this.saveScreenShot("ERR_ACCESO_POST");
 				}
 			}
@@ -258,14 +308,36 @@ public @Data class FacebookScrap extends Scrap {
 					this.getActions().sendKeys(Keys.ESCAPE).perform();
 				}
 				
+				if(this.getAccess() == null) {
+					String posts = this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).getAttribute("href");
+					this.navigateTo(posts);
+				}else {
+					try {
+						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
+						this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
+				
+					}catch(Exception e) {
+						System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
+						this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+					}
+					
+				}
+				/*
 				try {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
 					this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
 					//Thread.sleep(1000);
 				}catch(Exception e) {
-					System.out.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
-					this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+					try {
+						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
+						this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
+					}catch(Exception e1) {
+						System.out.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
+						this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+					}
+					
 				}
+				*/
 				
 				System.out.println("[INFO] LEYENDO PUBLICACIONES....");
 				this.saveScreenShot("LEYENDO_PUBLICACIONES");
@@ -373,13 +445,14 @@ public @Data class FacebookScrap extends Scrap {
 				//this.saveScreenShot("AFTER_1click_OK");
 			} catch(Exception e) {
 				this.moveTo(showMoreLink);
-				showMoreLink.click();
 				this.saveScreenShot("[ERROR]click_verMAsMsgs");
+				showMoreLink.click();
+				
 			}
 			
 			int cantReintentos = 0;
 
-			while (cantReintentos < 5) {
+			while (cantReintentos < 3) {
 				try {
 					//Si existe el botón mostrar más...
 					if(container.findElements(By.xpath(xPathExpression)).size()>0) {
@@ -389,6 +462,7 @@ public @Data class FacebookScrap extends Scrap {
 						if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
 							cantReintentos = 0;
 							cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+							System.out.print("|"+cantIniComentarios);
 							// cantIniComentarios =
 							// (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
 							/*
@@ -459,7 +533,7 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			try {
 				// System.out.println("[INFO]Esperando carga de
 				// comentarios..."+System.currentTimeMillis());
-				Thread.sleep(200);
+				Thread.sleep(1000);
 				// System.out.println("[INFO]FIN espera"+System.currentTimeMillis());
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
@@ -471,7 +545,7 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			// if
 			// (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size()
 			// > cantIniComentarios)) {
-			System.out.println("[INFO] El Click no descargó nuevos comentarios");
+			//System.out.println("[INFO] El Click no descargó nuevos comentarios");
 			return false;
 		} else {
 			return true;
@@ -838,7 +912,8 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 		while (this.existElement(element, xpathExpression) && (!verMasClicked)) {
 			try {
 				WebElement we = element.findElement(By.xpath(xpathExpression));
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", we);
+				//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", we);
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
 				//this.moveTo(we);
 				if (we.isDisplayed()) {
 					we.click();
@@ -1057,7 +1132,9 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			if(this.getAccess()==null) {
 				try {
 					if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+						System.out.println("CErrando popup login");
 						this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+
 					}
 				}catch(Exception e) {
 					//e.printStackTrace();
@@ -1066,6 +1143,18 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 			}
 			
 			this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
+			if(this.getAccess()==null) {
+				try {
+					if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+						System.out.println("CErrando popup login");
+						this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+
+					}
+				}catch(Exception e) {
+					//e.printStackTrace();
+					//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+				}
+			}
 			Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 			this.saveScreenShot("OPT_VERCOMENTARIOS");
 			//Esto abre un Context Option...
@@ -1077,11 +1166,20 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 				if(this.getAccess()==null) {
 					try {
 						if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
+							this.scrollMainPublicationsPage();
+							this.scrollMainPublicationsPage();
+							this.scrollMainPublicationsPage();
+							System.out.println("SCROLL");
+							this.moveTo(this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")));
+							System.out.println("Cerrando popup login!");
 							this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+							
 						}
 					}catch(Exception e) {
+						System.out.println("Exception NAME: "+e.getClass().getName()+"--------");
+						System.out.println("Exception message: "+e.getClass().toString());
 						//e.printStackTrace();
-						//this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+						this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
 					}
 				}
 				

@@ -22,8 +22,8 @@ public class Application {
 		 * ); //Creo el webdriver WebDriver driver = new PhantomJSDriver(capabilities);
 		 * //Accedo a la página que quiero scrapear
 		 */
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
-		Credential access = null;
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		//Credential access = null;
 
 		// Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs
 		// del 14/03
@@ -39,8 +39,8 @@ public class Application {
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
-				fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
+				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
@@ -50,8 +50,8 @@ public class Application {
 				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
-			fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
+			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
