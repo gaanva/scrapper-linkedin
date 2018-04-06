@@ -35,13 +35,14 @@ public class Application {
 		Long uTIME_COMMENTS_INI = 1521158400L;
 		
 		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		//FacebookScrap fs = new FacebookScrap(DriverType.CHROME_HEADLESS);
 		
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
-				//fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
+				fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
 				//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN);
@@ -50,13 +51,13 @@ public class Application {
 				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
+			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN);
-			//fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
+			fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN);
 			//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN);
-		}
+		}	
 		
 		fs.printPage(fs.getPage());
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever

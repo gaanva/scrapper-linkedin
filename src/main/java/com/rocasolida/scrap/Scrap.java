@@ -8,10 +8,11 @@ import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -62,7 +63,7 @@ public @Data class Scrap {
 			this.driver = new PhantomJSDriver(this.getDriverCapabilities());
 			this.configureDriver();
 		} else if (driverType != null && driverType.equals(DriverType.FIREFOX_HEADLESS)) {
-			System.setProperty("webdriver.gecko.driver", "drivers2/geckodriver.exe");
+			System.setProperty("webdriver.gecko.driver", "drivers/binaries/windows/marionette/64bit/geckodriver.exe");
 			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 			
@@ -75,6 +76,14 @@ public @Data class Scrap {
 			firefoxOptions.setCapability("permissions.default.image", 2);
 			this.driver = new FirefoxDriver(firefoxOptions);
 			this.configureDriver();
+		}else if(driverType != null && driverType.equals(DriverType.CHROME_HEADLESS)) {
+			
+			ChromeOptions chromeOptions = new ChromeOptions();  
+			System.setProperty("webdriver.chrome.driver", "drivers/binaries/windows/googlechrome/64bit/chromedriver.exe");
+		    chromeOptions.addArguments("--headless");  
+		    //chromeOptions.addArguments("--disable-gpu");  
+		    this.driver = new ChromeDriver(chromeOptions);  
+			
 		}
 	}
 
