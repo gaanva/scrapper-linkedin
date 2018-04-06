@@ -47,8 +47,10 @@ public class ApplicationTest {
 	public void teamisurusSinLogin() {
 		Long uTIME_INI = getFecha("24/3/2018 00:00");
 		Long uTIME_FIN = getFecha("24/3/2018 23:59");
+		Long COMMENTS_uTIME_INI = 1521072000L; 
+		Long COMMENTS_uTIME_FIN = 1521158400L;
 		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
-		List<Publication> publications = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN).getPublications();
+		List<Publication> publications = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN).getPublications();
 		System.out.println(publications);
 		fs.quit();
 		assertNotNull(publications);

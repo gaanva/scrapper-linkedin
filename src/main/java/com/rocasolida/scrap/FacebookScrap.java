@@ -96,7 +96,7 @@ public @Data class FacebookScrap extends Scrap {
 
 	}
 
-	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
 		//Obtengo todas las publicaciones que tienen fecha del post mayor a la fecha inicial...
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
 		if (publicationsElements != null) {
@@ -189,14 +189,14 @@ public @Data class FacebookScrap extends Scrap {
 							this.saveScreenShot("SXROLL_POST1");
 							try {	
 								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-								publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+								publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
 							}catch(Exception e){
 								if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
 									this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 								}
 								try {	
 									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-									publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+									publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
 								}catch(Exception e1){
 									System.out.println("No se pudo seleccionar la parte de comentarios del Post " + e.getClass().getSimpleName());
 									this.saveScreenShot("ElementClickInterceptedException");
@@ -223,7 +223,7 @@ public @Data class FacebookScrap extends Scrap {
 							return null;
 						}
 					}else {
-						publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0)));
+						publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
 						/*
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 							this.TipoCargaComentarios(pubsNew.get(0), 3);
@@ -253,11 +253,11 @@ public @Data class FacebookScrap extends Scrap {
 		}
 	}
 	
-	public List<Comment> extractPubComments(WebElement pub) {
+	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
 		if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 			this.TipoCargaComentarios(pub, 3);
 			System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
-			return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		} else {
 			System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
 			this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
@@ -418,7 +418,7 @@ public @Data class FacebookScrap extends Scrap {
 	 * todos los mensajes para luego obtenerlos con un XPATH query y extraerle los
 	 * datos. Me servirá para las replies y para los comentarios.
 	 */
-	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression) {
+	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
 		if(container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size()>0) {
@@ -433,6 +433,10 @@ public @Data class FacebookScrap extends Scrap {
 				showMoreLink.click();
 				//this.saveScreenShot("AFTER_1click_OK");
 			} catch(Exception e) {
+				if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+					this.getActions().sendKeys(Keys.SPACE);
+				}
+				
 				this.moveTo(showMoreLink);
 				this.saveScreenShot("[ERROR]click_verMAsMsgs");
 				showMoreLink.click();
@@ -452,6 +456,13 @@ public @Data class FacebookScrap extends Scrap {
 							cantReintentos = 0;
 							cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
 							System.out.print("|"+cantIniComentarios);
+							if(COMMENTS_uTIME_INI!= null) {
+								if(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS+".//abbr[@data-utime<"+ String.valueOf(COMMENTS_uTIME_INI) + "]")).size()>0) {
+									//Si encuentro alguno con fecha mayor a la inicial dada...
+									break;
+								}
+							}
+							
 							// cantIniComentarios =
 							// (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
 							/*
@@ -459,6 +470,9 @@ public @Data class FacebookScrap extends Scrap {
 								break;
 							}
 							*/
+							
+							
+							
 						} else {
 							cantReintentos++;
 						}
@@ -472,6 +486,8 @@ public @Data class FacebookScrap extends Scrap {
 					cantReintentos++;
 				}
 			}
+			
+			
 			System.out.println("[INFO] TOTAL COMENTARIOS: " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
 		} else {
 			System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
@@ -479,8 +495,14 @@ public @Data class FacebookScrap extends Scrap {
 
 		
 		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
-
-		comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		if(COMMENTS_uTIME_FIN!=null) {
+			comentarios = container.findElements(By.xpath(".//abbr[@data-utime>="+ String.valueOf(COMMENTS_uTIME_INI) + " and @data-utime<="+ String.valueOf(COMMENTS_uTIME_FIN) +"]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+			System.out.println("[INFO] TOTAL COMENTARIOS (CON FILTRO DE UTIME): " + comentarios.size());
+		}else {
+			System.out.println("[INFO] TOTAL COMENTARIOS (SIN FILTRO DE UTIME): " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+			comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		}
+		
 		// System.out.println("Comentarios:
 		// "+this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
 		// comentarios =
@@ -514,7 +536,7 @@ public @Data class FacebookScrap extends Scrap {
 	 *         finalicen.
 	 */
 
-public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) {
+	public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) {
 		if (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > cantIniComentarios)) {
 			// if
 			// (!(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size()
@@ -600,10 +622,6 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 		return wait.until(jsLoad);
 	}
 	
-	
-	
-	
-
 	public void moveTo(WebElement element) {
 		//Se fija si al hacer un scroll, antes o despues, aparea el botn de cerrar.
 		if(this.getAccess() == null) {
@@ -637,6 +655,7 @@ public boolean ctrlClickHasEffect(WebElement container, int cantIniComentarios) 
 		}
 	}
 
+	
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
 		this.saveScreenShot("EXTRACT_PUB_DATA");
