@@ -31,10 +31,10 @@ public class Application {
 		// 0hs dle 15/03
 		Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
-		Long COMMENTS_uTIME_INI = 1521072000L; 
-		Long COMMENTS_uTIME_FIN = 1521158400L;
-		//Long COMMENTS_uTIME_INI = null; 
-		//Long COMMENTS_uTIME_FIN = null;
+		//Long COMMENTS_uTIME_INI = 1521072000L; 
+		//Long COMMENTS_uTIME_FIN = 1521158400L;
+		Long COMMENTS_uTIME_INI = null; 
+		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
 		//FacebookScrap fs = new FacebookScrap(DriverType.CHROME_HEADLESS);
 		

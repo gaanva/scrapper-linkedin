@@ -123,10 +123,7 @@ public @Data class FacebookScrap extends Scrap {
 				//Acá debería no ir a este post, e ir al listado.
 				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i+1) + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				try {
-					//if(this.getAccess()!=null) {
-						this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-					//}
-					
+					this.getDriver().navigate().to(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
 				} catch(Exception e) {
 					System.out.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
 					this.saveScreenShot("ERR_ACCESO_POST");
@@ -173,10 +170,6 @@ public @Data class FacebookScrap extends Scrap {
 							this.checkAndClosePopupLogin();
 						}
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
-							//Hacer 1 scroll
-							//this.scrollMainPublicationsPage();
-							//this.scrollMainPublicationsPage();
-							//this.scrollMainPublicationsPage();
 							this.saveScreenShot("SXROLL_POST0");
 							try {
 								this.checkAndClosePopupLogin();
@@ -418,15 +411,19 @@ public @Data class FacebookScrap extends Scrap {
 	 * todos los mensajes para luego obtenerlos con un XPATH query y extraerle los
 	 * datos. Me servirá para las replies y para los comentarios.
 	 */
-	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
+public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
+		
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
 		if(container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size()>0) {
 			System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
 		}
 		// Si existe el botón de "Ver Más mensajes"
-		if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
-			int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
+		//if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
+		if (this.existElement(container,xPathExpression)) {
+			//---
+			//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
+			
 			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
 			this.moveTo(showMoreLink);
 			try {
@@ -444,41 +441,99 @@ public @Data class FacebookScrap extends Scrap {
 			}
 			
 			int cantReintentos = 0;
-
-			while (cantReintentos < 3) {
+			Long cantRequests = 0L;
+			Long totalRequests = (Long) ((JavascriptExecutor) this.getDriver()).executeScript("return window.performance.getEntries().length;");
+			
+			
+			//while (cantReintentos < 3) {
+			while (totalRequests>cantRequests && cantReintentos<3) {
+				cantRequests = totalRequests;
 				try {
+					/* SIEMPRE ME TIRA COMPLETE
+					switch (((JavascriptExecutor) this.getDriver()).executeScript("return document.readyState").toString()) {
+					  case "loading":
+						System.out.println("LOADING");
+					    // The document is still loading.
+					    break;
+					  case "interactive":
+					    // The document has finished loading. We can now access the DOM elements.
+					   System.out.println("INTERACTIVE!");
+					    break;
+					  case "complete":
+					    // The page is fully loaded.
+						  System.out.println("COMPLETE");
+						break;
+					}
+					*/
+					
+			        // Time to load DOM Content
+					/*
+					long domLoadEventEnd = (Long) js.executeScript("return window.performance.timing.domContentLoadedEventEnd;");
+					long fetchStart = (Long) js.executeScript("return window.performance.timing.fetchStart;");
+					System.out.println("DOM Content Loaded: " + (domLoadEventEnd - fetchStart) + " ms.");
+					*/
+			        // Time to load entire page
+					/*
+					long loadEventEnd = (Long) js.executeScript("return window.performance.timing.loadEventEnd;");
+					System.out.println("Loaded: " + (loadEventEnd - fetchStart) + " ms.");
+					*/
+					
+					
+					
+					
+					
 					//Si existe el botón mostrar más...
-					if(container.findElements(By.xpath(xPathExpression)).size()>0) {
+					//if(container.findElements(By.xpath(xPathExpression)).size()>0) {
+					if (this.existElement(container,xPathExpression)) {
 						showMoreLink = container.findElement(By.xpath(xPathExpression));
 						this.moveTo(showMoreLink);
 						showMoreLink.click();
-						if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
+						Thread.sleep(300);
+						
+						JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
+						// Total requests, made to get page rendered
+				        totalRequests = (Long) js.executeScript("return window.performance.getEntries().length;");
+						System.out.print("... ");
+						
+						
+						if(totalRequests>cantRequests) {
 							cantReintentos = 0;
-							cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
-							System.out.print("|"+cantIniComentarios);
-							if(COMMENTS_uTIME_INI!= null) {
-								if(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS+".//abbr[@data-utime<"+ String.valueOf(COMMENTS_uTIME_INI) + "]")).size()>0) {
-									//Si encuentro alguno con fecha mayor a la inicial dada...
-									break;
-								}
-							}
-							
-							// cantIniComentarios =
-							// (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
-							/*
-							if (cantIniComentarios > 2200) {
-								break;
-							}
-							*/
-							
-							
-							
-						} else {
+						}else {
+							totalRequests++;
 							cantReintentos++;
 						}
+						
 					}else {
-						break;
+						
+						try {
+							//this.scrollMainPublicationsPage();
+							JavascriptExecutor jsx = (JavascriptExecutor)this.getDriver();
+							jsx.executeScript("window.scrollBy(0,500)", "");
+							//Me muestra si realmente se llegó al último mensaje...
+							this.saveScreenShot("FINMENSAJES1");
+							//showMoreLink = container.findElement(By.xpath(xPathExpression));
+							//this.moveTo(showMoreLink);
+							//showMoreLink.click();
+							//this.saveScreenShot("FINMENSAJES2");
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+						
+						if(cantReintentos<2) {
+							JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
+							// Total requests, made to get page rendered
+					        totalRequests = (Long) js.executeScript("return window.performance.getEntries().length;");
+							//System.out.println("Total requests: " + totalRequests);
+							
+							totalRequests++;
+							cantReintentos++;
+						}else {
+							break;
+						}
+						
 					}
+					
+					
 					
 				} catch (Exception e) {
 					//this.saveScreenShot("elementStale_");
@@ -488,12 +543,12 @@ public @Data class FacebookScrap extends Scrap {
 			}
 			
 			
-			System.out.println("[INFO] TOTAL COMENTARIOS: " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+			
 		} else {
 			System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
 		}
 
-		
+		System.out.println("[INFO] TOTAL COMENTARIOS LEIDOS: " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
 		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
 		if(COMMENTS_uTIME_FIN!=null) {
 			comentarios = container.findElements(By.xpath(".//abbr[@data-utime>="+ String.valueOf(COMMENTS_uTIME_INI) + " and @data-utime<="+ String.valueOf(COMMENTS_uTIME_FIN) +"]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
@@ -520,6 +575,201 @@ public @Data class FacebookScrap extends Scrap {
 		//System.out.println("[INFO] CANTIDAD TOTAL DE COMENTARIOS PROCESADOS: " + comments.size());
 		//System.out.println("[TIME] Extract COMMENT FIN: " + System.currentTimeMillis());
 		return comments;
+	}
+	
+/*
+	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
+		//Cantidad total de request que llevó cargar la página hasta el momento.
+		Long cantInicialRequest = (Long)((JavascriptExecutor) this.getDriver()).executeScript("return window.performance.getEntries().length;");
+		
+		//int cantIniComentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size();
+		
+		if(this.existElement(container, xPathExpression)) {
+			
+			WebElement showMoreCommentsLink = container.findElement(By.xpath(xPathExpression));
+			//Si el link existe, debería hacer el click sin problemas... y me debeía cambiar el total de requests.
+			this.clickShowMoreComments(showMoreCommentsLink);
+			Long cantNuevaRequest = (Long)((JavascriptExecutor) this.getDriver()).executeScript("return window.performance.getEntries().length;");
+			
+			
+			this.moveTo(showMoreLink);
+			try {
+				showMoreLink.click();
+				Thread.sleep(150);
+				//this.saveScreenShot("AFTER_1click_OK");
+			} catch(Exception e) {
+				if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+					this.getActions().sendKeys(Keys.SPACE);
+				}
+				
+				this.moveTo(showMoreLink);
+				this.saveScreenShot("[ERROR]click_verMAsMsgs");
+				showMoreLink.click();
+				
+			}
+*/
+			
+			//Variable de control, por si en una de las veces la cantidad de requests no se actualiza...
+/*			int cantReintentos = 0;
+			
+			
+			System.out.println("Cant Inicial Request: " + cantInicialRequest);
+			System.out.println("Cant Nueva Request: " + cantNuevaRequest);
+			//System.out.println("Leyendo mensajes...");
+			
+			while(cantNuevaRequest>cantInicialRequest && cantReintentos<2) {
+				System.out.print("... ");
+				cantInicialRequest=cantNuevaRequest;
+				//Si existe el botón mostrar más...
+				//if(container.findElements(By.xpath(xPathExpression)).size()>0) {
+				if(this.existElement(container, xPathExpression)) {
+					showMoreCommentsLink = container.findElement(By.xpath(xPathExpression));
+					if(this.clickShowMoreComments(showMoreCommentsLink)){
+						System.out.println("Click en Show more ok.");
+						cantNuevaRequest = (Long)((JavascriptExecutor) this.getDriver()).executeScript("return window.performance.getEntries().length;");
+						System.out.println("Cant Requests: " + cantNuevaRequest);
+					}else {
+						System.out.println("Click en Show more NON ok.");
+						if(cantReintentos<2) {
+							cantReintentos++;
+							//sumo uno para que pase la condición del while
+							cantNuevaRequest++;
+						}
+						this.saveScreenShot("NOMORECOMMENTSLINK_"+cantReintentos+"_");
+						//No hay más mensajes para mostrar
+					}
+					
+				}else {
+					if(cantReintentos<2) {
+						cantReintentos++;
+						//sumo uno para que pase la condición del while
+						cantNuevaRequest++;
+					}
+					this.saveScreenShot("NOMORECOMMENTSLINK_"+cantReintentos+"_");
+					//No hay más mensajes para mostrar
+				}
+				//cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+				//System.out.print("|"+cantIniComentarios);
+			}			
+			
+		}else {
+			this.saveScreenShot("NOMORECOMMENTSLINK_");
+			System.out.println("No se encontró el SHOWMORECOMMENTSLINK");
+		}
+		System.out.println("FIN LECTURA DE COMENTARIOS|");
+		/*
+			while (cantReintentos < 3) {
+				try {
+					//Si existe el botón mostrar más...
+					if(container.findElements(By.xpath(xPathExpression)).size()>0) {
+						showMoreLink = container.findElement(By.xpath(xPathExpression));
+						this.moveTo(showMoreLink);
+						showMoreLink.click();
+						if (this.ctrlClickHasEffect(container, cantIniComentarios)) {
+							cantReintentos = 0;
+							cantIniComentarios = (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+							System.out.print("|"+cantIniComentarios);
+							if(COMMENTS_uTIME_INI!= null) {
+								if(container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS+".//abbr[@data-utime<"+ String.valueOf(COMMENTS_uTIME_INI) + "]")).size()>0) {
+									//Si encuentro alguno con fecha mayor a la inicial dada...
+									break;
+								}
+							}
+		*/					
+							// cantIniComentarios =
+							// (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
+							/*
+							if (cantIniComentarios > 2200) {
+								break;
+							}
+							*/
+		/*
+					}else {
+						break;
+					}
+					
+				} catch (Exception e) {
+					//this.saveScreenShot("elementStale_");
+					//System.out.println("ERROR: " + e.toString());
+					cantReintentos++;
+				}
+			}
+			
+			
+			System.out.println("[INFO] TOTAL COMENTARIOS: " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+		} else {
+			System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
+		}
+
+		*/
+		// this.saveScreenShot("SCREEN_SCRAWLED_"+String.valueOf(System.currentTimeMillis()));
+/*		System.out.println("Cant Final requests: " + (Long)((JavascriptExecutor) this.getDriver()).executeScript("return window.performance.getEntries().length;"));
+		System.out.println("TOTAL COMENTARIOS LEIDOS: " + (container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()) );
+		List<WebElement> comentarios = new ArrayList<WebElement>();
+		List<Comment> comments = new ArrayList<Comment>();
+		if(COMMENTS_uTIME_FIN!=null) {
+			comentarios = container.findElements(By.xpath(".//abbr[@data-utime>="+ String.valueOf(COMMENTS_uTIME_INI) + " and @data-utime<="+ String.valueOf(COMMENTS_uTIME_FIN) +"]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+			System.out.println("[INFO] TOTAL COMENTARIOS (CON FILTRO DE UTIME): " + comentarios.size());
+		}else {
+			System.out.println("[INFO] TOTAL COMENTARIOS (SIN FILTRO DE UTIME): " + container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size());
+			comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		}
+		
+		// System.out.println("Comentarios:
+		// "+this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size());
+		// comentarios =
+		// this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER)).get(0).findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV));
+		// container.findElements(By.xpath(FacebookConfig.XPATH_COMMENT_ROOT_DIV)).size();
+		//System.out.println("[INFO] PROCESANDO: " + comentarios.size() + " COMENTARIOS.");
+		System.out.print("[INFO]PROCESANDO COMENTARIO: ");
+		for (int j = 0; j < comentarios.size(); j++) {
+			comments.add(this.extractCommentData(comentarios.get(j)));
+			System.out.print(j + "|");
+		}
+		System.out.println("FIN");
+		System.out.println("[INFO] SE PROCESARON TODOS LOS COMENTARIOS. ("+ comentarios.size() + ")");
+		
+		//System.out.println("[INFO] CANTIDAD TOTAL DE COMENTARIOS PROCESADOS: " + comments.size());
+		//System.out.println("[TIME] Extract COMMENT FIN: " + System.currentTimeMillis());
+		return comments;
+	}
+*/	
+	public boolean clickShowMoreComments(WebElement showMoreCommentsLink) {
+		try {
+			this.moveTo(showMoreCommentsLink);
+			showMoreCommentsLink.click();
+			
+		} catch(Exception e) {
+			System.out.println("[ERROR PARA CATCH] " + e.getClass().getSimpleName());
+			if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+				try {
+					this.getActions().sendKeys(Keys.SPACE);
+					this.moveTo(showMoreCommentsLink);
+					showMoreCommentsLink.click();
+				}catch(Exception e1) {
+					System.out.println("[ERROR] al intentar hacer click en Ver Mas mensajes.");
+					this.saveScreenShot("[ERROR]CLICK_VER_MAS_");
+					return false;
+				}
+			}else {
+				System.out.println("[ERROR] al intentar hacer click en Ver Mas mensajes.");
+				this.saveScreenShot("[ERROR]CLICK_VER_MAS_");
+				return false;
+			}
+		}
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
+	}
+	
+	public void totalCommentsPub(WebElement pub) {
+		if(pub.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size()>0) {
+			System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + pub.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
+		}
 	}
 
 	/**
@@ -571,7 +821,24 @@ public @Data class FacebookScrap extends Scrap {
 		Comment auxComment = new Comment();
 
 		// Mensaje
-		if (comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size() > 0) {
+		if(this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
+			WebElement aux;
+			while(this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
+				aux = comentario.findElement(By.xpath(".//a[@class='_5v47 fss']"));
+				try {
+					this.moveTo(aux);
+					aux.click();
+					Thread.sleep(50);
+					
+				}catch(Exception e) {
+					this.saveScreenShot("Error VerMasContenidoMensaje");
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+		//if (comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size() > 0) {
+		if (this.existElement(comentario, FacebookConfig.XPATH_USER_COMMENT)) {
 			String aux = "";
 			for (int i = 0; i < comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size(); i++) {
 				aux += comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).get(i).getText();
