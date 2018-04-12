@@ -185,6 +185,8 @@ public @Data class FacebookScrap extends Scrap {
 								publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
 							}catch(Exception e){
 								if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+									JavascriptExecutor jsx = (JavascriptExecutor)this.getDriver();
+									jsx.executeScript("window.scrollBy(0,500)", "");
 									this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 								}
 								try {	
@@ -898,6 +900,7 @@ public List<Comment> obtainAllPublicationComments(WebElement container, String x
 		if(this.getAccess()==null) {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
 			//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", element);
+			//this.saveScreenShot("moveElement_");
 		}else {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
 			//System.out.println("SCROLL_INTO_ELEMENT");
@@ -925,7 +928,7 @@ public List<Comment> obtainAllPublicationComments(WebElement container, String x
 	
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
-		this.saveScreenShot("EXTRACT_PUB_DATA");
+		//this.saveScreenShot("EXTRACT_PUB_DATA");
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
@@ -1376,7 +1379,7 @@ public List<Comment> obtainAllPublicationComments(WebElement container, String x
 			if(this.getAccess()==null) {
 				try {
 					if(this.getDriver().findElements(By.xpath("//a[@id='expanding_cta_close_button']")).size()>0) {
-						System.out.println("CErrando popup login");
+						//System.out.println("Cerrando popup login");
 						this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 
 					}
@@ -1415,17 +1418,22 @@ public List<Comment> obtainAllPublicationComments(WebElement container, String x
 							this.scrollMainPublicationsPage();
 							this.scrollMainPublicationsPage();
 							*/
-							System.out.println("SCROLL");
+							//System.out.println("SCROLL");
 							this.moveTo(this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")));
-							System.out.println("Cerrando popup login!");
+							//System.out.println("Cerrando popup login!");
 							this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 							
 						}
 					}catch(Exception e) {
-						System.out.println("Exception NAME: "+e.getClass().getName()+"--------");
-						System.out.println("Exception message: "+e.getClass().toString());
-						//e.printStackTrace();
-						this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+						//El elemento existe en el DOM pero no está visible...
+						if(e.getClass().getName().equalsIgnoreCase("org.openqa.selenium.ElementNotInteractableException")) {
+							
+						}else {
+							System.out.println("Exception NAME: "+e.getClass().getName()+"--------");
+							//System.out.println("Exception message: "+e.getClass().toString());
+							//e.printStackTrace();
+							this.saveScreenShot("ERR_CLOSE_POPUPLOGIN");
+						}
 					}
 				}
 				
@@ -1447,7 +1455,11 @@ public List<Comment> obtainAllPublicationComments(WebElement container, String x
 					this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
 				}catch(Exception e1) {
 					if(e1.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-						this.getActions().sendKeys(Keys.SPACE);
+						//this.getActions().sendKeys(Keys.SPACE);
+						JavascriptExecutor jsx = (JavascriptExecutor)this.getDriver();
+						jsx.executeScript("window.scrollBy(0,500)", "");
+						this.saveScreenShot("SCROLL_TIPOCARGA");
+						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 						this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+option+"]")).click();
 					}
 				}

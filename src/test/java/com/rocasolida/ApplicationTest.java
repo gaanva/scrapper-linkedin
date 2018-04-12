@@ -34,6 +34,26 @@ public class ApplicationTest {
 		//Total de comentarios con el filtro aplicado:
 		assertEquals(5, page.getPublications().get(0).getComments().size());
 	}
+	
+	@Test
+	public void herbalifeSinLoginConFiltroComments() {
+		Credential access = null;
+		Long uTIME_INI = getFecha("15/3/2018 00:00");
+		Long uTIME_FIN = getFecha("16/3/2018 00:00");
+		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00"); 
+		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
+		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		fs.login(access);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		//System.out.println(publications);
+		assertNotNull(page);
+		assertEquals(1, page.getPublications().size());
+		//Total de comentarios con el filtro aplicado:
+		assertEquals(5, page.getPublications().get(0).getComments().size());
+	}
+	
+	
 	@Test
 	public void herbalifeConLoginSinFiltroComments() {
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
@@ -52,6 +72,24 @@ public class ApplicationTest {
 		assertEquals(9, page.getPublications().get(0).getComments().size());
 	}
 
+	
+	@Test
+	public void herbalifeSinLoginSinFiltroComments() {
+		Credential access = null;
+		Long uTIME_INI = getFecha("15/3/2018 00:00");
+		Long uTIME_FIN = getFecha("16/3/2018 00:00");
+		Long COMMENTS_uTIME_INI = null; 
+		Long COMMENTS_uTIME_FIN = null;
+		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		fs.login(access);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		//System.out.println(publications);
+		assertNotNull(page);
+		assertEquals(1, page.getPublications().size());
+		//Total de comentarios con el filtro aplicado:
+		assertEquals(9, page.getPublications().get(0).getComments().size());
+	}
 //	@Test
 //	public void herbalifeSinLogin() {
 //		Long uTIME_INI = getFecha("15/3/2018 00:00");
@@ -67,6 +105,23 @@ public class ApplicationTest {
 	@Test
 	public void teamisurusConLoginConFiltroComments() {
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		Long uTIME_INI = getFecha("15/3/2018 00:00");
+		Long uTIME_FIN = getFecha("16/3/2018 00:00");
+		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00"); 
+		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
+		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		fs.login(access);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(2, page.getPublications().size());
+		assertEquals(2, page.getPublications().get(0).getComments().size());
+		assertEquals(4, page.getPublications().get(1).getComments().size());
+	}
+	
+	@Test
+	public void teamisurusSinLoginConFiltroComments() {
+		Credential access = null;
 		Long uTIME_INI = getFecha("15/3/2018 00:00");
 		Long uTIME_FIN = getFecha("16/3/2018 00:00");
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00"); 
@@ -98,6 +153,22 @@ public class ApplicationTest {
 		assertEquals(7, page.getPublications().get(1).getComments().size());
 	}
 	
+	@Test
+	public void teamisurusSinLoginSinFiltroComments() {
+		Credential access = null;
+		Long uTIME_INI = getFecha("15/3/2018 00:00");
+		Long uTIME_FIN = getFecha("16/3/2018 00:00");
+		Long COMMENTS_uTIME_INI = null; 
+		Long COMMENTS_uTIME_FIN = null;
+		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
+		fs.login(access);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(2, page.getPublications().size());
+		assertEquals(2, page.getPublications().get(0).getComments().size());
+		assertEquals(7, page.getPublications().get(1).getComments().size());
+	}
 	private Long getFecha(String string) {
 		try {
 			String pattern = "dd/MM/yyyy HH:mm";
