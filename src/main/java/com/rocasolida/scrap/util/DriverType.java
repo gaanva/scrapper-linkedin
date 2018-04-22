@@ -1,5 +1,5 @@
 package com.rocasolida.scrap.util;
 
 public enum DriverType {
-	PHANTOM_JS, FIREFOX_HEADLESS, CHROME_HEADLESS
+	FIREFOX_HEADLESS, CHROME_HEADLESS, FIREFOX, CHROME
 }

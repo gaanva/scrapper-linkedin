@@ -1,12 +1,10 @@
 package com.rocasolida.scrap;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -14,34 +12,20 @@ import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Actions;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.LocalFileDetector;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.rocasolida.entities.Credential;
+import com.rocasolida.scrap.util.Driver;
+import com.rocasolida.scrap.util.DriverFinder;
 import com.rocasolida.scrap.util.DriverType;
 
 import lombok.Data;
 
-public @Data class Scrap {
-	/**
-	 * An IMPLICIT wait is to tell WebDriver to poll the DOM for a certain amount of time when trying to find an element or elements if they are not immediately available.
-	 */
-	private static Integer IMPLICIT_WAIT = 2;
-	/**
-	 * An EXPLICIT wait is code you define to wait for a certain condition to occur before proceeding further in the code.
-	 */
-	private static Integer EXPLICIT_WAIT = 2;
-
-	// private static String PATH_GHOST_DRIVER = "/home/brunoli/Downloads/phantomjs-2.1.1-linux-x86_64/bin/phantomjs";
-	private static String PATH_GHOST_DRIVER = "drivers/binaries/windows/phantomjs/64bit/phantomjs.exe";
-	private static String SETTINGS_USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36";
-	// private static String SETTINGS_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36";
-
-	private static String SETTINGS_LOAD_IMAGE = "false";
-	private static String NAVIGATION_DATA_PATH = "C:\\tmp\\"; // Guarda datos de la navegación. Session, Cookies, etc.
-	private static String NAVIGATION_DATA_STORAGE_QUOTA = "20000";
+@Data
+public class Scrap {
 
 	private static Integer SCREEN_WIDTH = 1920;
 	private static Integer SCREEN_HEIGHT = 1080;
@@ -50,25 +34,64 @@ public @Data class Scrap {
 	private Credential access;
 	private WebDriverWait waitDriver;
 	private Actions actions;
-	private DriverType driverType;
+	private Driver driverResource;
 
-	public Scrap(DriverType driverType) {
-		this.driverType = driverType;
+	public Scrap(final Driver driver) throws MalformedURLException {
+		this.driverResource = driver;
 		// Creo el webdriver
-		this.initGhostDriver(driverType);
+		if (driver.getSeleniumHost() != null && driver.getSeleniumPort() != null) {
+			this.setupWebDriver(driver);
+		} else {
+			this.initLocalDriver(driver);
+		}
 	}
 
-	public void initGhostDriver(DriverType driverType) {
-		if (driverType == null || driverType.equals(DriverType.PHANTOM_JS)) {
-			this.driver = new PhantomJSDriver(this.getDriverCapabilities());
-			this.configureDriver();
-		} else if (driverType != null && driverType.equals(DriverType.FIREFOX_HEADLESS)) {
-			System.setProperty("webdriver.gecko.driver", "drivers/binaries/windows/marionette/64bit/geckodriver.exe");
+	public void setupWebDriver(Driver driver) throws MalformedURLException {
+		setupRemoteDriver(driver);
+
+	}
+
+	private void setupRemoteDriver(Driver driverResource) throws MalformedURLException {
+		DesiredCapabilities capabilities;
+		if (driverResource.getType().equals(DriverType.FIREFOX)) {
+			capabilities = DesiredCapabilities.firefox();
+			capabilities.setBrowserName("firefox");
+		} else if (driverResource.getType().equals(DriverType.CHROME)) {
+			capabilities = DesiredCapabilities.chrome();
+			capabilities.setBrowserName("chrome");
+		} else if (driverResource.getType().equals(DriverType.FIREFOX_HEADLESS)) {
+			capabilities = DesiredCapabilities.chrome();
+			capabilities.setBrowserName("firefox");
+		} else if (driverResource.getType().equals(DriverType.CHROME_HEADLESS)) {
+			capabilities = DesiredCapabilities.chrome();
+			capabilities.setBrowserName("chrome");
+		} else {
+			throw new RuntimeException("Browser type unsupported");
+		}
+
+		if (driverResource.getOs().equals("Mac")) {
+			capabilities.setPlatform(Platform.MAC);
+		} else if (driverResource.getOs().equals("Linux")) {
+			capabilities.setPlatform(Platform.LINUX);
+		} else if (driverResource.getOs().equals("Windows")) {
+			capabilities.setPlatform(Platform.WINDOWS);
+		} else {
+			throw new RuntimeException("SO type unsupported");
+		}
+
+		this.driver = new RemoteWebDriver(new URL(
+				"http://" + driverResource.getSeleniumHost() + ":" + driverResource.getSeleniumPort() + "/wd/hub"),
+				capabilities);
+		((RemoteWebDriver) this.driver).setFileDetector(new LocalFileDetector());
+		this.configureDriver();
+	}
+
+	public void initLocalDriver(Driver driver) {
+		if (driver != null && driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
+			System.setProperty("webdriver.gecko.driver", DriverFinder.findFirefoxDriver().get());
 			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
-			
-			
-			
+
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
 			firefoxBinary.addCommandLineOptions("--headless");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
@@ -76,14 +99,13 @@ public @Data class Scrap {
 			firefoxOptions.setCapability("permissions.default.image", 2);
 			this.driver = new FirefoxDriver(firefoxOptions);
 			this.configureDriver();
-		}else if(driverType != null && driverType.equals(DriverType.CHROME_HEADLESS)) {
-			
-			ChromeOptions chromeOptions = new ChromeOptions();  
-			System.setProperty("webdriver.chrome.driver", "drivers/binaries/windows/googlechrome/64bit/chromedriver.exe");
-		    chromeOptions.addArguments("--headless");  
-		    //chromeOptions.addArguments("--disable-gpu");  
-		    this.driver = new ChromeDriver(chromeOptions);  
-			
+		} else if (driver != null && driver.getType().equals(DriverType.CHROME_HEADLESS)) {
+
+			ChromeOptions chromeOptions = new ChromeOptions();
+			System.setProperty("webdriver.chrome.driver", DriverFinder.findChromeDriver().get());
+			chromeOptions.addArguments("--headless");
+			// chromeOptions.addArguments("--disable-gpu");
+			this.driver = new ChromeDriver(chromeOptions);
 		}
 	}
 
@@ -91,36 +113,7 @@ public @Data class Scrap {
 		this.driver.quit();
 	}
 
-	// Libera recursos y me guarda la session.
-	public void refresh() {
-		Set<Cookie> session = this.driver.manage().getCookies();
-		this.driver.close();
-		this.driver.quit();
-		this.initGhostDriver(driverType);
-		for (Cookie cookie : session)
-			this.driver.manage().addCookie(cookie);
-	}
-
-	private DesiredCapabilities getDriverCapabilities() {
-		DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
-		List<String> cliArgs = new ArrayList<String>();
-		cliArgs.add("--local-storage-quota=" + NAVIGATION_DATA_STORAGE_QUOTA);
-		cliArgs.add("--local-storage-path=" + NAVIGATION_DATA_PATH);
-		cliArgs.add("--web-security=false");
-		cliArgs.add("--ssl-protocol=any");
-		cliArgs.add("--ignore-ssl-errors=true");
-		cliArgs.add("--webdriver-loglevel=ERROR");
-		capabilities.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, cliArgs);
-		capabilities.setCapability("phantomjs.binary.path", PATH_GHOST_DRIVER);
-		capabilities.setCapability("phantomjs.page.settings.userAgent", SETTINGS_USER_AGENT);
-		capabilities.setCapability("phantomjs.page.settings.loadImages", SETTINGS_LOAD_IMAGE);
-
-		return capabilities;
-	}
-
 	private void configureDriver() {
-		this.driver.manage().timeouts().implicitlyWait(IMPLICIT_WAIT, TimeUnit.SECONDS);
-		this.waitDriver = new WebDriverWait(this.driver, EXPLICIT_WAIT);
 		this.driver.manage().window().setSize(new Dimension(SCREEN_WIDTH, SCREEN_HEIGHT));
 		this.driver.manage().window().maximize();
 		this.actions = new Actions(this.driver);

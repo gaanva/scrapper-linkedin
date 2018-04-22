@@ -1,66 +1,83 @@
 package com.rocasolida;
 
+import java.net.MalformedURLException;
+
 import com.rocasolida.entities.Credential;
-import com.rocasolida.entities.Page;
 import com.rocasolida.scrap.FacebookScrap;
+import com.rocasolida.scrap.util.Driver;
 import com.rocasolida.scrap.util.DriverType;
 
 /*
  * NOTA: Si estás Loggeado, no te muestra por default las historias (o tal vez mi profile tenga algo).
  * Si no estás loggeado, te carga una banda de publicaciones.
  */
+
 public class Application {
 
-	public static void main(String[] args) {
-		// Configuración del webdriver
+	public static void main(String[] args) throws MalformedURLException {
 
-		/*
-		 * DesiredCapabilities capabilities = DesiredCapabilities.phantomjs();
-		 * capabilities.setCapability("phantomjs.binary.path",
-		 * "C:\\Users\\gvaldez\\drivers\\phantomjs.exe"); capabilities.setCapability(
-		 * "phantomjs.page.settings.userAgent","Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36"
-		 * ); //Creo el webdriver WebDriver driver = new PhantomJSDriver(capabilities);
-		 * //Accedo a la página que quiero scrapear
-		 */
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		Credential access = null;
 
-		// Long uTIME_INI = 1520985600L; // 03/14/2018 @ 12:00am (UTC) - Desde las 0hs
-		// del 14/03
-		// Long uTIME_FIN = 1521072000L; // 03/14/2018 @ 12:59:59pm (UTC) - Hasta las
-		// 0hs dle 15/03
-		Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
-		Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
-		Long COMMENTS_uTIME_INI = 1521072000L; 
-		Long COMMENTS_uTIME_FIN = 1521158400L;
-		//Long COMMENTS_uTIME_INI = null; 
-		//Long COMMENTS_uTIME_FIN = null;
-		FacebookScrap fs = new FacebookScrap(DriverType.FIREFOX_HEADLESS);
-		//FacebookScrap fs = new FacebookScrap(DriverType.CHROME_HEADLESS);
-		
+		String os = System.getenv("OS");
+		String user = System.getenv("LOGIN_FACEBOOK");
+		String password = System.getenv("PASSWORD_FACEBOOK");
+		String seleniumHost = System.getenv("SELENIUM_HOST");
+		String seleniumPort = System.getenv("SELENIUM_PORT");
+
+		if (os == null) {
+			os = "Windows";
+		}
+
+		if (user != null && password != null) {
+			access = new Credential(user, password, 0L, "");
+		}
+
+		Long uTIME_INI = 1524106800L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
+		Long uTIME_FIN = 1524381248L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
+		Long COMMENTS_uTIME_INI = 1524106800L;
+		Long COMMENTS_uTIME_FIN = 1524381248L;
+
+		FacebookScrap fs = null;
+		if (seleniumHost != null && seleniumPort != null) {
+			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort));
+		} else {
+			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os));
+		}
+
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				
-			}else {
+				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
+				// COMMENTS_uTIME_INI,
+				// COMMENTS_uTIME_FIN);
+				// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
+				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
+				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				// fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
+				// COMMENTS_uTIME_FIN);
+
+			} else {
 				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		}	
-		
-		fs.printPage(fs.getPage());
+			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
+			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
+			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
+			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
+			// COMMENTS_uTIME_FIN);
+		}
+
+		fs.printPage(fs.page());
 		// SIEMPRE cerrar el navegador. Sino te queda un proceso corriendo for ever
 		// "phantomjs.exe".
 		fs.quit();
