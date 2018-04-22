@@ -18,6 +18,9 @@ public class DriverFinder {
 		if (os.toLowerCase().contains("windows")) {
 			return findDriver("marionette", os);
 		} else {
+			if (os.toLowerCase().contains("mac")) {
+				return findDriver("geckodriver", "osx");
+			}
 			return findDriver("geckodriver", os);
 		}
 	}
@@ -25,7 +28,8 @@ public class DriverFinder {
 	private static String findDriver(final String name, String os) {
 		Path start = Paths.get("./drivers/binaries");
 		int maxDepth = 10;
-		try (Stream<Path> stream = Files.find(start, maxDepth, (path, attr) -> String.valueOf(path).contains(name) && String.valueOf(path).contains(os.toLowerCase()))) {
+		try (Stream<Path> stream = Files.find(start, maxDepth, (path, attr) -> String.valueOf(path).contains(name)
+				&& String.valueOf(path).contains(os.toLowerCase()))) {
 			Iterator<Path> it = stream.iterator();
 			while (it.hasNext()) {
 				Path path = it.next();

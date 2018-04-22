@@ -53,7 +53,7 @@
 				<artifactId>driver-binary-downloader-maven-plugin</artifactId>
 				<version>1.0.17</version>
 				<configuration>
-					<onlyGetDriversForHostOperatingSystem>false</onlyGetDriversForHostOperatingSystem>
+					<onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
 					<operatingSystems>
 						<linux>true</linux>
 						<mac>true</mac>
