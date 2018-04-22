@@ -23,7 +23,7 @@ public class ApplicationTest {
 	@BeforeClass
 	public static void loadOs() {
 		OS = System.getenv("OS");
-		if (OS == null) {
+		if (OS == null || OS.equalsIgnoreCase("Windows_NT")) {
 			OS = "Windows";
 		}
 	}
@@ -37,8 +37,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		// System.out.println(publications);
 		assertNotNull(page);
@@ -54,8 +53,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		// System.out.println(publications);
 		assertNotNull(page);
@@ -73,8 +71,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		// System.out.println(publications);
 		assertNotNull(page);
@@ -90,8 +87,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = null;
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		// System.out.println(publications);
 		assertNotNull(page);
@@ -121,8 +117,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
 		assertEquals(2, page.getPublications().size());
@@ -137,8 +132,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
 		assertEquals(2, page.getPublications().size());
@@ -155,8 +149,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
 		assertEquals(2, page.getPublications().size());
@@ -172,8 +165,7 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-				COMMENTS_uTIME_FIN);
+		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
 		assertEquals(2, page.getPublications().size());
