@@ -79,16 +79,14 @@ public class Scrap {
 			throw new RuntimeException("SO type unsupported");
 		}
 
-		this.driver = new RemoteWebDriver(new URL(
-				"http://" + driverResource.getSeleniumHost() + ":" + driverResource.getSeleniumPort() + "/wd/hub"),
-				capabilities);
+		this.driver = new RemoteWebDriver(new URL("http://" + driverResource.getSeleniumHost() + ":" + driverResource.getSeleniumPort() + "/wd/hub"), capabilities);
 		((RemoteWebDriver) this.driver).setFileDetector(new LocalFileDetector());
 		this.configureDriver();
 	}
 
 	public void initLocalDriver(Driver driver) {
 		if (driver != null && driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
-			System.setProperty("webdriver.gecko.driver", DriverFinder.findFirefoxDriver().get());
+			System.setProperty("webdriver.gecko.driver", DriverFinder.findFirefoxDriver(driver.getOs()));
 			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 
@@ -102,7 +100,7 @@ public class Scrap {
 		} else if (driver != null && driver.getType().equals(DriverType.CHROME_HEADLESS)) {
 
 			ChromeOptions chromeOptions = new ChromeOptions();
-			System.setProperty("webdriver.chrome.driver", DriverFinder.findChromeDriver().get());
+			System.setProperty("webdriver.chrome.driver", DriverFinder.findChromeDriver(driver.getOs()));
 			chromeOptions.addArguments("--headless");
 			// chromeOptions.addArguments("--disable-gpu");
 			this.driver = new ChromeDriver(chromeOptions);

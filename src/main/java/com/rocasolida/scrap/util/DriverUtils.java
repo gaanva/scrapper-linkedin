@@ -63,20 +63,7 @@ public class DriverUtils {
 		return driver;
 	}
 
-	public static WebDriver getGCDriver(boolean headless) {
-		if (driver != null) {
-			return driver;
-		}
-
-		System.setProperty("webdriver.gecko.driver", DriverFinder.findFirefoxDriver().get());
-
-		ChromeOptions chromeOptions = new ChromeOptions();
-
-		chromeOptions.addArguments("--headless");
-		// chromeOptions.addArguments("--disable-gpu");
-
-		return (driver = new ChromeDriver(chromeOptions));
-	}
+//	public static WebDri FI
 
 	public static Path getTempPath() {
 		return tempPath;

@@ -4,29 +4,39 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public class DriverFinder {
 
-  public static Optional<String> findChromeDriver() {
-    return findDriver("chromedriver");
-  }
-
-  public static Optional<String> findFirefoxDriver() {
-    return findDriver("geckodriver");
-  }
-
-  private static Optional<String> findDriver(final String name) {
-    Path start = Paths.get("./drivers/binaries");
-    int maxDepth = 10;
-
-    try (Stream<Path> stream = Files.find(start, maxDepth, (path, attr) ->
-      String.valueOf(path).contains(name))) {
-      return stream.findFirst().map(path -> path.toString());
-    } catch (final IOException e) {
-    		throw new RuntimeException(e);
+	public static String findChromeDriver(String os) {
+		return findDriver("chromedriver", os);
 	}
-  }
+
+	public static String findFirefoxDriver(String os) {
+		if (os.toLowerCase().contains("windows")) {
+			return findDriver("marionette", os);
+		} else {
+			return findDriver("geckodriver", os);
+		}
+	}
+
+	private static String findDriver(final String name, String os) {
+		Path start = Paths.get("./drivers/binaries");
+		int maxDepth = 10;
+		try (Stream<Path> stream = Files.find(start, maxDepth, (path, attr) -> String.valueOf(path).contains(name) && String.valueOf(path).contains(os.toLowerCase()))) {
+			Iterator<Path> it = stream.iterator();
+			while (it.hasNext()) {
+				Path path = it.next();
+				if (Files.isRegularFile(path)) {
+					return path.toString();
+				}
+			}
+		} catch (final IOException e) {
+			throw new RuntimeException(e);
+		}
+		return null;
+	}
 
 }
