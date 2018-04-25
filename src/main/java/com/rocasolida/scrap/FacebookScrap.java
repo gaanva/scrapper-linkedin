@@ -973,7 +973,6 @@ public class FacebookScrap extends Scrap {
 		Publication aux = new Publication();
 		// this.saveScreenShot("EXTRACT_PUB_DATA");
 		
-		System.out.println("Publicación HTML: " + publication.getAttribute("innerHTML"));
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
