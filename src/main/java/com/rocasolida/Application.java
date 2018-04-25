@@ -17,7 +17,7 @@ public class Application {
 	public static void main(String[] args) throws MalformedURLException {
 
 		Credential access = null;
-
+		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
