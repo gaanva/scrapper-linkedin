@@ -42,7 +42,7 @@ public final class FacebookConfig {
 	// TIEMSTAMP: HUSO HORARIO GMT (sumarle 4 horas para saber fecha de post en
 	// Arg.)
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
-
+	public static String XPATH_PUBLICATION_TIMESTAMP_1 = ".//abbr//span[contains(@class,'timestamp')]//parent::abbr"; // getAttribute("data-utime")
 	// Condición por timeStamp
 	//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'cocacola')]//descendant::abbr[@data-utime<"1521072000"]
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";

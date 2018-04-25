@@ -210,24 +210,7 @@ public class FacebookScrap extends Scrap {
 								}
 
 							}
-							/*
-							 * try { //this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.
-							 * XPATH_COMMENTS_CONTAINER_NL))); ((JavascriptExecutor)
-							 * this.getDriver()).executeScript("arguments[0].scrollIntoView(true);",
-							 * pubsNew.get(0).findElement(By.xpath(FacebookConfig.
-							 * XPATH_COMMENTS_CONTAINER_NL)));
-							 * pubsNew.get(0).findElement(By.xpath(FacebookConfig.
-							 * XPATH_COMMENTS_CONTAINER_NL)).click();
-							 * 
-							 * } catch (Exception e) {
-							 * //System.err.println("[ERROR] Click en comment_tracking not logged in!");
-							 * //e.printStackTrace(); ((JavascriptExecutor)
-							 * this.getDriver()).executeScript("arguments[0].scrollIntoView(false);",
-							 * pubsNew.get(0).findElement(By.xpath(FacebookConfig.
-							 * XPATH_COMMENTS_CONTAINER_NL)));
-							 * pubsNew.get(0).findElement(By.xpath(FacebookConfig.
-							 * XPATH_COMMENTS_CONTAINER_NL)).click(); this.saveScreenShot("clickTckMsg1"); }
-							 */
+							
 						} else {
 							System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS (SIN LOGIN)");
 							return null;
@@ -235,16 +218,6 @@ public class FacebookScrap extends Scrap {
 					} else {
 						publicationsImpl.get(i).setComments(
 								this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
-						/*
-						 * if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER
-						 * + "//*")) { this.TipoCargaComentarios(pubsNew.get(0), 3);
-						 * System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
-						 * publicationsImpl.get(i).setComments(this.obtainAllPublicationComments(pubsNew
-						 * .get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER +
-						 * "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)); } else {
-						 * System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
-						 * this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS"); return null; }
-						 */
 					}
 
 					this.page.setPublications(publicationsImpl);
@@ -999,6 +972,8 @@ public class FacebookScrap extends Scrap {
 	public Publication extractPublicationData(WebElement publication) {
 		Publication aux = new Publication();
 		// this.saveScreenShot("EXTRACT_PUB_DATA");
+		
+		System.out.println("Publicación HTML: " + publication.getAttribute("innerHTML"));
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
@@ -1013,9 +988,22 @@ public class FacebookScrap extends Scrap {
 		/**
 		 * TIMESTAMP El timestamp viene en GMT.
 		 */
-		aux.setTimeStamp(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))
-				.getAttribute("data-utime")));
-
+		
+		/*
+		 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando 
+		 * comparten un post de otra cuenta de facebook): 
+		 *    <abbr data-utime='' class='timestamp'>
+		 *    <abbr data-utime=''><span class='timestamp'>
+		 */
+		
+		if(this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
+			aux.setTimeStamp(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))
+					.getAttribute("data-utime")));
+		}else if(this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)){
+			aux.setTimeStamp(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1))
+					.getAttribute("data-utime")));
+		}
+	
 		/**
 		 * TITULO TODO HAY QUE VER QUE PASA CUANDO EL TEXTO DEL TITULO ES MUY LARGO...
 		 * SI RECARGA LA PAGINA O LA MANTIENE EN LA MISMA.
@@ -1037,10 +1025,15 @@ public class FacebookScrap extends Scrap {
 		/**
 		 * DATETIME
 		 */
-		String d = (publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)))
-				.getAttribute("title");
-		aux.setDateTime(d);
-
+		
+		if(this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
+			aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)))
+					.getAttribute("title"));
+		}else if(this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)){
+			aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)))
+					.getAttribute("title"));
+		}
+		
 		/**
 		 * CANTIDAD DE REPRODUCCIONES
 		 */

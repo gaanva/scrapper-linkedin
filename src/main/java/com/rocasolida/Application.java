@@ -32,8 +32,11 @@ public class Application {
 			access = new Credential(user, password, 0L, "");
 		}
 
-		Long uTIME_INI = 1524106800L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
-		Long uTIME_FIN = 1524381248L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
+		Long uTIME_INI = 1524106800L; // 04/19/2018 @ 03:00:00
+		Long uTIME_FIN = 1524381248L; // 04/22/2018 @ 07:14:08
+		//Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
+		//Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
+		
 		Long COMMENTS_uTIME_INI = 1524106800L;
 		Long COMMENTS_uTIME_FIN = 1524381248L;
 
@@ -47,9 +50,9 @@ public class Application {
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				 fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+				 COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 				// COMMENTS_uTIME_INI,
 				// COMMENTS_uTIME_FIN);
@@ -64,9 +67,9 @@ public class Application {
 				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+			COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
