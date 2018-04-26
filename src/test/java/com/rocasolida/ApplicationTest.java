@@ -120,9 +120,8 @@ public class ApplicationTest {
 		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
+		assertEquals(1, page.getPublications().size());
 		assertEquals(2, page.getPublications().get(0).getComments().size());
-		assertEquals(4, page.getPublications().get(1).getComments().size());
 	}
 
 	@Test
@@ -135,9 +134,9 @@ public class ApplicationTest {
 		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
+		assertEquals(1, page.getPublications().size());
 		assertEquals(2, page.getPublications().get(0).getComments().size());
-		assertEquals(4, page.getPublications().get(1).getComments().size());
+		
 	}
 
 	@Test
@@ -152,9 +151,8 @@ public class ApplicationTest {
 		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
+		assertEquals(1, page.getPublications().size());
 		assertEquals(2, page.getPublications().get(0).getComments().size());
-		assertEquals(7, page.getPublications().get(1).getComments().size());
 	}
 
 	@Test
@@ -168,9 +166,8 @@ public class ApplicationTest {
 		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 		fs.quit();
 		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
+		assertEquals(1, page.getPublications().size());
 		assertEquals(2, page.getPublications().get(0).getComments().size());
-		assertEquals(7, page.getPublications().get(1).getComments().size());
 	}
 
 	private Long getFecha(String string) {

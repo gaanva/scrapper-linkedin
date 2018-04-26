@@ -340,8 +340,7 @@ public class FacebookScrap extends Scrap {
 				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
 				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
 					while (!((this.getDriver()
-							.findElements(By.xpath(FacebookConfig
-									.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI)))
+							.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI)))
 							.size()) > 0)) {
 						/**
 						 * TODO Buscar una manera de que espere a que termine el scroll para evitar
@@ -350,7 +349,7 @@ public class FacebookScrap extends Scrap {
 						try {
 							this.waitUntilShowMorePubsAppears(this);
 						}catch(Exception e) {
-							
+							System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
 						}
 						
 						if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
@@ -363,6 +362,7 @@ public class FacebookScrap extends Scrap {
 						}
 						System.out.print("...|");
 					}
+					this.saveScreenShot("posts");
 					System.out.println("|FIN|");
 				} else {
 					System.out

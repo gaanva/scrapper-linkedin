@@ -50,11 +50,11 @@ public class Application {
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				 //fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-				 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				 fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
-				 COMMENTS_uTIME_INI,COMMENTS_uTIME_FIN);
+				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				 fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+				 COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				 //fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
+				 //COMMENTS_uTIME_INI,COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
 				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
@@ -67,10 +67,10 @@ public class Application {
 			}
 		} else {
 			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-			//COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			 fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
-			 COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+			COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			 //fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
+			 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
 			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
