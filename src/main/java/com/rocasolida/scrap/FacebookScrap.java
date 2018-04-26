@@ -168,7 +168,10 @@ public class FacebookScrap extends Scrap {
 							this.checkAndClosePopupLogin();
 
 							JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
-							jsx.executeScript("window.scrollBy(0,500)", "");
+							//jsx.executeScript("window.scrollBy(0,500)", "");
+							//jsx.executeScript("window.scrollTo(0,document.body.scrollHeight)", "");
+							jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+							//window.scrollTo(0,document.body.scrollHeight);
 							this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL))
 							.click();
@@ -383,7 +386,7 @@ public class FacebookScrap extends Scrap {
 	}
 	
 	public boolean waitUntilShowMorePubsAppears(final FacebookScrap fs){
-
+/*
 	    Wait wait = new FluentWait<WebDriver>(this.getDriver())
 	            .withTimeout(30, TimeUnit.SECONDS)
 	            .pollingEvery(1, TimeUnit.SECONDS)
@@ -403,6 +406,28 @@ public class FacebookScrap extends Scrap {
 	    });
 
 	    return false;
+*/	    
+	    
+
+	    ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
+	    	public Boolean apply(WebDriver driver) {
+	            if(fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
+	            	//System.out.println("true");
+	            	return true;
+	            }else {
+	            	//System.out.println("FALSE!");
+	            	return false;
+	            }
+	        }
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
+				.pollingEvery(Duration.ofMillis(500));
+
+		return wait.until(morePubsLink);
+	    
+	    
+	    
 	}
 
 	public boolean overlayHandler() {
@@ -678,7 +703,7 @@ public class FacebookScrap extends Scrap {
 	}
 	
 	public boolean waitUntilShowMoreCommAppears(final FacebookScrap fs, final WebElement component, final String xpath){
-
+/*
 	    Wait wait = new FluentWait<WebDriver>(this.getDriver())
 	            .withTimeout(30, TimeUnit.SECONDS)
 	            .pollingEvery(1, TimeUnit.SECONDS)
@@ -700,6 +725,26 @@ public class FacebookScrap extends Scrap {
 	    
 	    System.out.println("Retornando falso");
 	    return false;
+*/	    
+	    
+	    
+	    
+	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
+	    	public Boolean apply(WebDriver driver) {
+	            if(fs.existElement(component, xpath)) {
+	            	//System.out.println("true");
+	            	return true;
+	            }else {
+	            	//System.out.println("FALSE!");
+	            	return false;
+	            }
+	        }
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
+				.pollingEvery(Duration.ofMillis(500));
+
+		return wait.until(commentLink);
 	}
 
 	/*
