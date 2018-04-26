@@ -16,8 +16,8 @@ public class Application {
 
 	public static void main(String[] args) throws MalformedURLException {
 
-		Credential access = null;
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		//Credential access = null;
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
@@ -50,9 +50,9 @@ public class Application {
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
-				//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				 fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-				 COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				 //fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+				 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 				// COMMENTS_uTIME_INI,
 				// COMMENTS_uTIME_FIN);
@@ -67,9 +67,9 @@ public class Application {
 				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 			}
 		} else {
-			//fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-			COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+			//COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,

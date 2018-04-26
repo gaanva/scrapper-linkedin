@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -342,6 +344,11 @@ public class FacebookScrap extends Scrap {
 						 * TODO Buscar una manera de que espere a que termine el scroll para evitar
 						 * poner el sleep del proceso arbitrariamente.
 						 */
+						try {
+							this.waitUntilShowMorePubsAppears(this);
+						}catch(Exception e) {
+							
+						}
 						
 						if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
 							this.scrollMainPublicationsPage();
@@ -373,6 +380,29 @@ public class FacebookScrap extends Scrap {
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return this.filterPostsByUTIME(facebookPage, uTIME_INI, uTIME_FIN);
 
+	}
+	
+	public boolean waitUntilShowMorePubsAppears(final FacebookScrap fs){
+
+	    Wait wait = new FluentWait<WebDriver>(this.getDriver())
+	            .withTimeout(30, TimeUnit.SECONDS)
+	            .pollingEvery(1, TimeUnit.SECONDS)
+	            .ignoring(NoSuchElementException.class);
+	            
+
+
+	    wait.until(new Function<WebDriver, Boolean>() {
+	        public Boolean apply(WebDriver driver) {
+	            if(fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
+	            	return true;
+	            }else {
+	            	fs.scrollMainPublicationsPage();
+	            	return false;
+	            }
+	        }
+	    });
+
+	    return false;
 	}
 
 	public boolean overlayHandler() {
@@ -499,6 +529,14 @@ public class FacebookScrap extends Scrap {
 		}
 		// Si existe el botón de "Ver Más mensajes"
 		// if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
+		
+		if(this.getAccess()==null) {
+			try{
+				this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
+			}catch(Exception e) {
+				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+			}
+		}
 		if (this.existElement(container, xPathExpression)) {
 			// ---
 			// int cantIniComentarios =
@@ -519,42 +557,27 @@ public class FacebookScrap extends Scrap {
 				showMoreLink.click();
 
 			}
-
+			
+			try {
+				while(this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
+					showMoreLink = container.findElement(By.xpath(xPathExpression));
+					this.moveTo(showMoreLink);
+					showMoreLink.click();
+				}
+			}catch(Exception e) {
+				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+			}
+				
+			/*
 			int cantReintentos = 0;
 			Long cantRequests = 0L;
 			Long totalRequests = (Long) ((JavascriptExecutor) this.getDriver())
 					.executeScript("return window.performance.getEntries().length;");
-
 			// while (cantReintentos < 3) {
 			while (totalRequests > cantRequests && cantReintentos < 3) {
 				cantRequests = totalRequests;
 				try {
-					/*
-					 * SIEMPRE ME TIRA COMPLETE switch (((JavascriptExecutor)
-					 * this.getDriver()).executeScript("return document.readyState").toString()) {
-					 * case "loading": System.out.println("LOADING"); // The document is still
-					 * loading. break; case "interactive": // The document has finished loading. We
-					 * can now access the DOM elements. System.out.println("INTERACTIVE!"); break;
-					 * case "complete": // The page is fully loaded. System.out.println("COMPLETE");
-					 * break; }
-					 */
-
-					// Time to load DOM Content
-					/*
-					 * long domLoadEventEnd = (Long)
-					 * js.executeScript("return window.performance.timing.domContentLoadedEventEnd;"
-					 * ); long fetchStart = (Long)
-					 * js.executeScript("return window.performance.timing.fetchStart;");
-					 * System.out.println("DOM Content Loaded: " + (domLoadEventEnd - fetchStart) +
-					 * " ms.");
-					 */
-					// Time to load entire page
-					/*
-					 * long loadEventEnd = (Long)
-					 * js.executeScript("return window.performance.timing.loadEventEnd;");
-					 * System.out.println("Loaded: " + (loadEventEnd - fetchStart) + " ms.");
-					 */
-
+					
 					// Si existe el botón mostrar más...
 					// if(container.findElements(By.xpath(xPathExpression)).size()>0) {
 					if (this.existElement(container, xPathExpression)) {
@@ -611,9 +634,11 @@ public class FacebookScrap extends Scrap {
 					cantReintentos++;
 				}
 			}
+			*/
 
 		} else {
 			System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
+			this.saveScreenShot("NOHAYMASMENSAJESCARGA");
 		}
 
 		System.out.println("[INFO] TOTAL COMENTARIOS LEIDOS: "
@@ -650,6 +675,31 @@ public class FacebookScrap extends Scrap {
 		// System.out.println("[TIME] Extract COMMENT FIN: " +
 		// System.currentTimeMillis());
 		return comments;
+	}
+	
+	public boolean waitUntilShowMoreCommAppears(final FacebookScrap fs, final WebElement component, final String xpath){
+
+	    Wait wait = new FluentWait<WebDriver>(this.getDriver())
+	            .withTimeout(30, TimeUnit.SECONDS)
+	            .pollingEvery(1, TimeUnit.SECONDS)
+	            .ignoring(NoSuchElementException.class);
+	            
+
+
+	    wait.until(new Function<WebDriver, Boolean>() {
+	        public Boolean apply(WebDriver driver) {
+	            if(fs.existElement(component, xpath)) {
+	            	System.out.println("true");
+	            	return true;
+	            }else {
+	            	System.out.println("FALSE!");
+	            	return false;
+	            }
+	        }
+	    });
+	    
+	    System.out.println("Retornando falso");
+	    return false;
 	}
 
 	/*
@@ -1354,10 +1404,10 @@ public class FacebookScrap extends Scrap {
 			public Boolean apply(WebDriver driver) {
 				String status = ((JavascriptExecutor) driver).executeScript("return document.readyState").toString();
 				if (status.equals("complete") || status.equals("interactive")) {
-					System.out.println("Estado pagina: " + status);
+					//System.out.println("Estado pagina: " + status);
 					return true;
 				} else {
-					System.out.println("Estado pagina: " + status);
+					//System.out.println("Estado pagina: " + status);
 					return false;
 				}
 			}
