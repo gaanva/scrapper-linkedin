@@ -43,7 +43,7 @@ public class ApplicationTest {
 		assertNotNull(page);
 		assertEquals(1, page.getPublications().size());
 		// Total de comentarios con el filtro aplicado:
-		assertEquals(5, page.getPublications().get(0).getComments().size());
+		assertEquals(4, page.getPublications().get(0).getComments().size());
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class ApplicationTest {
 		assertNotNull(page);
 		assertEquals(1, page.getPublications().size());
 		// Total de comentarios con el filtro aplicado:
-		assertEquals(5, page.getPublications().get(0).getComments().size());
+		assertEquals(4, page.getPublications().get(0).getComments().size());
 	}
 
 	@Test

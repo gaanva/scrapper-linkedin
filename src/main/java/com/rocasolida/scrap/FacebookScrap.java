@@ -335,7 +335,11 @@ public class FacebookScrap extends Scrap {
 				this.overlayHandler();
 				this.goToPublicationsSection();
 				//this.waitForPageLoaded();
-				this.waitForPublicationsLoaded();
+				try {
+					this.waitForPublicationsLoaded();
+				}catch(Exception e) {
+					System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
+				}
 				//this.saveScreenShot("PubsLoadead");
 				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
 				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
@@ -1469,8 +1473,10 @@ public class FacebookScrap extends Scrap {
 		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
+					System.out.println("Container publications TRUE");
 					return true;
 				}else {
+					System.out.println("Container publications TRUE");
 					return false;
 				}
 			}
@@ -1478,7 +1484,8 @@ public class FacebookScrap extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
 				.pollingEvery(Duration.ofSeconds(1));
 		
-		return wait.until(pubsLoaded);
+		return wait.until(pubsLoaded);	
+		
 	}
 	
 	
