@@ -15,6 +15,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.exec.TimeoutObserver;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -22,6 +23,7 @@ import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
@@ -166,14 +168,13 @@ public class FacebookScrap extends Scrap {
 						
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							this.checkAndClosePopupLogin();
-							this.saveScreenShot("ANTES_SCROLL");
 							JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
 							//jsx.executeScript("window.scrollBy(0,500)", "");
 							//jsx.executeScript("window.scrollTo(0,document.body.scrollHeight)", "");
 							jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
-							this.saveScreenShot("DSPS_SCROLL");
 							//window.scrollTo(0,document.body.scrollHeight);
 							this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+							this.checkAndClosePopupLogin();
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL))
 							.click();
 							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0),COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
@@ -337,7 +338,7 @@ public class FacebookScrap extends Scrap {
 				this.goToPublicationsSection();
 				//this.waitForPageLoaded();
 				try {
-					this.waitForPublicationsLoaded();
+					this.waitForPublicationsLoaded(this);
 				}catch(Exception e) {
 					System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
 				}
@@ -469,31 +470,60 @@ public class FacebookScrap extends Scrap {
 		
 	}
 
-	public void goToPublicationsSection() {
-		if (this.getAccess() == null) {
-			String posts = this.getDriver().findElement(By.xpath(
-					"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
-					.getAttribute("href");
-			// ACcedo por la URL, puede que el elemento nunca me quede visible.
-			this.navigateTo(posts);
-		} else {
-			try {
-				// Accedo por el click en el menú opción "Publicaciones"
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);",
-						this.getDriver().findElement(By.xpath(
-								"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
-				this.getDriver().findElement(By.xpath(
+	public void goToPublicationsSection() throws TimeoutException{
+		
+		try{ 
+			this.waitUntilPublicationsMenuOption();
+		
+			if (this.getAccess() == null) {
+				String posts = this.getDriver().findElement(By.xpath(
 						"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
-						.click();
-
-			} catch (Exception e) {
-				System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
-				this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+						.getAttribute("href");
+				// ACcedo por la URL, puede que el elemento nunca me quede visible.
+				this.navigateTo(posts);
+			} else {
+				try {
+					// Accedo por el click en el menú opción "Publicaciones"
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);",
+							this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
+					this.getDriver().findElement(By.xpath(
+							"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
+							.click();
+	
+				} catch (Exception e) {
+					System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
+					this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+				}
+	
 			}
-
+		}catch(Exception e) {
+			System.out.println("No tiene menu publicación.");
 		}
 	}
+	
+	public boolean waitUntilPublicationsMenuOption() {
 
+	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
+	    	public Boolean apply(WebDriver driver) {
+	            if(driver.findElements(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).size()>0) {
+	            	System.out.println("true menu option");
+	            	return true;
+	            }else {
+	            	System.out.println("false menu option");
+	            	return false;
+	            }
+	        }
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(20))
+				.pollingEvery(Duration.ofMillis(1000))
+				.ignoring(TimeoutException.class);
+
+		return wait.until(commentLink);
+	}
+	
+	
+	
 	public List<WebElement> filterPostsByUTIME(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
 		int match = this.getDriver()
 				.findElements(By
@@ -595,6 +625,7 @@ public class FacebookScrap extends Scrap {
 					showMoreLink.click();
 				}
 			}catch(Exception e) {
+				this.saveScreenShot("ESPEARSHOWMOREAGOTADO");
 				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
 			}
 				
@@ -737,20 +768,20 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(fs.existElement(component, xpath)) {
-	            	//System.out.println("true");
+	            	System.out.println("existe show more comments.!");
 	            	return true;
 	            }else {
 	            	if(fs.getAccess()==null) {
 	            		fs.checkAndClosePopupLogin();
 	            	}
-	            	//System.out.println("FALSE!");
+	            	System.out.println("no existe show more comments.!");
 	            	return false;
 	            }
 	        }
 		};
 
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
-				.pollingEvery(Duration.ofMillis(500));
+				.pollingEvery(Duration.ofSeconds(1));
 
 		return wait.until(commentLink);
 	}
@@ -1473,14 +1504,15 @@ public class FacebookScrap extends Scrap {
 		
 	}
 	
-	public boolean waitForPublicationsLoaded() {
+	public boolean waitForPublicationsLoaded(final FacebookScrap fs) {
 		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
-					System.out.println("Container publications TRUE");
+					//System.out.println("Container publications TRUE");
 					return true;
 				}else {
-					System.out.println("Container publications TRUE");
+					//System.out.println("Container publications FALSE");
+					fs.scrollMainPublicationsPage();
 					return false;
 				}
 			}
