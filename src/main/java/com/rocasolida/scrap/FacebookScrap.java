@@ -166,11 +166,12 @@ public class FacebookScrap extends Scrap {
 						
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							this.checkAndClosePopupLogin();
-
+							this.saveScreenShot("ANTES_SCROLL");
 							JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
 							//jsx.executeScript("window.scrollBy(0,500)", "");
 							//jsx.executeScript("window.scrollTo(0,document.body.scrollHeight)", "");
 							jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+							this.saveScreenShot("DSPS_SCROLL");
 							//window.scrollTo(0,document.body.scrollHeight);
 							this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL))
@@ -739,6 +740,9 @@ public class FacebookScrap extends Scrap {
 	            	//System.out.println("true");
 	            	return true;
 	            }else {
+	            	if(fs.getAccess()==null) {
+	            		fs.checkAndClosePopupLogin();
+	            	}
 	            	//System.out.println("FALSE!");
 	            	return false;
 	            }
