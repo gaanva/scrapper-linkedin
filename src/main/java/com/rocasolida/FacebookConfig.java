@@ -19,15 +19,6 @@ public final class FacebookConfig {
 	public static String XPATH_SHOW_ALL_PUB_DETACADAS_LINK = "//div[@class='_4-u2 _3xaf _3-95 _4-u8']//div[@class='_4z-w']//a";
 
 	public static String XPATH_START_PUBLICATIONS_TITLE = "//div[@class='_3-95']//span[text()='Publicaciones']"; // Busqueda de control para saber si ya están cargadas las publicaciones
-	// Para cargar publicaciones tengo que contar los hermanos siguientes
-	// /following-sibling::div[@class='_4-u2 _4-u8']
-	// public static String XPATH_PUBLICATIONS =
-	// "//div[@class='_3-95']//div[@class=_4-u2 _4-u8 and not(@id)]"; //Busqueda de
-	// control para saber si ya están cargadas las publicaciones
-	// Buscar los siguientes a partir del start publications
-
-	// public static String XPATH_PPAL_BUTTON_SHOW_MORE =
-	// "//div[@id='pagelet_timeline_main_column']//a[contains(@class,'uiMorePagerPrimary')]";
 	public static String XPATH_PPAL_BUTTON_SHOW_MORE = "//a[contains(@class,'uiMorePagerPrimary')]";
 
 	public static String XPATH_CLOSE_BUTTON = "//a[@class='_xlt _418x']";
@@ -39,12 +30,8 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_ID_1 = ".//span[contains(@class,'fsm fwn fcg')]//a";
 
 	public static String XPATH_PUBLICATION_OWNER = ".//span[contains(@class,'fwn fcg')]//span[contains(@class,'fwb')]"; // getAttribute("aria-label")
-	// TIEMSTAMP: HUSO HORARIO GMT (sumarle 4 horas para saber fecha de post en
-	// Arg.)
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
 	public static String XPATH_PUBLICATION_TIMESTAMP_1 = ".//abbr//span[contains(@class,'timestamp')]//parent::abbr"; // getAttribute("data-utime")
-	// Condición por timeStamp
-	//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'cocacola')]//descendant::abbr[@data-utime<"1521072000"]
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = "')]//descendant::abbr[@data-utime>=";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = " and @data-utime<=";
@@ -58,11 +45,6 @@ public final class FacebookConfig {
 	 * Controlar que no tome el timestamp de un comentario!!!!
 	 * Controlar que la cantidad de publicaciones, no sean de solo las destacadas.
 	 */
-	
-	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION =
-	// ".//abbr[@data-utime=(min('"+FacebookConfig.uTIME_INI+"'),
-	// max('"+FacebookConfig.uTIME_FIN+"'))]";
-	// Esto me sirve para saber cuando debo seguir cargando más publicaciones.
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "')]//descendant::abbr[@data-utime<";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3 = "]";
@@ -118,14 +100,4 @@ public final class FacebookConfig {
 	public FacebookConfig() {
 
 	}
-
-	// Lista comentarios
-	// "div class=UFIList" --> VEO el TOTAL de COMMMENTS // "Comentarios Relevantes"
-	// // "Ver Más Comentarios" // Veces compartidas //
-	// Si son muchos comentarios, ir a "Ver más comentarios":
-	// Antes hay un "Ver más comentarios!" ("UFIPagerLink")
-	// Luego un: '<a class="UFIPagerLink" href="#" role="button">Ver 4 comentarios
-	// más</a>'
-	// El patrón es que desaparezca el "UFIPagerLink".
-
 }
