@@ -1099,6 +1099,7 @@ public class FacebookScrap extends Scrap {
 			//Seleccionar la opción de lista de mensajes:
 			
 				try {
+					this.waitUntilMenuOptionAppears(Post);
 					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 					if(this.waitUntilMenuAppears()) {
 						this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]")).click();
@@ -1131,6 +1132,29 @@ public class FacebookScrap extends Scrap {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public boolean waitUntilMenuOptionAppears(final WebElement post) {
+		 ExpectedCondition<Boolean> menuAppears = new ExpectedCondition<Boolean>() {
+		    	public Boolean apply(WebDriver driver) {
+		    		if(post.findElements(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).size()>0) {
+		            	//System.out.println("existe show more comments.!");
+		            	return true;
+		            }else {
+		            	//if(fs.getAccess()==null) {
+		            		//fs.checkAndClosePopupLogin();
+		            	//}
+		            	//System.out.println("no existe show more comments.!");
+		            	return false;
+		            }
+		        }
+			};
+
+			Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
+					.pollingEvery(Duration.ofMillis(500));
+					//.ignoring(StaleElementReferenceException.class);
+
+			return wait.until(menuAppears);
 	}
 	
 	public boolean waitUntilMenuAppears() {
