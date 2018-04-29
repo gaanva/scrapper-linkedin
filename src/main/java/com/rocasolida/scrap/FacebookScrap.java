@@ -18,10 +18,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.exec.TimeoutObserver;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
@@ -121,8 +123,6 @@ public class FacebookScrap extends Scrap {
 			}
 
 			for (int i = 0; i < publicationsImpl.size(); i++) {
-
-				// Acá debería no ir a este post, e ir al listado.
 				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": "
 						+ FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
 						+ publicationsImpl.get(i).getId());
@@ -156,12 +156,17 @@ public class FacebookScrap extends Scrap {
 					if (this.getAccess() == null) {
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							this.checkAndClosePopupLogin();
-							JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
-							jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
 							this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 							this.checkAndClosePopupLogin();
-							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL))
-							.click();
+							try {
+								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							}catch(Exception e) {
+								if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+									JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
+									jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								}
+							}
 							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0),COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
 							
 						} else {
@@ -178,6 +183,11 @@ public class FacebookScrap extends Scrap {
 					this.page.setPublications(publicationsImpl);
 
 				} catch (Exception e) {
+					if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+						//Hay veces que el overlay delogin te tapa el post,  y la window no tiene scroll...
+						//ME pasó probandolo con el browser, manualmente. Pero se puede hacer zoomout.
+						
+					}
 					System.out.println("[ERROR] AL ACCEDER AL POST.");
 					e.printStackTrace();
 					this.saveScreenShot("ERR_ACCESO_POST");
@@ -191,7 +201,7 @@ public class FacebookScrap extends Scrap {
 		}
 	}
 
-	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
+	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception{
 		if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 			this.TipoCargaComentarios(pub, 3);
 			System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
@@ -425,16 +435,16 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(driver.findElements(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).size()>0) {
-	            	System.out.println("true menu option");
+	            	//System.out.println("true menu option");
 	            	return true;
 	            }else {
-	            	System.out.println("false menu option");
+	            	//System.out.println("false menu option");
 	            	return false;
 	            }
 	        }
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(20))
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(10))
 				.pollingEvery(Duration.ofMillis(1000))
 				.ignoring(TimeoutException.class);
 
@@ -497,8 +507,7 @@ public class FacebookScrap extends Scrap {
 	 * todos los mensajes para luego obtenerlos con un XPATH query y extraerle los
 	 * datos. Me servirá para las replies y para los comentarios.
 	 */
-	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression,
-			Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) {
+	public List<Comment> obtainAllPublicationComments(WebElement container, String xPathExpression,Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception{
 
 		List<WebElement> comentarios = new ArrayList<WebElement>();
 		List<Comment> comments = new ArrayList<Comment>();
@@ -509,14 +518,21 @@ public class FacebookScrap extends Scrap {
 		// Si existe el botón de "Ver Más mensajes"
 		// if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
 		
-		if(this.getAccess()==null) {
-			try{
-				this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
-			}catch(Exception e) {
+		try{
+			this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
+			
+		}catch(Exception e) {
+			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
-			}
+			}else {
+				e.printStackTrace();
+			}				
 		}
+		
+		
 		if (this.existElement(container, xPathExpression)) {
+			WebElement showMoreLink;
+			/*
 			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
 			this.moveTo(showMoreLink);
 			try {
@@ -532,16 +548,30 @@ public class FacebookScrap extends Scrap {
 				showMoreLink.click();
 
 			}
-			
+			*/
 			try {
 				while(this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 					showMoreLink = container.findElement(By.xpath(xPathExpression));
-					this.moveTo(showMoreLink);
-					showMoreLink.click();
+					try {
+						this.moveTo(showMoreLink);
+						showMoreLink.click();
+					}catch(Exception e){
+						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
+							this.checkAndClosePopupLogin();
+						}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
+							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
+						}
+					}
 				}
 			}catch(Exception e) {
-				this.saveScreenShot("ESPEARSHOWMOREAGOTADO");
-				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					this.saveScreenShot("tiemoutexception_SM");
+					System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+				}else {
+					this.saveScreenShot("exception_SM_1");
+					e.printStackTrace();
+				}
+				
 			}
 				
 		} else {
@@ -574,20 +604,21 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(fs.existElement(component, xpath)) {
-	            	System.out.println("existe show more comments.!");
+	            	//System.out.println("existe show more comments.!");
 	            	return true;
 	            }else {
-	            	if(fs.getAccess()==null) {
-	            		fs.checkAndClosePopupLogin();
-	            	}
-	            	System.out.println("no existe show more comments.!");
+	            	//if(fs.getAccess()==null) {
+	            		//fs.checkAndClosePopupLogin();
+	            	//}
+	            	//System.out.println("no existe show more comments.!");
 	            	return false;
 	            }
 	        }
 		};
 
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
-				.pollingEvery(Duration.ofSeconds(1));
+				.pollingEvery(Duration.ofMillis(500));
+				//.ignoring(StaleElementReferenceException.class);
 
 		return wait.until(commentLink);
 	}
@@ -685,11 +716,11 @@ public class FacebookScrap extends Scrap {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", element);
 			
 		}
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e1) {
-			System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
-		}
+		//try {
+			//Thread.sleep(100);
+		//} catch (InterruptedException e1) {
+			//System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
+		//}
 	}
 
 	public void checkAndClosePopupLogin() {
@@ -937,6 +968,13 @@ public class FacebookScrap extends Scrap {
 				System.out.println(page.getPublications().get(j).toString());
 				System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************");
 			}
+			
+			for (int j = 0; j < page.getPublications().size(); j++) {
+				System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	===============");
+				System.out.println("TOTAL COMENTARIOS: " + page.getPublications().get(j).getComments().size());
+				System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************");
+			}
+			
 		} else {
 			System.out.println("[INFO] PrintPage():LA LISTA DE PUBLICACIONES PARA IMPRIMIR ESTÁ VACÍA.");
 		}
@@ -1058,25 +1096,27 @@ public class FacebookScrap extends Scrap {
 			}
 			
 			//if (this.waitForJStoLoad()) {
+			//Seleccionar la opción de lista de mensajes:
+			
 				try {
-					this.getDriver().findElement(By.xpath(
-							"//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["
-									+ option + "]"))
-							.click();
+					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+					if(this.waitUntilMenuAppears()) {
+						this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]")).click();
+					}
 				} catch (Exception e1) {
 					if (e1.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
 						// this.getActions().sendKeys(Keys.SPACE);
 						JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
 						jsx.executeScript("window.scrollBy(0,500)", "");
 						this.saveScreenShot("SCROLL_TIPOCARGA");
-						Post.findElement(By
-								.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']"))
-								.click();
+						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 						this.getDriver().findElement(By.xpath(
 								"//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["
 										+ option + "]"))
 								.click();
 					}
+					e1.printStackTrace();
+					System.out.println("Error al seleccionar tipo carga comentarios.");
 				}
 				this.waitForJStoLoad();
 
@@ -1091,6 +1131,29 @@ public class FacebookScrap extends Scrap {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public boolean waitUntilMenuAppears() {
+		 ExpectedCondition<Boolean> menuAppears = new ExpectedCondition<Boolean>() {
+		    	public Boolean apply(WebDriver driver) {
+		            if(driver.findElements(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li")).size()>0) {
+		            	//System.out.println("existe show more comments.!");
+		            	return true;
+		            }else {
+		            	//if(fs.getAccess()==null) {
+		            		//fs.checkAndClosePopupLogin();
+		            	//}
+		            	//System.out.println("no existe show more comments.!");
+		            	return false;
+		            }
+		        }
+			};
+
+			Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(10))
+					.pollingEvery(Duration.ofMillis(500));
+					//.ignoring(StaleElementReferenceException.class);
+
+			return wait.until(menuAppears);
 	}
 
 	public String regexPostID(String link) {

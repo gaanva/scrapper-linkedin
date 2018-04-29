@@ -2,6 +2,7 @@ package com.rocasolida;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -168,6 +169,40 @@ public class ApplicationTest {
 		assertNotNull(page.getPublications());
 		assertEquals(1, page.getPublications().size());
 		assertEquals(2, page.getPublications().get(0).getComments().size());
+	}
+	
+	
+	@Test
+	public void mauriciomacriSinLoginConFiltroComments() throws MalformedURLException {
+		Long uTIME_INI = 1524106800L; // 04/19/2018 @ 03:00:00
+		Long uTIME_FIN = 1524381248L; // 04/22/2018 @ 07:14:08
+		Long COMMENTS_uTIME_INI = 1524106800L;
+		Long COMMENTS_uTIME_FIN = 1524381248L;
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+
+		Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(2, page.getPublications().size());
+		assertTrue(page.getPublications().get(0).getComments().size()>184);
+		assertTrue(page.getPublications().get(1).getComments().size()>500);
+	}
+	
+	@Test
+	public void mauriciomacriConLoginConFiltroComments() throws MalformedURLException {
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		Long uTIME_INI = 1524106800L; // 04/19/2018 @ 03:00:00
+		Long uTIME_FIN = 1524381248L; // 04/22/2018 @ 07:14:08
+		Long COMMENTS_uTIME_INI = 1524106800L;
+		Long COMMENTS_uTIME_FIN = 1524381248L;
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		fs.login(access);
+		Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(2, page.getPublications().size());
+		assertTrue(page.getPublications().get(0).getComments().size()>184);
+		assertTrue(page.getPublications().get(1).getComments().size()>500);
 	}
 
 	private Long getFecha(String string) {
