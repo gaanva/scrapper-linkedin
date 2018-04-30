@@ -50,33 +50,41 @@ public class Application {
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
+				try {
+					fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					 //fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+					 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					 //fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
+					 //COMMENTS_uTIME_INI,COMMENTS_uTIME_FIN);
+					// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
+					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
+					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					// fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
+					// COMMENTS_uTIME_FIN);
+				}catch(Exception e) {
+					e.printStackTrace();
+				}
+
+			} else {
+				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
+			}
+		} else {
+			try {
 				fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-				 //fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-				 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+				//COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				 //fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
-				 //COMMENTS_uTIME_INI,COMMENTS_uTIME_FIN);
+				 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
 				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
 				// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 				// fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
 				// COMMENTS_uTIME_FIN);
-
-			} else {
-				System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
+			}catch(Exception e) {
+				e.printStackTrace();
 			}
-		} else {
-			fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			//fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-			//COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			 //fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
-			 //COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
-			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			// fs.obtainPageInformation("marcelotinelli", uTIME_INI, uTIME_FIN,
-			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			// fs.obtainPageInformation("brunoli", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI,
-			// COMMENTS_uTIME_FIN);
 		}
 
 		fs.printPage(fs.page());

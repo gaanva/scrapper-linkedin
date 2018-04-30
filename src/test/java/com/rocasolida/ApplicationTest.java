@@ -38,13 +38,19 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		// System.out.println(publications);
-		assertNotNull(page);
-		assertEquals(1, page.getPublications().size());
-		// Total de comentarios con el filtro aplicado:
-		assertEquals(4, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			// System.out.println(publications);
+			assertNotNull(page);
+			assertEquals(1, page.getPublications().size());
+			// Total de comentarios con el filtro aplicado:
+			assertEquals(4, page.getPublications().get(0).getComments().size());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 	@Test
@@ -54,13 +60,18 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		// System.out.println(publications);
-		assertNotNull(page);
-		assertEquals(1, page.getPublications().size());
-		// Total de comentarios con el filtro aplicado:
-		assertEquals(4, page.getPublications().get(0).getComments().size());
+		try{
+			Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			// System.out.println(publications);
+			assertNotNull(page);
+			assertEquals(1, page.getPublications().size());
+			// Total de comentarios con el filtro aplicado:
+			assertEquals(4, page.getPublications().get(0).getComments().size());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	@Test
@@ -72,13 +83,18 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		// System.out.println(publications);
-		assertNotNull(page);
-		assertEquals(1, page.getPublications().size());
-		// Total de comentarios con el filtro aplicado:
-		assertEquals(9, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			// System.out.println(publications);
+			assertNotNull(page);
+			assertEquals(1, page.getPublications().size());
+			// Total de comentarios con el filtro aplicado:
+			assertEquals(9, page.getPublications().get(0).getComments().size());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	@Test
@@ -88,13 +104,18 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = null;
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		// System.out.println(publications);
-		assertNotNull(page);
-		assertEquals(1, page.getPublications().size());
-		// Total de comentarios con el filtro aplicado:
-		assertEquals(9, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			// System.out.println(publications);
+			assertNotNull(page);
+			assertEquals(1, page.getPublications().size());
+			// Total de comentarios con el filtro aplicado:
+			assertEquals(9, page.getPublications().get(0).getComments().size());
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	// @Test
 	// public void herbalifeSinLogin() {
@@ -118,11 +139,16 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(1, page.getPublications().size());
+			assertEquals(2, page.getPublications().get(0).getComments().size());
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -132,11 +158,16 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(1, page.getPublications().size());
+			assertEquals(2, page.getPublications().get(0).getComments().size());
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -149,11 +180,16 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(1, page.getPublications().size());
+			assertEquals(2, page.getPublications().get(0).getComments().size());
+
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
@@ -163,12 +199,15 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = null;
 		Long COMMENTS_uTIME_FIN = null;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-
-		Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
+		try {
+			Page page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(1, page.getPublications().size());
+			assertEquals(2, page.getPublications().get(0).getComments().size());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -179,13 +218,17 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_INI = 1524106800L;
 		Long COMMENTS_uTIME_FIN = 1524381248L;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
-
-		Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
-		assertTrue(page.getPublications().get(0).getComments().size()>184);
-		assertTrue(page.getPublications().get(1).getComments().size()>500);
+		try {
+			Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(2, page.getPublications().size());
+			assertTrue(page.getPublications().get(0).getComments().size()>184);
+			assertTrue(page.getPublications().get(1).getComments().size()>500);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	@Test
@@ -197,12 +240,17 @@ public class ApplicationTest {
 		Long COMMENTS_uTIME_FIN = 1524381248L;
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
 		fs.login(access);
-		Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(2, page.getPublications().size());
-		assertTrue(page.getPublications().get(0).getComments().size()>184);
-		assertTrue(page.getPublications().get(1).getComments().size()>500);
+		try {
+			Page page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.quit();
+			assertNotNull(page.getPublications());
+			assertEquals(2, page.getPublications().size());
+			assertTrue(page.getPublications().get(0).getComments().size()>184);
+			assertTrue(page.getPublications().get(1).getComments().size()>500);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	
 	}
 
 	private Long getFecha(String string) {

@@ -45,6 +45,7 @@ public class FacebookScrap extends Scrap {
 	private Page page;
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
 	final Pattern pattern = Pattern.compile(countRegex);
+	private static Integer WAIT_UNTIL_SECONDS = 30;
 
 	public FacebookScrap(Driver driver) throws MalformedURLException {
 		super(driver);
@@ -105,9 +106,9 @@ public class FacebookScrap extends Scrap {
 
 	}
 
-	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI,
-			Long COMMENTS_uTIME_FIN) {
+	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception{
 		List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN);
+		
 		if (publicationsElements != null) {
 			List<Publication> publicationsImpl = new ArrayList<Publication>();
 			// Se extraen datos del POST
@@ -292,7 +293,7 @@ public class FacebookScrap extends Scrap {
 
 	}
 
-	public List<WebElement> inicializePublicationsToBeLoad(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+	public List<WebElement> inicializePublicationsToBeLoad(String facebookPage, Long uTIME_INI, Long uTIME_FIN) throws Exception{
 
 		if (this.navigateTo(FacebookConfig.URL + facebookPage)) { // SI NO TIRA ERROR DE CONEXIÓN O DE PAGINA
 																	// INEXISTENTE...
@@ -315,62 +316,56 @@ public class FacebookScrap extends Scrap {
 		return null;
 	}
 
-	public List<WebElement> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN) {
+	public List<WebElement> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN) throws Exception{
 		try {
-			try {
 
-				this.overlayHandler();
-				this.goToPublicationsSection();
-				//this.waitForPageLoaded();
-				try {
-					this.waitForPublicationsLoaded(this);
-				}catch(Exception e) {
-					System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
-				}
-				//this.saveScreenShot("PubsLoadead");
-				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
-				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
-					while (!((this.getDriver()
-							.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI)))
-							.size()) > 0)) {
-						/**
-						 * TODO Buscar una manera de que espere a que termine el scroll para evitar
-						 * poner el sleep del proceso arbitrariamente.
-						 */
-						try {
-							this.waitUntilShowMorePubsAppears(this);
-						}catch(Exception e) {
-							System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
-						}
-						
-						if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
-							this.scrollMainPublicationsPage();
-						} else {
-							System.out.println(
-									"[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: "
-											+ FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
-							break;
-						}
-						System.out.print("...|");
+			this.overlayHandler();
+			this.goToPublicationsSection();
+			//this.waitForPageLoaded();
+			try {
+				this.waitForPublicationsLoaded(this);
+			}catch(Exception e) {
+				System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
+				this.saveScreenShot("ERR_ESPERA_CARGA_PUBS");
+				throw e;
+			}
+			//this.saveScreenShot("PubsLoadead");
+			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
+			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
+				while (!((this.getDriver()
+						.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI)))
+						.size()) > 0)) {
+					try {
+						this.waitUntilShowMorePubsAppears(this);
+					}catch(Exception e) {
+						System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
 					}
-					this.saveScreenShot("posts");
-					System.out.println("|FIN|");
-				} else {
-					System.out
-							.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
-					this.saveScreenShot("PAGINA_SIN_PUBS");
-					return null;
+					
+					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
+						this.scrollMainPublicationsPage();
+					} else {
+						System.out.println(
+								"[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: "
+										+ FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
+						break;
+					}
+					System.out.print("...|");
 				}
-			} catch (Exception e) {
-				System.err.println("[ERROR] EN LA CARGA DE PUBLICACIONES.");
-				e.printStackTrace();
-				this.saveScreenShot("ERR_CARGA_PUBS");
+				//this.saveScreenShot("posts");
+				System.out.println("|FIN|");
+			} else {
+				System.err
+						.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
+				this.saveScreenShot("PAGINA_SIN_PUBS");
+				return null;
 			}
 		} catch (Exception e) {
-			System.err.println("[ERROR] ERROR INESPERADO.");
-			this.saveScreenShot("ERR_INESPERADO");
-			return null;
+			System.err.println("[ERROR] EN LA CARGA DE PUBLICACIONES.");
+			e.printStackTrace();
+			this.saveScreenShot("ERR_CARGA_PUBS");
+			throw e;
 		}
+		
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return this.filterPostsByUTIME(facebookPage, uTIME_INI, uTIME_FIN);
 
@@ -421,22 +416,27 @@ public class FacebookScrap extends Scrap {
 		
 	}
 
-	public void goToPublicationsSection() throws TimeoutException{
+	public void goToPublicationsSection() throws Exception{
 		
 		try{ 
 			this.waitUntilPublicationsMenuOption();
 		
 			if (this.getAccess() == null) {
-				String posts = this.getDriver().findElement(By.xpath(
-						"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
-						.getAttribute("href");
-				// ACcedo por la URL, puede que el elemento nunca me quede visible.
-				this.navigateTo(posts);
+				try {
+					String posts = this.getDriver().findElement(By.xpath(
+							"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
+							.getAttribute("href");
+					// ACcedo por la URL, puede que el elemento nunca me quede visible.
+					this.navigateTo(posts);
+				}catch(Exception e) {
+					System.err.println("[ERROR] ACCEDIENDO A LA URL DEL POST");
+					throw e;
+				}
 			} else {
 				try {
 					// Accedo por el click en el menú opción "Publicaciones"
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);",
-							this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
+					this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
 					this.getDriver().findElement(By.xpath(
 							"//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a"))
 							.click();
@@ -444,11 +444,12 @@ public class FacebookScrap extends Scrap {
 				} catch (Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
 					this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+					throw e;
 				}
 	
 			}
 		}catch(Exception e) {
-			System.out.println("No tiene menu publicación.");
+			System.err.println("No tiene opción de menu 'publicaciones'.");
 		}
 	}
 	
@@ -457,16 +458,14 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> commentLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(driver.findElements(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).size()>0) {
-	            	//System.out.println("true menu option");
 	            	return true;
 	            }else {
-	            	//System.out.println("false menu option");
 	            	return false;
 	            }
 	        }
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(10))
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
 				.pollingEvery(Duration.ofMillis(1000))
 				.ignoring(TimeoutException.class);
 
@@ -488,7 +487,7 @@ public class FacebookScrap extends Scrap {
 					By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN)
 							+ "//ancestor::div[contains(@class,'userContentWrapper')]"));
 		} else {
-			System.out.println("[ERROR] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS.");
+			System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" +uTIME_INI + " FIN:"+uTIME_FIN);
 			return null;
 		}
 	}
@@ -1103,7 +1102,7 @@ public class FacebookScrap extends Scrap {
 	// los posts de Facebook.
 	// "opt=2: Más Recientes" --> Cuando se actualice un post
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
-	private void TipoCargaComentarios(WebElement Post, int option) {
+	private void TipoCargaComentarios(WebElement Post, int option) throws Exception{
 		try {
 			// Puede que se abra automáticamente el Enviar mensajes al dueño de la página.
 			if (this.getAccess() != null) {
@@ -1117,44 +1116,25 @@ public class FacebookScrap extends Scrap {
 				this.checkAndClosePopupLogin();
 			}
 			
-			//if (this.waitForJStoLoad()) {
-			//Seleccionar la opción de lista de mensajes:
-			
-				try {
-					this.waitUntilMenuOptionAppears(this, Post);
-					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
-					if(this.waitUntilMenuAppears()) {
-						WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]"));
-						this.moveTo(menuOption);
-						menuOption.click();
-					}
-				} catch (Exception e1) {
-					/*
-					if (e1.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-						// this.getActions().sendKeys(Keys.SPACE);
-						JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
-						jsx.executeScript("window.scrollBy(0,500)", "");
-						this.saveScreenShot("SCROLL_TIPOCARGA");
-						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
-						this.getDriver().findElement(By.xpath(
-								"//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["
-										+ option + "]"))
-								.click();
-					}
-					*/
-					this.saveScreenShot("ERROR_TIPOCARGA");
-					e1.printStackTrace();
-					System.out.println("Error al seleccionar tipo carga comentarios.");
+			try {
+				this.waitUntilMenuOptionAppears(this, Post);
+				Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+				if(this.waitUntilMenuAppears()) {
+					WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]"));
+					this.moveTo(menuOption);
+					menuOption.click();
 				}
-				this.waitForJStoLoad();
-
-				//this.saveScreenShot("AFTER_OPT_VERCOMENTARIOS");
+			} catch (Exception e) {
+				System.err.println("[ERROR] ERROR SELECCIONANDO EL TIPO DE CARGA");
+				this.saveScreenShot("ERROR_TIPOCARGA");
+				e.printStackTrace();
+				throw e;
+			}
+			
+			this.waitForJStoLoad();
 				
-			//} else {
-
-			//}
 		} catch (Exception e) {
-			System.out.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
+			System.err.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
 			this.saveScreenShot("ERR_NO_SELECCIONO_MOSTRAR_MENSAJES");
 			e.printStackTrace();
 		}
