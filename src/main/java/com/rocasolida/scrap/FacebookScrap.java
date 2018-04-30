@@ -162,8 +162,9 @@ public class FacebookScrap extends Scrap {
 								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 							}catch(Exception e) {
 								if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
-									JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
-									jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+									this.waitUntilCommentSectionVisible(pubsNew.get(0));
+									//JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
+									//jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
 									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 								}
 							}
@@ -199,6 +200,27 @@ public class FacebookScrap extends Scrap {
 			System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
 			return null;
 		}
+	}
+	
+	public boolean waitUntilCommentSectionVisible(final WebElement pub) {
+		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
+	    	public Boolean apply(WebDriver driver) {
+	    		if(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed() && pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isEnabled()) {
+	            	//System.out.println("true");
+	            	return true;
+	            }else {
+	            	JavascriptExecutor jsx = (JavascriptExecutor) driver;
+	        		jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+	        		return false;
+	            }
+	        }
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
+				.pollingEvery(Duration.ofMillis(500));
+				//.ignoring(StaleElementReferenceException.class);
+
+		return wait.until(commentSection);
 	}
 
 	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception{
@@ -474,13 +496,13 @@ public class FacebookScrap extends Scrap {
 	private void scrollMainPublicationsPage() {
 		((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
 		this.waitForJStoLoad();
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
+		//try {
+			//Thread.sleep(1000);
+		//} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			// e.printStackTrace();
-			System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
-		}
+			//System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
+		//}
 		//this.saveScreenShot("Scroll_MainPAge");
 	}
 
@@ -616,7 +638,7 @@ public class FacebookScrap extends Scrap {
 	        }
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(30))
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(20))
 				.pollingEvery(Duration.ofMillis(500));
 				//.ignoring(StaleElementReferenceException.class);
 
@@ -1099,12 +1121,15 @@ public class FacebookScrap extends Scrap {
 			//Seleccionar la opción de lista de mensajes:
 			
 				try {
-					this.waitUntilMenuOptionAppears(Post);
+					this.waitUntilMenuOptionAppears(this, Post);
 					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 					if(this.waitUntilMenuAppears()) {
-						this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]")).click();
+						WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]"));
+						this.moveTo(menuOption);
+						menuOption.click();
 					}
 				} catch (Exception e1) {
+					/*
 					if (e1.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
 						// this.getActions().sendKeys(Keys.SPACE);
 						JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
@@ -1116,6 +1141,8 @@ public class FacebookScrap extends Scrap {
 										+ option + "]"))
 								.click();
 					}
+					*/
+					this.saveScreenShot("ERROR_TIPOCARGA");
 					e1.printStackTrace();
 					System.out.println("Error al seleccionar tipo carga comentarios.");
 				}
@@ -1134,16 +1161,16 @@ public class FacebookScrap extends Scrap {
 
 	}
 	
-	public boolean waitUntilMenuOptionAppears(final WebElement post) {
+	public boolean waitUntilMenuOptionAppears(final FacebookScrap fs, final WebElement post) {
 		 ExpectedCondition<Boolean> menuAppears = new ExpectedCondition<Boolean>() {
 		    	public Boolean apply(WebDriver driver) {
 		    		if(post.findElements(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).size()>0) {
 		            	//System.out.println("existe show more comments.!");
 		            	return true;
 		            }else {
-		            	//if(fs.getAccess()==null) {
-		            		//fs.checkAndClosePopupLogin();
-		            	//}
+		            	if(fs.getAccess()==null) {
+		            		fs.checkAndClosePopupLogin();
+		            	}
 		            	//System.out.println("no existe show more comments.!");
 		            	return false;
 		            }
