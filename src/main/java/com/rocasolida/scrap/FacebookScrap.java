@@ -143,7 +143,9 @@ public class FacebookScrap extends Scrap {
 				try{
 					//this.waitForPageLoaded();
 					this.waitForPublicationsLoaded(this);
-					this.scrollDown();
+					if(this.getAccess()==null) {
+						this.scrollDown();
+					}
 				}catch(Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 					throw e;
@@ -169,7 +171,7 @@ public class FacebookScrap extends Scrap {
 							try {	
 								this.checkAndClosePopupLogin();
 								this.waitUntilCommentSectionVisible(pubsNew.get(0));
-								this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
+								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
 								this.checkAndClosePopupLogin();
 								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 								
@@ -597,6 +599,8 @@ public class FacebookScrap extends Scrap {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
 							this.saveScreenShot("ElementClickIntercepted");
 							this.getActions().sendKeys(Keys.ESCAPE).perform();
+							this.overlayHandler();
+							this.checkAndClosePopupLogin();
 							
 						}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
@@ -1112,7 +1116,8 @@ public class FacebookScrap extends Scrap {
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
 				.pollingEvery(Duration.ofSeconds(1))
-				.ignoring(StaleElementReferenceException.class);
+				.ignoring(StaleElementReferenceException.class)
+				.ignoring(NoSuchElementException.class);
 		
 		return wait.until(pubsLoaded);	
 		
@@ -1127,7 +1132,9 @@ public class FacebookScrap extends Scrap {
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
 	private void TipoCargaComentarios(WebElement Post, int option) throws Exception{
 		try {
-			this.scrollDown();
+			if(this.getAccess() == null) {
+				this.scrollDown();
+			}
 			// Puede que se abra automáticamente el Enviar mensajes al dueño de la página.
 			if (this.getAccess() != null) {
 				if (this.getDriver().findElements(By.xpath("//a[@class='_3olu _3olv close button _4vu4']"))
@@ -1144,14 +1151,20 @@ public class FacebookScrap extends Scrap {
 			
 			try {
 				this.waitUntilMenuOptionAppears(this, Post);
-				this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
+				if(this.getAccess()!=null) {
+					this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
+				}
 				Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 				
-				this.scrollDown();
+				if(this.getAccess()==null) {
+					this.scrollDown();
+				}
 				//this.saveScreenShot("Sccrolldown");
 				if(this.waitUntilMenuAppears()) {
 					WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]"));
-					//this.moveTo(menuOption);
+					if(this.getAccess()!=null) {
+						this.moveTo(menuOption);
+					}
 					
 					this.checkAndClosePopupLogin();
 					menuOption.click();
