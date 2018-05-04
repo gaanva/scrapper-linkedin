@@ -143,9 +143,10 @@ public class FacebookScrap extends Scrap {
 				try{
 					//this.waitForPageLoaded();
 					this.waitForPublicationsLoaded(this);
-					if(this.getAccess()==null) {
+					this.saveScreenShot("PostLoaded");
+					/*if(this.getAccess()==null) {
 						this.scrollDown();
-					}
+					}*/
 				}catch(Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 					throw e;
@@ -154,26 +155,35 @@ public class FacebookScrap extends Scrap {
 				List<WebElement> pubsNew;
 				try {
 					// Controla que no tire el popup de login
-					if (this.getAccess() == null) {
+					/*if (this.getAccess() == null) {
 						this.checkAndClosePopupLogin();
-					}
+					}*/
 
 					pubsNew = this.getDriver()
 							.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + "[1]"));
 
-					if (this.getAccess() != null) {
+					/*if (this.getAccess() != null) {
 						this.overlayHandler();
 						
-					}
+					}*/
 
 					if (this.getAccess() == null) {
 						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
 							try {	
-								this.checkAndClosePopupLogin();
+								//this.checkAndClosePopupLogin();
 								this.waitUntilCommentSectionVisible(pubsNew.get(0));
 								//this.moveTo(pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)));
-								this.checkAndClosePopupLogin();
-								pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								//this.checkAndClosePopupLogin();
+								try{
+									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+								}catch(Exception e) {
+									if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+										this.overlayHandler();
+										this.checkAndClosePopupLogin();
+										this.scrollDown();
+										pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+									}
+								}
 								
 							}catch(Exception e) {
 								System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
@@ -190,7 +200,9 @@ public class FacebookScrap extends Scrap {
 					//}
 					
 					if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER)) {
-						publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
+						
+							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew.get(0), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
+						
 					}else {
 						System.out.println("[WARN] LA PUBLICACION NO TIENE COMENTARIOS");
 					}
@@ -514,7 +526,7 @@ public class FacebookScrap extends Scrap {
 
 	private void scrollMainPublicationsPage() {
 		((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-		this.waitForJStoLoad();
+		//this.waitForJStoLoad();
 		//try {
 			//Thread.sleep(1000);
 		//} catch (InterruptedException e) {
@@ -559,11 +571,13 @@ public class FacebookScrap extends Scrap {
 		// if (container.findElements(By.xpath(xPathExpression)).size() > 0) {
 		
 		try{
+			
 			this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
 			
 		}catch(Exception e) {
 			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+				
 			}else {
 				e.printStackTrace();
 			}				
@@ -593,15 +607,16 @@ public class FacebookScrap extends Scrap {
 				while(this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 					showMoreLink = container.findElement(By.xpath(xPathExpression));
 					try {
-						this.moveTo(showMoreLink);
+						//this.moveTo(showMoreLink);
 						showMoreLink.click();
 					}catch(Exception e){
-						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
-							this.saveScreenShot("ElementClickIntercepted");
+						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+							//this.saveScreenShot("ElementClickIntercepted");
 							this.getActions().sendKeys(Keys.ESCAPE).perform();
 							this.overlayHandler();
 							this.checkAndClosePopupLogin();
-							
+							this.scrollDown();
+							showMoreLink.click();
 						}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
 						}else {
@@ -613,6 +628,10 @@ public class FacebookScrap extends Scrap {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					this.saveScreenShot("tiemoutexception_SM");
 					System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+				}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
+					System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
+				}else if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")){
+					System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
 				}else {
 					this.saveScreenShot("exception_SM_1");
 					e.printStackTrace();
@@ -656,6 +675,9 @@ public class FacebookScrap extends Scrap {
 	            }else {
 	            	if(fs.getAccess()==null) {
 	            		fs.checkAndClosePopupLogin();
+	            	}else {
+	            		fs.overlayHandler();
+	            		fs.getActions().sendKeys(Keys.ESCAPE).perform();
 	            	}
 	            	//System.out.println("no existe show more comments.!");
 	            	return false;
@@ -733,6 +755,8 @@ public class FacebookScrap extends Scrap {
 			public Boolean apply(WebDriver driver) {
 				if (((JavascriptExecutor) driver).executeScript("return document.readyState").toString()
 						.equals("complete")) {
+					//System.out.println("[INFO] DocumentReady");
+					
 					return true;
 				} else {
 					System.out.println("[INFO] DocumentReadyState UNCOMPLETE");
@@ -1104,7 +1128,7 @@ public class FacebookScrap extends Scrap {
 	public boolean waitForPublicationsLoaded(final FacebookScrap fs) {
 		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
-				if ((driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) && (driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed())) {
+				if ((driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) && (driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed()) && (fs.waitForJStoLoad())) {
 					System.out.println("Container publications TRUE");
 					return true;
 				}else {
@@ -1132,9 +1156,9 @@ public class FacebookScrap extends Scrap {
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
 	private void TipoCargaComentarios(WebElement Post, int option) throws Exception{
 		try {
-			if(this.getAccess() == null) {
+			/*if(this.getAccess() == null) {
 				this.scrollDown();
-			}
+			}*/
 			// Puede que se abra automáticamente el Enviar mensajes al dueño de la página.
 			if (this.getAccess() != null) {
 				if (this.getDriver().findElements(By.xpath("//a[@class='_3olu _3olv close button _4vu4']"))
@@ -1143,9 +1167,9 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 			
-			if (this.getAccess() == null) {
+			/*if (this.getAccess() == null) {
 				this.checkAndClosePopupLogin();
-			}
+			}*/
 			
 			
 			
@@ -1154,20 +1178,46 @@ public class FacebookScrap extends Scrap {
 				if(this.getAccess()!=null) {
 					this.moveTo(Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
 				}
-				Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 				
-				if(this.getAccess()==null) {
-					this.scrollDown();
+				try{ 
+					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+				}catch(Exception e){
+					if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+						this.overlayHandler();
+						this.checkAndClosePopupLogin();
+						this.scrollDown();
+						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+					}else {
+						this.saveScreenShot("ERR_Sel_OptionPpal");
+						throw e;
+					}
 				}
+				
+				/*if(this.getAccess()==null) {
+					this.scrollDown();
+				}*/
 				//this.saveScreenShot("Sccrolldown");
 				if(this.waitUntilMenuAppears()) {
 					WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li["+ option + "]"));
-					if(this.getAccess()!=null) {
+					/*if(this.getAccess()!=null) {
 						this.moveTo(menuOption);
-					}
+					}*/
 					
 					this.checkAndClosePopupLogin();
-					menuOption.click();
+					try{
+						menuOption.click();
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+							this.overlayHandler();
+							this.checkAndClosePopupLogin();
+							this.scrollDown();
+							Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+							menuOption.click();
+						}else {
+							this.saveScreenShot("ERR_Sel_menuOption");
+							throw e;
+						}
+					}
 				}
 			} catch (Exception e) {
 				System.err.println("[ERROR] ERROR SELECCIONANDO EL TIPO DE CARGA");
