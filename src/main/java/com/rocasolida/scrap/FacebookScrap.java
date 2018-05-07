@@ -46,7 +46,7 @@ public class FacebookScrap extends Scrap {
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
 	final Pattern pattern = Pattern.compile(countRegex);
 	private static Integer WAIT_UNTIL_SECONDS = 30;
-
+	private static Integer WAIT_UNTIL_SPINNER = 90;
 	public FacebookScrap(Driver driver) throws MalformedURLException {
 		super(driver);
 		this.page = new Page();
@@ -158,6 +158,7 @@ public class FacebookScrap extends Scrap {
 									if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
 										this.overlayHandler();
 										this.checkAndClosePopupLogin();
+										this.saveScreenShot("antesScroll");
 										this.scrollDown();
 										pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 									}
@@ -397,7 +398,7 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(driver.findElements(By.xpath("//span[@role='progressbar']")).size()>0 && driver.findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
-	            	//System.out.println("true");
+	            	System.out.println("true spinner!");
 	            	return false;
 	            }else {
 	            	return true;
@@ -405,7 +406,7 @@ public class FacebookScrap extends Scrap {
 	        }
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER))
 				.pollingEvery(Duration.ofMillis(1000));
 
 		return wait.until(morePubsLink);    
@@ -657,7 +658,9 @@ public class FacebookScrap extends Scrap {
 							this.getActions().sendKeys(Keys.ESCAPE).perform();
 							this.overlayHandler();
 							this.checkAndClosePopupLogin();
+							this.waitUntilNotSpinnerLoading();
 							this.scrollDown();
+							this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
 							showMoreLink.click();
 						}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
@@ -721,6 +724,7 @@ public class FacebookScrap extends Scrap {
 	            		fs.overlayHandler();
 	            		fs.getActions().sendKeys(Keys.ESCAPE).perform();
 	            	}
+	            	fs.scrollDown();
 	            	//System.out.println("no existe show more comments.!");
 	            	return false;
 	            }
@@ -841,8 +845,14 @@ public class FacebookScrap extends Scrap {
 			try {
 				this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
 			} catch (Exception e) {
-				this.saveScreenShot("ERRCLOSEPOPUPLGIN");
-				e.printStackTrace();
+				if(e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+					this.scrollDown();
+					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+				}else {
+					this.saveScreenShot("ERRCLOSEPOPUPLGIN");
+					e.printStackTrace();
+				}
+				
 			}
 		}
 	}
@@ -1216,6 +1226,16 @@ public class FacebookScrap extends Scrap {
 						this.overlayHandler();
 						this.checkAndClosePopupLogin();
 						this.scrollDown();
+						if(this.getDriver().findElements(By.xpath("//span[@role='progressbar']")).size()>0 && this.getDriver().findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
+							try{
+								this.waitUntilNotSpinnerLoading();
+								this.scrollDown();
+							}catch(Exception e1) {
+								if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+									System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+								}
+							}
+						}
 						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 					}else {
 						this.saveScreenShot("ERR_Sel_OptionPpal");
