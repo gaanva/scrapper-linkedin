@@ -16,8 +16,8 @@ public class Application {
 
 	public static void main(String[] args) throws MalformedURLException {
 
-		Credential access = null;
-		//Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		//Credential access = null;
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
@@ -39,14 +39,16 @@ public class Application {
 		
 		Long COMMENTS_uTIME_INI = 1524106800L;
 		Long COMMENTS_uTIME_FIN = 1524381248L;
-
+		for (int i=0; i<20; i++) {
 		FacebookScrap fs = null;
 		if (seleniumHost != null && seleniumPort != null) {
 			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort));
 		} else {
 			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os));
 		}
-
+		
+		System.out.println(i+ "***********************************************************");	
+		
 		if (access != null) {
 			System.out.println("[APP]Por hacer login");
 			if (fs.login(access)) {
@@ -89,6 +91,7 @@ public class Application {
 
 		fs.printPage(fs.page());
 		fs.quit();
+		}
 		System.out.println("[APP] FIN");
 
 	}
