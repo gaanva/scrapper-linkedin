@@ -310,6 +310,7 @@ public class FacebookScrap extends Scrap {
 		}
 		return null;
 	}
+	
 
 	public List<WebElement> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN) throws Exception{
 		try {
@@ -318,6 +319,7 @@ public class FacebookScrap extends Scrap {
 			this.goToPublicationsSection();
 			//this.waitForPageLoaded();
 			try {
+				this.waitUntilNotSpinnerLoading();
 				this.waitForPublicationsLoaded(this);
 			}catch(Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")){
@@ -349,6 +351,7 @@ public class FacebookScrap extends Scrap {
 					
 					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
 						this.scrollMainPublicationsPage();
+						this.waitUntilNotSpinnerLoading();
 					} else {
 						this.saveScreenShot("posts");
 						System.out.println(
@@ -377,6 +380,49 @@ public class FacebookScrap extends Scrap {
 		return this.filterPostsByUTIME(facebookPage, uTIME_INI, uTIME_FIN);
 
 	}
+	
+	public boolean waitUntilNotSpinnerLoading(){
+	    ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
+	    	public Boolean apply(WebDriver driver) {
+	            if(driver.findElements(By.xpath("//span[@role='progressbar']")).size()>0 && driver.findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
+	            	//System.out.println("true");
+	            	return false;
+	            }else {
+	            	return true;
+	            }
+	        }
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
+				.pollingEvery(Duration.ofMillis(1000));
+
+		return wait.until(morePubsLink);    
+	    
+	}
+	
+	public boolean waitForPublicationsLoaded(final FacebookScrap fs) {
+		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if ((driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) && (driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed()) && (fs.waitForJStoLoad())) {
+					System.out.println("Container publications TRUE");
+					fs.saveScreenShot("container_pub_true");
+					return true;
+				}else {
+					System.out.println("Container publications FALSE");
+					fs.scrollMainPublicationsPage();
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
+				.pollingEvery(Duration.ofSeconds(1))
+				.ignoring(StaleElementReferenceException.class)
+				.ignoring(NoSuchElementException.class);
+		
+		return wait.until(pubsLoaded);	
+		
+	}
+	
 	
 	public boolean waitUntilShowMorePubsAppears(final FacebookScrap fs){
 	    ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
@@ -551,10 +597,13 @@ public class FacebookScrap extends Scrap {
 			
 		}catch(Exception e) {
 			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+				this.waitUntilNotSpinnerLoading();
 				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
 				
 			}else {
 				e.printStackTrace();
+				this.saveScreenShot("SM_primeraVez_");
+				throw e;
 			}				
 		}
 		
@@ -1101,28 +1150,6 @@ public class FacebookScrap extends Scrap {
 		
 	}
 	
-	public boolean waitForPublicationsLoaded(final FacebookScrap fs) {
-		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
-			public Boolean apply(WebDriver driver) {
-				if ((driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) && (driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER+"[1]")).isDisplayed()) && (fs.waitForJStoLoad())) {
-					System.out.println("Container publications TRUE");
-					fs.saveScreenShot("container_pub_true");
-					return true;
-				}else {
-					System.out.println("Container publications FALSE");
-					fs.scrollMainPublicationsPage();
-					return false;
-				}
-			}
-		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS))
-				.pollingEvery(Duration.ofSeconds(1))
-				.ignoring(StaleElementReferenceException.class)
-				.ignoring(NoSuchElementException.class);
-		
-		return wait.until(pubsLoaded);	
-		
-	}
 	
 	
 	
