@@ -319,7 +319,13 @@ public class FacebookScrap extends Scrap {
 			this.goToPublicationsSection();
 			//this.waitForPageLoaded();
 			try {
-				this.waitUntilNotSpinnerLoading();
+				try{
+					this.waitUntilNotSpinnerLoading();
+				}catch(Exception e1) {
+					if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+						System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+					}
+				}
 				this.waitForPublicationsLoaded(this);
 			}catch(Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")){
@@ -351,7 +357,13 @@ public class FacebookScrap extends Scrap {
 					
 					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
 						this.scrollMainPublicationsPage();
-						this.waitUntilNotSpinnerLoading();
+						try{
+							this.waitUntilNotSpinnerLoading();
+						}catch(Exception e1) {
+							if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+								System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+							}
+						}
 					} else {
 						this.saveScreenShot("posts");
 						System.out.println(
@@ -597,7 +609,13 @@ public class FacebookScrap extends Scrap {
 			
 		}catch(Exception e) {
 			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-				this.waitUntilNotSpinnerLoading();
+				try{
+					this.waitUntilNotSpinnerLoading();
+				}catch(Exception e1) {
+					if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+						System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+					}
+				}
 				System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
 				
 			}else {
