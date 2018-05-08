@@ -14,7 +14,7 @@ RUN mkdir -p /app/drivers/binaries/linux/
 RUN chmod o+rwx /app/drivers/binaries/linux/
 
 USER $USER
-RUN cp /opt/geckodriver-0.20.0 /app/drivers/binaries/linux/
+RUN cp /opt/geckodriver-0.20.1 /app/drivers/binaries/linux/
 
 RUN chmod +x ./entrypoint.sh
 
