@@ -196,6 +196,7 @@ public class FacebookScrap extends Scrap {
 						
 					}*/
 					try{
+						System.out.println("[INFO] SPINNER ACTIVE?...");
 						this.waitUntilNotSpinnerLoading();
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -208,6 +209,7 @@ public class FacebookScrap extends Scrap {
 											+ publicationsImpl.get(i).getId());
 									this.ctrlLoadPost();
 									pubsNew = this.publicationCommentSectionClick();
+									System.out.println("[INFO] SPINNER ACTIVE?...");
 									this.waitUntilNotSpinnerLoading();
 									j=3;
 								}catch(Exception e1) {
@@ -456,6 +458,7 @@ public class FacebookScrap extends Scrap {
 			//this.waitForPageLoaded();
 			try {
 				try{
+					System.out.println("[INFO] SPINNER ACTIVE?...");
 					this.waitUntilNotSpinnerLoading();
 				}catch(Exception e1) {
 					if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -494,6 +497,7 @@ public class FacebookScrap extends Scrap {
 					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
 						this.scrollMainPublicationsPage();
 						try{
+							System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
 						}catch(Exception e1) {
 							if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -533,7 +537,7 @@ public class FacebookScrap extends Scrap {
 	    ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 	    	public Boolean apply(WebDriver driver) {
 	            if(driver.findElements(By.xpath("//span[@role='progressbar']")).size()>0 && driver.findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
-	            	System.out.println("true spinner!");
+	            	//System.out.println("true spinner!");
 	            	return false;
 	            }else {
 	            	return true;
@@ -741,6 +745,7 @@ public class FacebookScrap extends Scrap {
 		
 		try{
 			try{
+				System.out.println("[INFO] SPINNER ACTIVE?...");
 				this.waitUntilNotSpinnerLoading();
 			}catch(Exception e1) {
 				if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -793,6 +798,7 @@ public class FacebookScrap extends Scrap {
 							this.getActions().sendKeys(Keys.ESCAPE).perform();
 							this.overlayHandler();
 							this.checkAndClosePopupLogin();
+							System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
 							this.scrollDown();
 							this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
@@ -1371,6 +1377,7 @@ public class FacebookScrap extends Scrap {
 						this.scrollDown();
 						if(this.getDriver().findElements(By.xpath("//span[@role='progressbar']")).size()>0 && this.getDriver().findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
 							try{
+								System.out.println("[INFO] SPINNER ACTIVE?...");
 								this.waitUntilNotSpinnerLoading();
 								this.scrollDown();
 							}catch(Exception e1) {
