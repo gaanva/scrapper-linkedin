@@ -1,5 +1,8 @@
 package com.rocasolida.scrap;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -10,15 +13,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.exec.TimeoutObserver;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
@@ -45,8 +44,8 @@ public class FacebookScrap extends Scrap {
 	private Page page;
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
 	final Pattern pattern = Pattern.compile(countRegex);
-	private static Integer WAIT_UNTIL_SECONDS = 30;
-	private static Integer WAIT_UNTIL_SPINNER = 90;
+	private static Integer WAIT_UNTIL_SECONDS = 10;
+	private static Integer WAIT_UNTIL_SPINNER = 15;
 	public FacebookScrap(Driver driver) throws MalformedURLException {
 		super(driver);
 		this.page = new Page();
@@ -122,8 +121,6 @@ public class FacebookScrap extends Scrap {
 
 			}
 		
-		
-			
 			for (int i = 0; i < publicationsImpl.size(); i++) {
 				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": "
 						+ FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
@@ -138,21 +135,7 @@ public class FacebookScrap extends Scrap {
 				}
 				try{
 					this.ctrlLoadPost();
-					/*this.waitForPublicationsLoaded(this);
-					if(this.getAccess()==null) {
-						try {
-							if(this.waitUntilPopupLoginAppears(this)){
-								this.checkAndClosePopupLogin();
-							}
-						}catch(Exception e) {
-							if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")){
-								System.out.println("[WARN] TIEMPO ESPERA POPUPLOGIN AGOTADO");
-							}else{
-								throw e;
-							}
-						}
-					}*/
-					
+					this.zoomOut();
 					this.saveScreenShot("PostLoaded");
 				}catch(Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
@@ -162,39 +145,7 @@ public class FacebookScrap extends Scrap {
 				List<WebElement> pubsNew;
 				try {
 					pubsNew = this.publicationCommentSectionClick();
-					/*
-					pubsNew = this.getDriver()
-							.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + "[1]"));
-					if (this.getAccess() == null) {
-						if (this.existElement(pubsNew.get(0), FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
-							try {	
-								this.waitUntilCommentSectionVisible(pubsNew.get(0));
-								try{
-									this.saveScreenShot("antesClickCommentSection_NL_1");
-									pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-								}catch(Exception e) {
-									if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-										//this.overlayHandler(); //ESTO ES SOLO PARA LOGIN
-										if((Boolean)((JavascriptExecutor) this.getDriver()).executeScript("return document.documentElement.scrollHeight>document.documentElement.clientHeight;")) {
-											this.scrollDown();
-										}else {
-											System.out.println("[INFO] LA VENTANA NO TIENE SCROLL");
-										}
-										this.checkAndClosePopupLogin();
-										this.saveScreenShot("antesClickCommentSection_NL_2");
-										pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
-									}
-								}
-								
-							}catch(Exception e) {
-								System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
-								this.saveScreenShot("ERR_ACCESO_COMM_PUB");
-								throw e;
-							}
-							
-						}
-						
-					}*/
+					
 					try{
 						System.out.println("[INFO] SPINNER ACTIVE?...");
 						this.waitUntilNotSpinnerLoading();
@@ -249,6 +200,40 @@ public class FacebookScrap extends Scrap {
 		}
 		
 	}
+	
+	public void zoomOut() {
+		/*WebElement html = this.getDriver().findElement(By.tagName("html"));
+		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		*/
+		
+		/*JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
+		js.executeScript("document.body.style.zoom='60%'");
+		*/
+		
+		Robot robot;
+		try {
+			robot = new Robot();
+			robot.keyPress(KeyEvent.VK_CONTROL);
+			robot.keyPress(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			//this.saveScreenShot(name);
+		} catch (AWTException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	
 	public void ctrlLoadPost() throws Exception{
 		try{
 			this.waitForPublicationsLoaded(this);
@@ -769,23 +754,7 @@ public class FacebookScrap extends Scrap {
 		
 		if (this.existElement(container, xPathExpression)) {
 			WebElement showMoreLink;
-			/*
-			WebElement showMoreLink = container.findElement(By.xpath(xPathExpression));
-			this.moveTo(showMoreLink);
-			try {
-				showMoreLink.click();
-				// this.saveScreenShot("AFTER_1click_OK");
-			} catch (Exception e) {
-				if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
-					this.getActions().sendKeys(Keys.SPACE);
-				}
-
-				this.moveTo(showMoreLink);
-				this.saveScreenShot("[ERROR]click_verMAsMsgs");
-				showMoreLink.click();
-
-			}
-			*/
+			
 			try {
 				while(this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 					showMoreLink = container.findElement(By.xpath(xPathExpression));
@@ -813,7 +782,7 @@ public class FacebookScrap extends Scrap {
 			}catch(Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					this.saveScreenShot("tiemoutexception_SM");
-					System.out.println("[WARN] TIEMPO DE ESPERA EXCEDIDO.");
+					System.out.println("[WARN] TIEMPO DE ESPERA SHOW MORE MESSAGES LINK EXCEDIDO.");
 				}else if(e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 					System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
 				}else if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")){
