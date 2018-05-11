@@ -208,9 +208,9 @@ public class FacebookScrap extends Scrap {
 		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
 		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
 		*/
-		
-		/*JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
-		js.executeScript("document.body.style.zoom='60%'");
+		/*
+		JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
+		js.executeScript("document.body.style.zoom='40%'");
 		*/
 		
 		Robot robot;
@@ -218,6 +218,22 @@ public class FacebookScrap extends Scrap {
 			robot = new Robot();
 			robot.keyPress(KeyEvent.VK_CONTROL);
 			robot.keyPress(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyPress(KeyEvent.VK_CONTROL);
+			robot.keyPress(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
+			robot.keyRelease(KeyEvent.VK_CONTROL);
+			robot.keyRelease(KeyEvent.VK_MINUS);
 			robot.keyRelease(KeyEvent.VK_CONTROL);
 			robot.keyRelease(KeyEvent.VK_MINUS);
 			robot.keyRelease(KeyEvent.VK_CONTROL);
@@ -531,7 +547,9 @@ public class FacebookScrap extends Scrap {
 		};
 
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER))
-				.pollingEvery(Duration.ofMillis(1000));
+				.pollingEvery(Duration.ofMillis(1000))
+				.ignoring(NoSuchElementException.class)
+				.ignoring(StaleElementReferenceException.class);
 
 		return wait.until(morePubsLink);    
 	    
