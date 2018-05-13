@@ -149,6 +149,7 @@ public class FacebookScrap extends Scrap {
 					try{
 						System.out.println("[INFO] SPINNER ACTIVE?...");
 						this.waitUntilNotSpinnerLoading();
+						this.TipoCargaComentarios(pubsNew.get(0), 3);
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
 							System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMETNARIOS! SPINNER ACTIVE!");
@@ -162,10 +163,11 @@ public class FacebookScrap extends Scrap {
 									pubsNew = this.publicationCommentSectionClick();
 									System.out.println("[INFO] SPINNER ACTIVE?...");
 									this.waitUntilNotSpinnerLoading();
+									this.TipoCargaComentarios(pubsNew.get(0), 3);
 									j=3;
 								}catch(Exception e1) {
 									if(e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")){
-										System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMETNARIOS! SPINNER ACTIVE!");
+										System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
 										this.saveScreenShot("WARN_SPINNERLOAD");
 									}else {
 										e1.printStackTrace();
@@ -339,7 +341,7 @@ public class FacebookScrap extends Scrap {
 
 	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception{
 		if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
-			this.TipoCargaComentarios(pub, 3);
+			//this.TipoCargaComentarios(pub, 3);
 			System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
 			return this.obtainAllPublicationComments(
 					pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")),
@@ -1348,8 +1350,11 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 							}catch(Exception e1) {
 								if(e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-									System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+									System.out.println("[WARN] TIEMPO ESPERA NOT SPINNER EXCEEDED (Tipo De Carga)");
+									
 								}
+								
+								throw e;
 							}
 						}
 						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
