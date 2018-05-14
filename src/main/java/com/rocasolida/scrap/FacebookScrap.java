@@ -146,7 +146,7 @@ public class FacebookScrap extends Scrap {
 				try {
 					pubsNew = this.publicationCommentSectionClick();
 					
-					if(pubsNew==null) {
+					while(pubsNew==null) {
 						System.out.println("[INFO]recargando el post... no tiene más scroll.");
 						this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
 								+ publicationsImpl.get(i).getId());
