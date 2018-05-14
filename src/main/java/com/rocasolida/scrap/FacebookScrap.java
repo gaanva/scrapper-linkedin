@@ -45,7 +45,7 @@ public class FacebookScrap extends Scrap {
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
 	final Pattern pattern = Pattern.compile(countRegex);
 	private static Integer WAIT_UNTIL_SECONDS = 10;
-	private static Integer WAIT_UNTIL_SPINNER = 15;
+	private static Integer WAIT_UNTIL_SPINNER = 10;
 	public FacebookScrap(Driver driver) throws MalformedURLException {
 		super(driver);
 		this.page = new Page();
@@ -135,7 +135,7 @@ public class FacebookScrap extends Scrap {
 				}
 				try{
 					this.ctrlLoadPost();
-					this.zoomOut();
+					//this.zoomOut();
 					this.saveScreenShot("PostLoaded");
 				}catch(Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
@@ -146,13 +146,20 @@ public class FacebookScrap extends Scrap {
 				try {
 					pubsNew = this.publicationCommentSectionClick();
 					
+					if(pubsNew==null) {
+						System.out.println("[INFO]recargando el post... no tiene más scroll.");
+						this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
+								+ publicationsImpl.get(i).getId());
+						this.ctrlLoadPost();
+						pubsNew = this.publicationCommentSectionClick();
+					}
 					try{
 						System.out.println("[INFO] SPINNER ACTIVE?...");
 						this.waitUntilNotSpinnerLoading();
 						this.TipoCargaComentarios(pubsNew.get(0), 3);
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-							System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMETNARIOS! SPINNER ACTIVE!");
+							System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
 							this.saveScreenShot("WARN_SPINNERLOAD");
 							for(int j=0; j<3; j++) {
 								System.out.println("[INFO] INTENTO "+(j+1)+" PARA QUE EL SPINNER NO SE MUESTRE.");
@@ -268,10 +275,13 @@ public class FacebookScrap extends Scrap {
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
 							//this.overlayHandler(); //ESTO ES SOLO PARA LOGIN
-							if((Boolean)((JavascriptExecutor) this.getDriver()).executeScript("return document.documentElement.scrollHeight>document.documentElement.clientHeight;")) {
+							//if((Boolean)((JavascriptExecutor) this.getDriver()).executeScript("return document.documentElement.scrollHeight>document.documentElement.clientHeight;")) {
+							if(!(Boolean)((JavascriptExecutor) this.getDriver()).executeScript("return window.innerHeight+window.scrollY>=document.body.offsetHeight;")) {	
 								this.scrollDown();
 							}else {
-								System.out.println("[INFO] LA VENTANA NO TIENE SCROLL");
+								System.out.println("[INFO] LA VENTANA NO TIENE MAS SCROLL!!!!!!!!!");
+								this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
+								return null;
 							}
 							this.checkAndClosePopupLogin();
 							this.saveScreenShot("antesClickCommentSection_NL_2");
