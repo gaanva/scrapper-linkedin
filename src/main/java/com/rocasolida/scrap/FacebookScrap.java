@@ -146,12 +146,17 @@ public class FacebookScrap extends Scrap {
 				try {
 					pubsNew = this.publicationCommentSectionClick();
 					
-					while(pubsNew==null) {
+					//while(pubsNew==null) {
+					for(int h=0; h<3; h++) {
 						System.out.println("[INFO]recargando el post... no tiene más scroll.");
-						this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
-								+ publicationsImpl.get(i).getId());
+						//this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST
+						//		+ publicationsImpl.get(i).getId());
+						this.getDriver().navigate().refresh();
 						this.ctrlLoadPost();
 						pubsNew = this.publicationCommentSectionClick();
+						if(pubsNew != null) {
+							h=3;
+						}
 					}
 					try{
 						System.out.println("[INFO] SPINNER ACTIVE?...");
