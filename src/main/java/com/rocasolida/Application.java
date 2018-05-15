@@ -43,8 +43,10 @@ public class Application {
 		FacebookScrap fs = null;
 		if (seleniumHost != null && seleniumPort != null) {
 			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort));
+			//fs = new FacebookScrap(Driver.from(DriverType.FIREFOX, os, seleniumHost, seleniumPort));
 		} else {
 			fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os));
+			//fs = new FacebookScrap(Driver.from(DriverType.FIREFOX, os));
 		}
 		
 		System.out.println(i+ "***********************************************************");	
