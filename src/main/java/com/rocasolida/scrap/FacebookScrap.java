@@ -225,14 +225,14 @@ public class FacebookScrap extends Scrap {
 		html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
 		*/
 		
-		JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
+		/*JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
 		js.executeScript("document.body.style.zoom='40%'");
+		*/
 		
-		/*
 		Robot robot;
 		try {
 			robot = new Robot();
-			for(int i=0; i<10; i++) {
+			for(int i=0; i<25; i++) {//-25%
 				robot.keyPress(KeyEvent.VK_CONTROL);
 				robot.keyPress(KeyEvent.VK_MINUS);
 			}
@@ -240,7 +240,7 @@ public class FacebookScrap extends Scrap {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/
+		
 		
 		
 	}
