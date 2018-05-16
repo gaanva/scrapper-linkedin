@@ -288,8 +288,12 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 							}else {
 								System.out.println("[INFO] LA VENTANA NO TIENE MAS SCROLL!!!!!!!!!");
+								
+								WebElement divButtom = this.getDriver().findElement(By.xpath("//div[@clasS='_67m7']"));
+								((JavascriptExecutor)this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')",divButtom);
+								
 								this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
-								return null;
+								//return null;
 							}
 							this.checkAndClosePopupLogin();
 							this.saveScreenShot("antesClickCommentSection_NL_2");
@@ -795,6 +799,10 @@ public class FacebookScrap extends Scrap {
 							throw e;
 						}
 					}
+					
+					
+					
+					
 				}
 			}catch(Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -836,6 +844,15 @@ public class FacebookScrap extends Scrap {
 		}
 		System.out.println("[INFO] SE PROCESARON TODOS LOS COMENTARIOS. (" + comentarios.size() + ")");
 		return comments;
+	}
+	
+	public void clickOnReplyLinks() {
+		while(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENT_REPLY_LINKS)).size() > 0){
+			List<WebElement> replyLinks = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENT_REPLY_LINKS));
+			for(int i=0; i<replyLinks.size();i++) {
+				
+			}
+		}
 	}
 	
 	public boolean waitUntilShowMoreCommAppears(final FacebookScrap fs, final WebElement component, final String xpath){
