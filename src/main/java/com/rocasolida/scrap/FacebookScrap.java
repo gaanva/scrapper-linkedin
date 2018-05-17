@@ -135,7 +135,7 @@ public class FacebookScrap extends Scrap {
 				}
 				try{
 					this.ctrlLoadPost();
-					this.zoomOut();
+					//this.zoomOut();
 					this.saveScreenShot("PostLoaded");
 				}catch(Exception e) {
 					System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
@@ -288,9 +288,10 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 							}else {
 								System.out.println("[INFO] LA VENTANA NO TIENE MAS SCROLL!!!!!!!!!");
-								
-								WebElement divButtom = this.getDriver().findElement(By.xpath("//div[@clasS='_67m7']"));
-								((JavascriptExecutor)this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')",divButtom);
+								if(this.existElement(null, "//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']")) {
+									WebElement divButtom = this.getDriver().findElement(By.xpath("//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']//parent::div//parent::div//parent::div//parent::div//parent::div[1]"));
+									((JavascriptExecutor)this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')",divButtom);
+								}
 								
 								this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
 								//return null;
