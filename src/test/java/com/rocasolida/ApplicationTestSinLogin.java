@@ -19,6 +19,7 @@ import com.rocasolida.scrap.util.DriverType;
 public class ApplicationTestSinLogin {
 
 	private static String OS;
+	private static final boolean DEBUG = false;
 
 	@BeforeClass
 	public static void loadOs() {
@@ -34,7 +35,7 @@ public class ApplicationTestSinLogin {
 		Long uTIME_FIN = getFecha("16/3/2018 00:00");
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
@@ -56,7 +57,7 @@ public class ApplicationTestSinLogin {
 		Long uTIME_FIN = getFecha("16/3/2018 00:00");
 		Long COMMENTS_uTIME_INI = null;
 		Long COMMENTS_uTIME_FIN = null;
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
@@ -79,7 +80,7 @@ public class ApplicationTestSinLogin {
 		Long uTIME_FIN = getFecha("16/3/2018 00:00");
 		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
 		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
@@ -101,7 +102,7 @@ public class ApplicationTestSinLogin {
 		Long uTIME_FIN = getFecha("16/3/2018 00:00");
 		Long COMMENTS_uTIME_INI = null;
 		Long COMMENTS_uTIME_FIN = null;
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
@@ -122,7 +123,7 @@ public class ApplicationTestSinLogin {
 		Long uTIME_FIN = 1524381248L; // 04/22/2018 @ 07:14:08
 		Long COMMENTS_uTIME_INI = 1524106800L;
 		Long COMMENTS_uTIME_FIN = 1524381248L;
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS));
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);

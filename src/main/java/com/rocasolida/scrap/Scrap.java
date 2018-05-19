@@ -36,9 +36,11 @@ public class Scrap {
 	private WebDriverWait waitDriver;
 	private Actions actions;
 	private Driver driverResource;
+	protected boolean debug;
 
-	public Scrap(final Driver driver) throws MalformedURLException {
+	public Scrap(final Driver driver, boolean debug) throws MalformedURLException {
 		this.driverResource = driver;
+		this.debug = debug;
 		// Creo el webdriver
 		if (driver.getSeleniumHost() != null && driver.getSeleniumPort() != null) {
 			this.setupWebDriver(driver);
