@@ -11,6 +11,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.FirefoxProfile;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
@@ -94,6 +95,9 @@ public class Scrap {
 			firefoxBinary.addCommandLineOptions("--headless");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.setBinary(firefoxBinary);
+			FirefoxProfile firefoxProfile = new FirefoxProfile();
+			firefoxProfile.setPreference("media.volume_scale", "0.0");
+			firefoxOptions.setProfile(firefoxProfile);
 			firefoxOptions.setCapability("permissions.default.image", 2);
 			this.driver = new FirefoxDriver(firefoxOptions);
 			this.configureDriver();
