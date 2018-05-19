@@ -77,7 +77,7 @@ public class ApplicationTestConLogin {
 		assertNotNull(page);
 		assertEquals(1, page.getPublications().size());
 		// Total de comentarios con el filtro aplicado:
-		assertEquals(9, page.getPublications().get(0).getComments().size());
+		assertEquals(10, page.getPublications().get(0).getComments().size());
 
 	}
 
