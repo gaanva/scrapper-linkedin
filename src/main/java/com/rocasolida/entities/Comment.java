@@ -4,7 +4,10 @@ import java.util.List;
 
 import lombok.Data;
 
-public @Data class Comment {
+@Data
+public class Comment {
+
+	private String id;
 	private String userId;
 	private String mensaje;
 	private String uTime;

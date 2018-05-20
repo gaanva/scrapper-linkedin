@@ -60,6 +60,8 @@ public final class FacebookConfig {
 
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
 	public static String XPATH_PUBLICATION_CANT_SHARE = ".//a[contains(@class,'UFIShareLink')]";
+	public static String XPATH_PUBLICATION_CANT_LIKE = ".//div[contains(@class,'UFILikeSentence')]//a[contains(@class,'_3emk _401_')]";
+//	public static String XPATH_PUBLICATION_CANT_LIKE = ".";
 
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
 
@@ -94,6 +96,7 @@ public final class FacebookConfig {
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
+	public static String XPATH_COMMENT_ID = ".//a[contains(@class,'uiLinkSubtle')]";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
 	
 	

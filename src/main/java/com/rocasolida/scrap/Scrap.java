@@ -94,7 +94,7 @@ public class Scrap {
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
-			firefoxBinary.addCommandLineOptions("--headless");
+			firefoxBinary.addCommandLineOptions("--headless --load-images=false --ignore-ssl-errors=yes");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.setBinary(firefoxBinary);
 			FirefoxProfile firefoxProfile = new FirefoxProfile();
@@ -104,7 +104,6 @@ public class Scrap {
 			this.driver = new FirefoxDriver(firefoxOptions);
 			this.configureDriver();
 		} else if (driver != null && driver.getType().equals(DriverType.CHROME_HEADLESS)) {
-
 			ChromeOptions chromeOptions = new ChromeOptions();
 			System.setProperty("webdriver.chrome.driver", DriverFinder.findChromeDriver(driver.getOs()));
 			chromeOptions.addArguments("--headless");

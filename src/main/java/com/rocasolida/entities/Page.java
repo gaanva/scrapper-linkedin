@@ -4,8 +4,11 @@ import java.util.List;
 
 import lombok.Data;
 
-public @Data class Page {
-	List<Publication> publications;
-	Long likes;
-	Long followers;
+@Data
+public class Page {
+
+	private String name;
+	private List<Publication> publications;
+	private Long likes;
+	private Long followers;
 }

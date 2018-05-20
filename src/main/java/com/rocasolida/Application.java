@@ -16,7 +16,7 @@ import com.rocasolida.scrap.util.DriverType;
 public class Application {
 
 	public static void main(String[] args) throws MalformedURLException {
-
+		Long aux = System.currentTimeMillis();
 		// Credential access = null;
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
@@ -33,14 +33,14 @@ public class Application {
 			access = new Credential(user, password, 0L, "");
 		}
 
-		Long uTIME_INI = 1524106800L; // 04/19/2018 @ 03:00:00
-		Long uTIME_FIN = 1524381248L; // 04/22/2018 @ 07:14:08
+		Long uTIME_INI = 1526761924L; // 04/19/2018 @ 03:00:00
+		Long uTIME_FIN = 1526848324L; // 04/22/2018 @ 07:14:08
 		// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
 
-		Long COMMENTS_uTIME_INI = 1524106800L;
-		Long COMMENTS_uTIME_FIN = 1524381248L;
-		for (int i = 0; i < 20; i++) {
+		Long COMMENTS_uTIME_INI = uTIME_INI;
+		Long COMMENTS_uTIME_FIN = uTIME_FIN;
+		for (int i = 0; i < 1; i++) {
 			FacebookScrap fs = null;
 			if (seleniumHost != null && seleniumPort != null) {
 				fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort), false);
@@ -91,11 +91,11 @@ public class Application {
 					e.printStackTrace();
 				}
 			}
-
-			fs.printPage(page);
+			System.out.println(page);
 			fs.quit();
 		}
 		System.out.println("[APP] FIN");
-
+		aux = System.currentTimeMillis() - aux;
+		System.out.println("Tardo: " + aux);
 	}
 }
