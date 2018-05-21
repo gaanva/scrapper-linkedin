@@ -94,7 +94,7 @@ public class Scrap {
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
-			firefoxBinary.addCommandLineOptions("--headless --load-images=false --ignore-ssl-errors=yes");
+			firefoxBinary.addCommandLineOptions("--headless");
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.setBinary(firefoxBinary);
 			FirefoxProfile firefoxProfile = new FirefoxProfile();
