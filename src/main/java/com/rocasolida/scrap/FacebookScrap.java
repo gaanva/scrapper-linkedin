@@ -347,7 +347,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(500));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		// .ignoring(StaleElementReferenceException.class);
 
 		return wait.until(commentSection);
@@ -369,7 +369,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(500));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		// .ignoring(StaleElementReferenceException.class);
 
 		return wait.until(commentSection);
@@ -585,7 +585,9 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER)).pollingEvery(Duration.ofMillis(1000)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER)).pollingEvery(Duration.ofMillis(200))
+				.ignoring(NoSuchElementException.class)
+				.ignoring(StaleElementReferenceException.class);
 
 		return wait.until(morePubsLink);
 
@@ -608,7 +610,9 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofSeconds(1)).ignoring(StaleElementReferenceException.class).ignoring(NoSuchElementException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200))
+				.ignoring(StaleElementReferenceException.class)
+				.ignoring(NoSuchElementException.class);
 		return wait.until(pubsLoaded);
 	}
 
@@ -625,7 +629,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(1000));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(morePubsLink);
 
 	}
@@ -694,7 +698,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(1000)).ignoring(TimeoutException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(TimeoutException.class);
 
 		return wait.until(commentLink);
 	}
@@ -898,7 +902,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(500));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		// .ignoring(StaleElementReferenceException.class);
 
 		return wait.until(commentLink);
@@ -987,7 +991,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofSeconds(5)).ignoring(NoSuchElementException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(NoSuchElementException.class);
 
 		return wait.until(jsLoad);
 	}
@@ -1359,7 +1363,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofSeconds(1));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 
 		return wait.until(jsLoad);
 
@@ -1518,7 +1522,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(500));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		// .ignoring(StaleElementReferenceException.class);
 
 		return wait.until(menuAppears);
@@ -1542,7 +1546,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(500));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		// .ignoring(StaleElementReferenceException.class);
 
 		return wait.until(menuAppears);
