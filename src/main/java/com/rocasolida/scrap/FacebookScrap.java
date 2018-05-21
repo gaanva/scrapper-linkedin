@@ -143,7 +143,8 @@ public class FacebookScrap extends Scrap {
 					try {
 						this.ctrlLoadPost();
 						// this.zoomOut();
-						this.saveScreenShot("PostLoaded");
+						if (debug)
+							this.saveScreenShot("PostLoaded");
 					} catch (Exception e) {
 						System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 						throw e;
@@ -175,9 +176,10 @@ public class FacebookScrap extends Scrap {
 							this.TipoCargaComentarios(pubsNew.get(0), 3);
 						} catch (Exception e) {
 							if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-								if (debug)
+								if (debug) {
 									System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-								this.saveScreenShot("WARN_SPINNERLOAD");
+									this.saveScreenShot("WARN_SPINNERLOAD");
+								}
 								for (int j = 0; j < 3; j++) {
 									if (debug)
 										System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
@@ -192,9 +194,10 @@ public class FacebookScrap extends Scrap {
 										j = 3;
 									} catch (Exception e1) {
 										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-											if (debug)
+											if (debug) {
 												System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-											this.saveScreenShot("WARN_SPINNERLOAD");
+												this.saveScreenShot("WARN_SPINNERLOAD");
+											}
 										} else {
 											e1.printStackTrace();
 											throw e;
@@ -214,9 +217,10 @@ public class FacebookScrap extends Scrap {
 						}
 						page.setPublications(publicationsImpl);
 					} catch (Exception e) {
-						if (debug)
+						if (debug) {
 							System.out.println("[ERROR] AL ACCEDER AL POST.");
-						this.saveScreenShot("ERR_ACCESO_POST");
+							this.saveScreenShot("ERR_ACCESO_POST");
+						}
 						throw e;
 					}
 				}
@@ -272,7 +276,8 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 
-			this.saveScreenShot("PostLoaded");
+			if(debug)
+				this.saveScreenShot("PostLoaded");
 		} catch (Exception e) {
 			System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 			throw e;
@@ -286,7 +291,8 @@ public class FacebookScrap extends Scrap {
 				try {
 					this.waitUntilCommentSectionVisible(pubsNew.get(0));
 					try {
-						this.saveScreenShot("antesClickCommentSection_NL_1");
+						if(debug)
+							this.saveScreenShot("antesClickCommentSection_NL_1");
 						pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 						return pubsNew;
 					} catch (Exception e) {
@@ -302,21 +308,23 @@ public class FacebookScrap extends Scrap {
 									WebElement divButtom = this.getDriver().findElement(By.xpath("//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']//parent::div//parent::div//parent::div//parent::div//parent::div[1]"));
 									((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')", divButtom);
 								}
-
-								this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
+								if(debug)
+									this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
 								// return null;
 							}
 							this.checkAndClosePopupLogin();
-							this.saveScreenShot("antesClickCommentSection_NL_2");
+							if(debug) 
+								this.saveScreenShot("antesClickCommentSection_NL_2");
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 							return pubsNew;
 						}
 					}
 
 				} catch (Exception e) {
-					if (debug)
+					if (debug) {
 						System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
-					this.saveScreenShot("ERR_ACCESO_COMM_PUB");
+						this.saveScreenShot("ERR_ACCESO_COMM_PUB");
+					}
 					throw e;
 				}
 
@@ -376,9 +384,10 @@ public class FacebookScrap extends Scrap {
 					System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
 				return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			} else {
-				if (debug)
+				if (debug) {
 					System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
-				this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
+					this.saveScreenShot("INFO_PUB_SIN_COMENTARIOS");
+				}
 				return null;
 			}
 		} finally {
@@ -434,9 +443,10 @@ public class FacebookScrap extends Scrap {
 
 		} catch (Exception e) {
 			// Sent to slack if error
-			if (debug)
+			if (debug) {
 				System.out.println("[ERROR] AL OBTENER LIKES AND FOLLOWERS!.");
-			this.saveScreenShot("ERROR_LIKES_FOLLOWERS");
+				this.saveScreenShot("ERROR_LIKES_FOLLOWERS");
+			}
 		}
 
 	}
@@ -488,9 +498,10 @@ public class FacebookScrap extends Scrap {
 				this.waitForPublicationsLoaded(this);
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-					if (debug)
+					if (debug) {
 						System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
-					this.saveScreenShot("ERR_ESPERA_CARGA_PUBS");
+						this.saveScreenShot("ERR_ESPERA_CARGA_PUBS");
+					}
 					throw e;
 				} else {
 					throw e;
@@ -528,9 +539,11 @@ public class FacebookScrap extends Scrap {
 							}
 						}
 					} else {
-						this.saveScreenShot("posts");
-						if (debug)
+						
+						if (debug) {
+							this.saveScreenShot("posts");
 							System.out.println("[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
+						}
 						break;
 					}
 					if (debug)
@@ -540,16 +553,18 @@ public class FacebookScrap extends Scrap {
 				if (debug)
 					System.out.println("|FIN|");
 			} else {
-				if (debug)
+				if (debug) {
 					System.err.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
-				this.saveScreenShot("PAGINA_SIN_PUBS");
+					this.saveScreenShot("PAGINA_SIN_PUBS");
+				}
+				
 				return null;
 			}
 		} catch (Exception e) {
-			if (debug)
+			if (debug) {
 				System.err.println("[ERROR] EN LA CARGA DE PUBLICACIONES.");
-			e.printStackTrace();
-			this.saveScreenShot("ERR_CARGA_PUBS");
+				this.saveScreenShot("ERR_CARGA_PUBS");
+			}
 			throw e;
 		}
 
@@ -580,9 +595,10 @@ public class FacebookScrap extends Scrap {
 		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if ((driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) && (driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + "[1]")).isDisplayed()) && (fs.waitForJStoLoad())) {
-					if (debug)
+					if (debug) {
 						System.out.println("Container publications TRUE");
-					fs.saveScreenShot("container_pub_true");
+						fs.saveScreenShot("container_pub_true");
+					}
 					return true;
 				} else {
 					if (debug)
@@ -653,9 +669,10 @@ public class FacebookScrap extends Scrap {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(true);", this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")));
 					this.getDriver().findElement(By.xpath("//div[@id='entity_sidebar']//descendant::div//descendant::div[@data-key='tab_posts']//descendant::a")).click();
 				} catch (Exception e) {
-					if (debug)
+					if (debug) {
 						System.err.println("[ERROR] NO SE PUDO ACCEDER AL MENÚ 'PUBLICACIONES'");
-					this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+						this.saveScreenShot("ERR_ACCEDER_PUBLICACIONES");
+					}
 					throw e;
 				}
 
@@ -758,7 +775,8 @@ public class FacebookScrap extends Scrap {
 						System.out.println("[WARN] TIEMPO DE ESPERA APARICION BOTON SHOW MOORE COMMENTS EXCEDIDO.");
 				} else {
 					// e.printStackTrace();
-					this.saveScreenShot("SM_primeraVez_");
+					if(debug)
+						this.saveScreenShot("SM_primeraVez_");
 					throw e;
 				}
 			}
@@ -795,9 +813,10 @@ public class FacebookScrap extends Scrap {
 					}
 				} catch (Exception e) {
 					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-						this.saveScreenShot("tiemoutexception_SM");
-						if (debug)
+						if (debug) {
+							this.saveScreenShot("tiemoutexception_SM");
 							System.out.println("[WARN] TIEMPO DE ESPERA SHOW MORE MESSAGES LINK EXCEDIDO.");
+						}
 					} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
 						if (debug)
 							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
@@ -805,17 +824,18 @@ public class FacebookScrap extends Scrap {
 						if (debug)
 							System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
 					} else {
-						this.saveScreenShot("exception_SM_1");
-						e.printStackTrace();
+						if(debug)
+							this.saveScreenShot("exception_SM_1");
 						throw e;
 					}
 
 				}
 
 			} else {
-				if (debug)
+				if (debug) {
 					System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
-				this.saveScreenShot("NOHAYMASMENSAJESCARGA");
+					this.saveScreenShot("NOHAYMASMENSAJESCARGA");
+				}
 			}
 			a1 = System.currentTimeMillis() - a1;
 			System.out.println("a1: " + a1);
@@ -894,7 +914,7 @@ public class FacebookScrap extends Scrap {
 	/**
 	 * Se cargan todas las publicaciones, haciendo scrolls, del timestamp definido en las variables del CONFIG.
 	 */
-	public Comment extractCommentData(WebElement comentario) {
+	public Comment extractCommentData(WebElement comentario) throws Exception{
 		Comment auxComment = new Comment();
 
 		// Mensaje
@@ -908,9 +928,11 @@ public class FacebookScrap extends Scrap {
 					Thread.sleep(50);
 
 				} catch (Exception e) {
-					this.saveScreenShot("Error VerMasContenidoMensaje");
-					e.printStackTrace();
-					break;
+					if(debug)
+						this.saveScreenShot("Error VerMasContenidoMensaje");
+					//e.printStackTrace();
+					throw e;
+					//break;
 				}
 			}
 		}
@@ -1005,7 +1027,8 @@ public class FacebookScrap extends Scrap {
 					if (debug)
 						System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
 				} else {
-					this.saveScreenShot("ERRCLOSEPOPUPLGIN");
+					if(debug)
+						this.saveScreenShot("ERRCLOSEPOPUPLGIN");
 					e.printStackTrace();
 				}
 
@@ -1237,7 +1260,8 @@ public class FacebookScrap extends Scrap {
 						System.out.println("[ERROR] VER MAS TITLE NOT DISPLAYED");
 				}
 			} catch (Exception w) {
-				this.saveScreenShot("Err_ViewMoreText");
+				if(debug)
+					this.saveScreenShot("Err_ViewMoreText");
 				break;
 			}
 		}
@@ -1284,9 +1308,10 @@ public class FacebookScrap extends Scrap {
 		// Si por algún motivo se carga una URL que no existe, ej:
 		// https://www.facebook2342.com/
 		if (this.existElement(null, "//body[@class='neterror']")) {
-			if (debug)
+			if (debug) {
 				System.out.println("[ERROR] NET ERROR ACCESS: " + this.getDriver().findElement(By.xpath("//body[@class='neterror']//div[@id='main-message']")).getText());
-			this.saveScreenShot("NET_ERROR_ACCESS");
+				this.saveScreenShot("NET_ERROR_ACCESS");
+			}
 			return false;
 		}
 
@@ -1295,9 +1320,10 @@ public class FacebookScrap extends Scrap {
 			 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida
 			 * https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 			 */
-			if (debug)
+			if (debug) {
 				System.out.println("[ERROR] NO EXISTE LINK " + URL + ": " + this.getDriver().findElement(By.xpath("//div[contains(@id,'globalContainer')]//h2")).getText());
-			this.saveScreenShot("NO_EXISTE_LINK");
+				this.saveScreenShot("NO_EXISTE_LINK");
+			}
 			return false;
 		}
 
@@ -1375,7 +1401,8 @@ public class FacebookScrap extends Scrap {
 				}
 
 				try {
-					this.saveScreenShot("Antes_Sel_TipoCargAComentarios");
+					if(debug) 
+						this.saveScreenShot("Antes_Sel_TipoCargAComentarios");
 					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 				} catch (Exception e) {
 					if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException") || e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
@@ -1398,7 +1425,8 @@ public class FacebookScrap extends Scrap {
 						}
 						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 					} else {
-						this.saveScreenShot("ERR_Sel_OptionPpal");
+						if(debug)
+							this.saveScreenShot("ERR_Sel_OptionPpal");
 						throw e;
 					}
 				}
@@ -1421,12 +1449,14 @@ public class FacebookScrap extends Scrap {
 							this.overlayHandler();
 							this.checkAndClosePopupLogin();
 							this.scrollDown();
-							this.saveScreenShot("ListOpt_TIPOCARGA");
+							if(debug)
+								this.saveScreenShot("ListOpt_TIPOCARGA");
 							// Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 							try {
 								this.waitUntilMenuAppears();
 								this.scrollDown();
-								this.saveScreenShot("opt_TIPOCARGA");
+								if(debug)
+									this.saveScreenShot("opt_TIPOCARGA");
 								menuOption.click();
 							} catch (Exception e1) {
 								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -1438,26 +1468,29 @@ public class FacebookScrap extends Scrap {
 							}
 
 						} else {
-							this.saveScreenShot("ERR_Sel_menuOption");
+							if(debug)
+								this.saveScreenShot("ERR_Sel_menuOption");
 							throw e;
 						}
 					}
 				}
 			} catch (Exception e) {
-				if (debug)
+				if (debug) {
 					System.err.println("[ERROR] ERROR SELECCIONANDO EL TIPO DE CARGA");
-				this.saveScreenShot("ERROR_TIPOCARGA");
-				e.printStackTrace();
+					this.saveScreenShot("ERROR_TIPOCARGA");
+				}
+				//e.printStackTrace();
 				throw e;
 			}
 
 			this.waitForJStoLoad();
 
 		} catch (Exception e) {
-			if (debug)
+			if (debug) {
 				System.err.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
-			this.saveScreenShot("ERR_NO_SELECCIONO_MOSTRAR_MENSAJES");
-			e.printStackTrace();
+				this.saveScreenShot("ERR_NO_SELECCIONO_MOSTRAR_MENSAJES");
+			}
+			//e.printStackTrace();
 			throw e;
 		}
 
