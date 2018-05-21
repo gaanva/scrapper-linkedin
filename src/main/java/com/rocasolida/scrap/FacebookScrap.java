@@ -1092,6 +1092,12 @@ public class FacebookScrap extends Scrap {
 			try {
 				if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)) {
 					String auxLikes = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)).findElement(By.xpath("//span[contains(@class,'_3chu')]")).getAttribute("innerHTML");
+					if (auxLikes.contains("&nbsp;mil")) {
+						auxLikes = auxLikes.replaceAll("&nbsp;mil", "000");
+						if (auxLikes.contains(",")) {
+							auxLikes = auxLikes.replaceAll(",", "");
+						}
+					}					
 					aux.setCantLikes(Integer.valueOf(auxLikes));
 				} else {
 					aux.setCantLikes(0);
