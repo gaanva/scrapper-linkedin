@@ -32,25 +32,37 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_OWNER = ".//span[contains(@class,'fwn fcg')]//span[contains(@class,'fwb')]"; // getAttribute("aria-label")
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
 	public static String XPATH_PUBLICATION_TIMESTAMP_1 = ".//abbr//span[contains(@class,'timestamp')]//parent::abbr"; // getAttribute("data-utime")
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = "')]//descendant::abbr[@data-utime>=";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = " and @data-utime<=";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4 = "]";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = "')]//descendant::abbr[@data-utime>=";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = " and @data-utime<=";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4 = "]";
+	//
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
+	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4;
+	// }
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
 
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4;
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
 
 	/**
-	 * Controlar que no tome el timestamp de un comentario!!!!
-	 * Controlar que la cantidad de publicaciones, no sean de solo las destacadas.
+	 * Controlar que no tome el timestamp de un comentario!!!! Controlar que la cantidad de publicaciones, no sean de solo las destacadas.
 	 */
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "')]//descendant::abbr[@data-utime<";
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3 = "]";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER+"//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "')]//descendant::abbr[@data-utime<";
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3 = "]";
+	//
+	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
+	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
+	// }
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
 
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
 
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
@@ -61,7 +73,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
 	public static String XPATH_PUBLICATION_CANT_SHARE = ".//a[contains(@class,'UFIShareLink')]";
 	public static String XPATH_PUBLICATION_CANT_LIKE = ".//div[contains(@class,'UFILikeSentence')]//a[contains(@class,'_3emk _401_')]";
-//	public static String XPATH_PUBLICATION_CANT_LIKE = ".";
+	// public static String XPATH_PUBLICATION_CANT_LIKE = ".";
 
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
 
@@ -72,25 +84,24 @@ public final class FacebookConfig {
 	 * COMENTARIOS
 	 */
 	public static String XPATH_COMMENTS_CONTAINER = ".//div[contains(@class,'UFIContainer')]"; // Esto agrupa a TODOS los comentarios/Replies
-	public static String XPATH_COMMENTS_CONTAINER_NL =".//a[contains(@href,'comment_tracking')]";
-	////div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
-	//public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
-	
-	////div[contains(@class,'UFIContainer')]//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]//div[@class='UFICommentContent']
+	public static String XPATH_COMMENTS_CONTAINER_NL = ".//a[contains(@href,'comment_tracking')]";
+	//// div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
+	// public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
+
+	//// div[contains(@class,'UFIContainer')]//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]//div[@class='UFICommentContent']
 	public static String XPATH_COMMENT_ROOT_DIV = ".//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]";
-	////div[contains(@class,'userContentWrapper') and .//span[contains(@class,'fsm fwn fcg')]//a[contains(@href,'1955574351421677')]]//div[@class='UFIList']/node()[last()]/node()/node()
-	
-	
+	//// div[contains(@class,'userContentWrapper') and .//span[contains(@class,'fsm fwn fcg')]//a[contains(@href,'1955574351421677')]]//div[@class='UFIList']/node()[last()]/node()/node()
+
 	public static String XPATH_REPLY_ROOT_DIV = ".//div[@class=' UFIReplyList']";
 	public static String XPATH_COMMENTS_AND_REPLIES_DIVS = "//*[starts-with(@class,'UFIRow UFIComment') or contains(@class,'UFIReplyList')]";
 
-	//public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
-	//public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
+	// public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
+	// public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
 	public static String XPATH_COMMENTS = ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]";
 	public static String XPATH_COMMENTS_AND_RESPONSES = ".//div[contains(@class,'UFICommentContentBlock')]";
 	public static String XPATH_RESPONSES_LINK = ".//span[contains(@class,'UFIReplySocialSentenceLinkText')]";
-	//span[contains(@class,'UFIReplySocialSentenceLinkText')]
-	///following-sibling::div[@class=' UFIReplyList'][1]
+	// span[contains(@class,'UFIReplySocialSentenceLinkText')]
+	/// following-sibling::div[@class=' UFIReplyList'][1]
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
@@ -98,13 +109,12 @@ public final class FacebookConfig {
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
 	public static String XPATH_COMMENT_ID = ".//a[contains(@class,'uiLinkSubtle')]";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
-	
-	
+
 	public static String XPATH_COMMENT_REPLY_LINKS = "//span[@class='UFIReplySocialSentenceLinkText UFIReplySocialSentenceVerified']";
 
-	public static String XPATH_COMMENTS_TIMESTAMP_CONDITION_SATISFIED(Long utimeINI) {
-		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
-	}
+	// public static String XPATH_COMMENTS_TIMESTAMP_CONDITION_SATISFIED(Long utimeINI) {
+	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
+	// }
 	// div[contains(@class,' UFIReplyList')]
 
 	public FacebookConfig() {

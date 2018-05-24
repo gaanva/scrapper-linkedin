@@ -17,8 +17,9 @@ public class Application {
 
 	public static void main(String[] args) throws MalformedURLException {
 		Long aux = System.currentTimeMillis();
-		// Credential access = null;
-		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		Boolean debug = true;
+		Credential access = null;
+//		 Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
@@ -34,7 +35,7 @@ public class Application {
 		}
 
 		Long uTIME_INI = 1527122578L; // 04/19/2018 @ 03:00:00
-		Long uTIME_FIN = 1527122584L; // 04/22/2018 @ 07:14:08
+		Long uTIME_FIN = System.currentTimeMillis() / 1000; // 04/22/2018 @ 07:14:08
 		// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
 
@@ -43,10 +44,10 @@ public class Application {
 		for (int i = 0; i < 1; i++) {
 			FacebookScrap fs = null;
 			if (seleniumHost != null && seleniumPort != null) {
-				fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort), false);
+				fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os, seleniumHost, seleniumPort), debug);
 				// fs = new FacebookScrap(Driver.from(DriverType.FIREFOX, os, seleniumHost, seleniumPort));
 			} else {
-				fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os), false);
+				fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, os), debug);
 				// fs = new FacebookScrap(Driver.from(DriverType.FIREFOX, os));
 			}
 
@@ -56,7 +57,7 @@ public class Application {
 				System.out.println("[APP]Por hacer login");
 				if (fs.login(access)) {
 					try {
-						page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 						// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,

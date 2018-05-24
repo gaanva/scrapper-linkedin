@@ -132,9 +132,11 @@ public class FacebookScrap extends Scrap {
 
 				for (int i = 0; i < publicationsImpl.size(); i++) {
 					if (debug)
-						System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+						// System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": " + FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+						System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": " + FacebookConfig.URL + publicationsImpl.get(i).getId());
 					try {
-						this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+						// this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+						this.navigateTo(FacebookConfig.URL + publicationsImpl.get(i).getId());
 					} catch (Exception e) {
 						System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
 						this.saveScreenShot("ERR_ACCESO_POST");
@@ -276,7 +278,7 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 
-			if(debug)
+			if (debug)
 				this.saveScreenShot("PostLoaded");
 		} catch (Exception e) {
 			System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
@@ -291,7 +293,7 @@ public class FacebookScrap extends Scrap {
 				try {
 					this.waitUntilCommentSectionVisible(pubsNew.get(0));
 					try {
-						if(debug)
+						if (debug)
 							this.saveScreenShot("antesClickCommentSection_NL_1");
 						pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 						return pubsNew;
@@ -308,12 +310,12 @@ public class FacebookScrap extends Scrap {
 									WebElement divButtom = this.getDriver().findElement(By.xpath("//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']//parent::div//parent::div//parent::div//parent::div//parent::div[1]"));
 									((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')", divButtom);
 								}
-								if(debug)
+								if (debug)
 									this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
 								// return null;
 							}
 							this.checkAndClosePopupLogin();
-							if(debug) 
+							if (debug)
 								this.saveScreenShot("antesClickCommentSection_NL_2");
 							pubsNew.get(0).findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
 							return pubsNew;
@@ -513,6 +515,7 @@ public class FacebookScrap extends Scrap {
 				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
 			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
 				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
+					this.saveScreenShot("a1-" + System.currentTimeMillis());
 					try {
 						this.waitUntilShowMorePubsAppears(this);
 					} catch (Exception e) {
@@ -539,7 +542,7 @@ public class FacebookScrap extends Scrap {
 							}
 						}
 					} else {
-						
+
 						if (debug) {
 							this.saveScreenShot("posts");
 							System.out.println("[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
@@ -557,7 +560,7 @@ public class FacebookScrap extends Scrap {
 					System.err.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
 					this.saveScreenShot("PAGINA_SIN_PUBS");
 				}
-				
+
 				return null;
 			}
 		} catch (Exception e) {
@@ -585,9 +588,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER)).pollingEvery(Duration.ofMillis(200))
-				.ignoring(NoSuchElementException.class)
-				.ignoring(StaleElementReferenceException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SPINNER)).pollingEvery(Duration.ofMillis(200)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
 
 		return wait.until(morePubsLink);
 
@@ -610,9 +611,7 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200))
-				.ignoring(StaleElementReferenceException.class)
-				.ignoring(NoSuchElementException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(StaleElementReferenceException.class).ignoring(NoSuchElementException.class);
 		return wait.until(pubsLoaded);
 	}
 
@@ -779,7 +778,7 @@ public class FacebookScrap extends Scrap {
 						System.out.println("[WARN] TIEMPO DE ESPERA APARICION BOTON SHOW MOORE COMMENTS EXCEDIDO.");
 				} else {
 					// e.printStackTrace();
-					if(debug)
+					if (debug)
 						this.saveScreenShot("SM_primeraVez_");
 					throw e;
 				}
@@ -828,7 +827,7 @@ public class FacebookScrap extends Scrap {
 						if (debug)
 							System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
 					} else {
-						if(debug)
+						if (debug)
 							this.saveScreenShot("exception_SM_1");
 						throw e;
 					}
@@ -918,7 +917,7 @@ public class FacebookScrap extends Scrap {
 	/**
 	 * Se cargan todas las publicaciones, haciendo scrolls, del timestamp definido en las variables del CONFIG.
 	 */
-	public Comment extractCommentData(WebElement comentario) throws Exception{
+	public Comment extractCommentData(WebElement comentario) throws Exception {
 		Comment auxComment = new Comment();
 
 		// Mensaje
@@ -932,11 +931,11 @@ public class FacebookScrap extends Scrap {
 					Thread.sleep(50);
 
 				} catch (Exception e) {
-					if(debug)
+					if (debug)
 						this.saveScreenShot("Error VerMasContenidoMensaje");
-					//e.printStackTrace();
+					// e.printStackTrace();
 					throw e;
-					//break;
+					// break;
 				}
 			}
 		}
@@ -1031,7 +1030,7 @@ public class FacebookScrap extends Scrap {
 					if (debug)
 						System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
 				} else {
-					if(debug)
+					if (debug)
 						this.saveScreenShot("ERRCLOSEPOPUPLGIN");
 					e.printStackTrace();
 				}
@@ -1124,7 +1123,7 @@ public class FacebookScrap extends Scrap {
 						if (auxLikes.contains(",")) {
 							auxLikes = auxLikes.replaceAll(",", "");
 						}
-					}					
+					}
 					aux.setCantLikes(Integer.valueOf(auxLikes));
 				} else {
 					aux.setCantLikes(0);
@@ -1264,7 +1263,7 @@ public class FacebookScrap extends Scrap {
 						System.out.println("[ERROR] VER MAS TITLE NOT DISPLAYED");
 				}
 			} catch (Exception w) {
-				if(debug)
+				if (debug)
 					this.saveScreenShot("Err_ViewMoreText");
 				break;
 			}
@@ -1334,20 +1333,6 @@ public class FacebookScrap extends Scrap {
 		return true;
 	}
 
-	public static void main(String args[]) {
-		try {
-			// String a = "Thursday, March 15, 2018";
-			// SimpleDateFormat sdf = new SimpleDateFormat("EEE, MMM d, yyyy");
-			// Date date = sdf.parse(a);
-			// System.out.println(date);
-			String a = "https://www.facebook.com/mauriciomacri/videos/10156570748083478/?comment_id=10156570873778478&comment_tracking=%7B%22tn%22%3A%22R9%22%7D";
-			a = a.split("\\?")[1].split("&")[0].split("=")[1];
-			System.out.println(a);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-
 	public boolean waitForPageLoaded() {
 
 		ExpectedCondition<Boolean> jsLoad = new ExpectedCondition<Boolean>() {
@@ -1405,7 +1390,7 @@ public class FacebookScrap extends Scrap {
 				}
 
 				try {
-					if(debug) 
+					if (debug)
 						this.saveScreenShot("Antes_Sel_TipoCargAComentarios");
 					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 				} catch (Exception e) {
@@ -1429,7 +1414,7 @@ public class FacebookScrap extends Scrap {
 						}
 						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 					} else {
-						if(debug)
+						if (debug)
 							this.saveScreenShot("ERR_Sel_OptionPpal");
 						throw e;
 					}
@@ -1453,13 +1438,13 @@ public class FacebookScrap extends Scrap {
 							this.overlayHandler();
 							this.checkAndClosePopupLogin();
 							this.scrollDown();
-							if(debug)
+							if (debug)
 								this.saveScreenShot("ListOpt_TIPOCARGA");
 							// Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
 							try {
 								this.waitUntilMenuAppears();
 								this.scrollDown();
-								if(debug)
+								if (debug)
 									this.saveScreenShot("opt_TIPOCARGA");
 								menuOption.click();
 							} catch (Exception e1) {
@@ -1472,7 +1457,7 @@ public class FacebookScrap extends Scrap {
 							}
 
 						} else {
-							if(debug)
+							if (debug)
 								this.saveScreenShot("ERR_Sel_menuOption");
 							throw e;
 						}
@@ -1483,7 +1468,7 @@ public class FacebookScrap extends Scrap {
 					System.err.println("[ERROR] ERROR SELECCIONANDO EL TIPO DE CARGA");
 					this.saveScreenShot("ERROR_TIPOCARGA");
 				}
-				//e.printStackTrace();
+				// e.printStackTrace();
 				throw e;
 			}
 
@@ -1494,7 +1479,7 @@ public class FacebookScrap extends Scrap {
 				System.err.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
 				this.saveScreenShot("ERR_NO_SELECCIONO_MOSTRAR_MENSAJES");
 			}
-			//e.printStackTrace();
+			// e.printStackTrace();
 			throw e;
 		}
 
@@ -1555,16 +1540,35 @@ public class FacebookScrap extends Scrap {
 	public String regexPostID(String link) {
 		// www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
 		// www.facebook.com/teamisurus/posts/2143052825719776
-		String[] stringArray = link.split("/");
-		Pattern pat = Pattern.compile("[0-9]{16,18}");
-		for (int i = 0; i < stringArray.length; i++) {
-			Matcher mat = pat.matcher(stringArray[i]);
-			if (mat.matches()) {
-				// System.out.println("[INFO] Post ID: " + stringArray[i]);
-				return stringArray[i];
+		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826
+		if (link.contains("permalink")) {
+			String[] a = link.split("\\?")[1].split("&");
+			for (String b : a) {
+				if (b.contains("story_fbid=")) {
+					return b.replace("story_fbid=", "");
+				}
+			}
+		} else {
+			String[] stringArray = link.split("/");
+			Pattern pat = Pattern.compile("[0-9]{16,18}");
+			for (int i = 0; i < stringArray.length; i++) {
+				Matcher mat = pat.matcher(stringArray[i]);
+				if (mat.matches()) {
+					// System.out.println("[INFO] Post ID: " + stringArray[i]);
+					return stringArray[i];
+				}
 			}
 		}
 		return "";
 	}
 
+	public static void main(String args[]) {
+		String c = "https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826";
+		String[] a = c.split("\\?")[1].split("&");
+		for (String b : a) {
+			if (b.contains("story_fbid=")) {
+				System.out.println(b.replace("story_fbid=", ""));
+			}
+		}
+	}
 }
