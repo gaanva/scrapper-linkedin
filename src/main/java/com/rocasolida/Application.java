@@ -57,7 +57,7 @@ public class Application {
 				System.out.println("[APP]Por hacer login");
 				if (fs.login(access)) {
 					try {
-						page = fs.obtainPageInformation("Curne-195943133758388", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						page = fs.obtainPageInformation("CartersResistencia", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 						// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
@@ -77,7 +77,7 @@ public class Application {
 				}
 			} else {
 				try {
-					page = fs.obtainPageInformation("Curne-195943133758388", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					page = fs.obtainPageInformation("CartersResistencia", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
