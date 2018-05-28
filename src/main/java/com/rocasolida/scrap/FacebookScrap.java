@@ -175,7 +175,11 @@ public class FacebookScrap extends Scrap {
 							if (debug)
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
-							this.TipoCargaComentarios(pubsNew.get(0), 3);
+							if(!this.TipoCargaComentarios(pubsNew.get(0), 3)) {
+								publicationsImpl.get(i).setComments(null);
+								page.setPublications(publicationsImpl);
+								continue;
+							}
 						} catch (Exception e) {
 							if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
 								if (debug) {
@@ -1358,7 +1362,7 @@ public class FacebookScrap extends Scrap {
 	// los posts de Facebook.
 	// "opt=2: Más Recientes" --> Cuando se actualice un post
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
-	private void TipoCargaComentarios(WebElement Post, int option) throws Exception {
+	private boolean TipoCargaComentarios(WebElement Post, int option) throws Exception {
 		try {
 			/*
 			 * if(this.getAccess() == null) { this.scrollDown(); }
@@ -1378,9 +1382,10 @@ public class FacebookScrap extends Scrap {
 				try {
 					this.waitUntilMenuOptionAppears(this, Post);
 				} catch (Exception e) {
-					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) { //Si la publicación no tiene ningun tipo de actividad...
 						if (debug)
 							System.out.println("[WARN] TIEMPO DE ESPERA A QUE APAREZCA LINK TIPO CARGA AGOTADO");
+						return false;
 					} else {
 						throw e;
 					}
@@ -1425,13 +1430,9 @@ public class FacebookScrap extends Scrap {
 				 */
 				// this.saveScreenShot("Sccrolldown");
 				if (this.waitUntilMenuAppears()) {
-					WebElement menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li[" + option + "]"));
-					/*
-					 * if(this.getAccess()!=null) { this.moveTo(menuOption); }
-					 */
-
-					// this.checkAndClosePopupLogin();
+					WebElement menuOption = null;
 					try {
+						menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li[" + option + "]"));
 						menuOption.click();
 					} catch (Exception e) {
 						if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
@@ -1456,7 +1457,10 @@ public class FacebookScrap extends Scrap {
 								}
 							}
 
-						} else {
+						} else if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
+								//puede ser que no tenga la opción... caso Curne.(https://www.facebook.com/2018054074880609)
+								return true;
+						}else {
 							if (debug)
 								this.saveScreenShot("ERR_Sel_menuOption");
 							throw e;
@@ -1473,7 +1477,7 @@ public class FacebookScrap extends Scrap {
 			}
 
 			this.waitForJStoLoad();
-
+			return true;
 		} catch (Exception e) {
 			if (debug) {
 				System.err.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
@@ -1507,8 +1511,8 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
-		// .ignoring(StaleElementReferenceException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200))
+		.ignoring(NoSuchElementException.class);
 
 		return wait.until(menuAppears);
 	}
