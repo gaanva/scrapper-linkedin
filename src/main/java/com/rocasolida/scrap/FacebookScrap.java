@@ -792,6 +792,7 @@ public class FacebookScrap extends Scrap {
 				WebElement showMoreLink;
 
 				try {
+					boolean firstTime = true;
 					while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 						showMoreLink = container.findElement(By.xpath(xPathExpression));
 						try {
@@ -815,6 +816,46 @@ public class FacebookScrap extends Scrap {
 							} else {
 								throw e;
 							}
+						}
+						
+						if(!firstTime) {
+							
+							int sizeComments = comments.size();
+							if (COMMENTS_uTIME_FIN != null) {
+								String aux = "";
+								if(sizeComments>0) {
+									aux = comments.get(sizeComments-1).getUTime();
+								}else {
+									aux = String.valueOf(COMMENTS_uTIME_INI);
+								}
+								
+								comentarios = container.findElements(By.xpath(".//abbr[@data-utime>=" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+								
+								
+							} else {
+								
+								if(sizeComments>0) {
+									String aux = "";
+									aux = comments.get(sizeComments-1).getUTime();
+									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>=" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+								}else {
+									comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+								}
+								
+							}
+							
+							for (int j = 0; j < comentarios.size(); j++) {
+								comments.add(this.extractCommentData(comentarios.get(j)));
+								if (debug)
+									System.out.print(j + "|");
+							}
+							if(debug) {
+								System.out.println("[INFO] comentarios size: " + comentarios.size());
+								System.out.println("[INFO] comments size: " + comments.size());
+							}
+							
+						}else {
+							firstTime = false;
 						}
 
 					}
@@ -844,6 +885,9 @@ public class FacebookScrap extends Scrap {
 					this.saveScreenShot("NOHAYMASMENSAJESCARGA");
 				}
 			}
+			
+			return comments;
+			/*
 			a1 = System.currentTimeMillis() - a1;
 			System.out.println("a1: " + a1);
 			long a2 = System.currentTimeMillis();
@@ -870,10 +914,12 @@ public class FacebookScrap extends Scrap {
 			a2 = System.currentTimeMillis() - a2;
 			System.out.println("a2: " + a2);
 			return comments;
+			*/
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("obtainAllPublicationComments tardo: " + tardo);
 		}
+		
 	}
 
 	public void clickOnReplyLinks() {
