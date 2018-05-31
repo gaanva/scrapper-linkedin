@@ -837,7 +837,7 @@ public class FacebookScrap extends Scrap {
 								if(sizeComments>0) {
 									String aux = "";
 									aux = comments.get(sizeComments-1).getUTime();
-									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>=" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
 								}else {
 									//la primera vez, si no tengo filtro, levanto todos los comentarios.
 									comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
