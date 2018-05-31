@@ -828,8 +828,8 @@ public class FacebookScrap extends Scrap {
 								}else {
 									aux = String.valueOf(COMMENTS_uTIME_INI);
 								}
-								
-								comentarios = container.findElements(By.xpath(".//abbr[@data-utime>=" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+								//supongo que no van a haber 2 o más comentarios con el mismo utime...
+								comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
 								
 								
 							} else {
@@ -839,6 +839,7 @@ public class FacebookScrap extends Scrap {
 									aux = comments.get(sizeComments-1).getUTime();
 									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>=" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
 								}else {
+									//la primera vez, si no tengo filtro, levanto todos los comentarios.
 									comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 								}
 								
@@ -853,6 +854,8 @@ public class FacebookScrap extends Scrap {
 								System.out.println("[INFO] comentarios size: " + comentarios.size());
 								System.out.println("[INFO] comments size: " + comments.size());
 							}
+							
+						
 							
 						}else {
 							firstTime = false;
