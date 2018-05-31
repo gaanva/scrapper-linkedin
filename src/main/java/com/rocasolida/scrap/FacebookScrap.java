@@ -981,7 +981,8 @@ public class FacebookScrap extends Scrap {
 				try {
 					this.moveTo(aux);
 					aux.click();
-					Thread.sleep(50);
+					this.waitForMoreTextInCommentMessageLink(this, comentario);
+					//Thread.sleep(50);
 
 				} catch (Exception e) {
 					if (debug)
@@ -1024,6 +1025,32 @@ public class FacebookScrap extends Scrap {
 		}
 		return auxComment;
 	}
+	
+	
+	
+	public boolean waitForMoreTextInCommentMessageLink(final FacebookScrap fs, final WebElement comentario) {
+		ExpectedCondition<Boolean> moreTextLink = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (fs.existElement(comentario, ".//a[@class='_5v47 fss']")) {
+					// System.out.println("[INFO] DocumentReady");
+
+					return true;
+				} else {
+					if (debug)
+						System.out.println("[INFO] no se muestra el link de mostrar más texto del comentario");
+					return false;
+				}
+
+				// return (Boolean)((JavascriptExecutor)driver).executeScript("return
+				// jQuery.active == 0");
+			}
+		};
+
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(50)).ignoring(NoSuchElementException.class);
+
+		return wait.until(moreTextLink);
+	}
+	
 
 	public boolean waitForJStoLoad() {
 		ExpectedCondition<Boolean> jsLoad = new ExpectedCondition<Boolean>() {
