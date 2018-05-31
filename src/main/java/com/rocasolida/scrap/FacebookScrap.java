@@ -981,7 +981,15 @@ public class FacebookScrap extends Scrap {
 				try {
 					this.moveTo(aux);
 					aux.click();
-					this.waitForMoreTextInCommentMessageLink(this, comentario);
+					try{
+						this.waitForMoreTextInCommentMessageLink(this, comentario);
+					}catch(Exception e) {	
+						if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) { //Si la publicación no tiene ningun tipo de actividad...
+							
+						} else {
+							throw e;
+						}
+					}
 					//Thread.sleep(50);
 
 				} catch (Exception e) {
@@ -1036,8 +1044,8 @@ public class FacebookScrap extends Scrap {
 
 					return true;
 				} else {
-					if (debug)
-						System.out.println("[INFO] no se muestra el link de mostrar más texto del comentario");
+					//if (debug)
+						//System.out.println("[INFO] no se muestra el link de mostrar más texto del comentario");
 					return false;
 				}
 
@@ -1046,7 +1054,7 @@ public class FacebookScrap extends Scrap {
 			}
 		};
 
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(50)).ignoring(NoSuchElementException.class);
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(1)).pollingEvery(Duration.ofMillis(50)).ignoring(NoSuchElementException.class);
 
 		return wait.until(moreTextLink);
 	}
