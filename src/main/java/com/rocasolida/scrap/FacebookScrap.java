@@ -175,7 +175,8 @@ public class FacebookScrap extends Scrap {
 							if (debug)
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
-							if(!this.TipoCargaComentarios(pubsNew.get(0), 3)) {
+							//if(!this.TipoCargaComentarios(pubsNew.get(0), 3)) {
+							if(!this.TipoCargaComentarios(pubsNew.get(0), 2)) {
 								publicationsImpl.get(i).setComments(null);
 								page.setPublications(publicationsImpl);
 								continue;
@@ -196,7 +197,8 @@ public class FacebookScrap extends Scrap {
 										if (debug)
 											System.out.println("[INFO] SPINNER ACTIVE?...");
 										this.waitUntilNotSpinnerLoading();
-										this.TipoCargaComentarios(pubsNew.get(0), 3);
+										//this.TipoCargaComentarios(pubsNew.get(0), 3);
+										this.TipoCargaComentarios(pubsNew.get(0), 2);
 										j = 3;
 									} catch (Exception e1) {
 										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -824,20 +826,25 @@ public class FacebookScrap extends Scrap {
 							if (COMMENTS_uTIME_FIN != null) {
 								String aux = "";
 								if(sizeComments>0) {
-									aux = comments.get(sizeComments-1).getUTime();
+									//aux = comments.get(sizeComments-1).getUTime();
+									aux = String.valueOf(COMMENTS_uTIME_INI);
 								}else {
 									aux = String.valueOf(COMMENTS_uTIME_INI);
 								}
 								//supongo que no van a haber 2 o más comentarios con el mismo utime...
-								comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
-								
-								
+								comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]"));
+								//and (not(contains(@style,"hidden")))
+								if (debug)
+									System.out.println("QUERY: " + ".//abbr[@data-utime>" + aux + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]");
 							} else {
 								
 								if(sizeComments>0) {
 									String aux = "";
-									aux = comments.get(sizeComments-1).getUTime();
-									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]"));
+									//aux = comments.get(sizeComments-1).getUTime();
+									aux = String.valueOf(COMMENTS_uTIME_INI);
+									comentarios = container.findElements(By.xpath(".//abbr[@data-utime>" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]"));
+									if (debug)
+										System.out.println("QUERY: " + ".//abbr[@data-utime>" + aux + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]");
 								}else {
 									//la primera vez, si no tengo filtro, levanto todos los comentarios.
 									comentarios = container.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
@@ -855,7 +862,12 @@ public class FacebookScrap extends Scrap {
 								System.out.println("[INFO] comments size: " + comments.size());
 							}
 							
-						
+							
+							//Luego de que ya los procesé Busco TODOS los visibles y los pongo hidden.
+							for(int i=0; i<comentarios.size();i++) {
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", comentarios.get(i));
+								//Condicion: //div[(contains(@style,"hidden"))]
+							}
 							
 						}else {
 							firstTime = false;

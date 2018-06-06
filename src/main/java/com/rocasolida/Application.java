@@ -34,7 +34,7 @@ public class Application {
 			access = new Credential(user, password, 0L, "");
 		}
 
-		Long uTIME_INI = 1527122578L; // 04/19/2018 @ 03:00:00
+		Long uTIME_INI = 1527811200L; // 06/01/2018 @ 00:00:00
 		Long uTIME_FIN = System.currentTimeMillis() / 1000; // 04/22/2018 @ 07:14:08
 		// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
@@ -57,7 +57,8 @@ public class Application {
 				System.out.println("[APP]Por hacer login");
 				if (fs.login(access)) {
 					try {
-						page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						//page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 						// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
@@ -77,7 +78,8 @@ public class Application {
 				}
 			} else {
 				try {
-					page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					//page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
