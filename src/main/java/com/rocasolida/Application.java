@@ -18,8 +18,8 @@ public class Application {
 	public static void main(String[] args) throws MalformedURLException {
 		Long aux = System.currentTimeMillis();
 		Boolean debug = true;
-//		Credential access = null;
-		 Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		Credential access = null;
+//		 Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
@@ -57,7 +57,7 @@ public class Application {
 				System.out.println("[APP]Por hacer login");
 				if (fs.login(access)) {
 					try {
-						page = fs.obtainPageInformation("CartersResistencia", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 						// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
@@ -77,7 +77,7 @@ public class Application {
 				}
 			} else {
 				try {
-					page = fs.obtainPageInformation("CartersResistencia", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+					page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
