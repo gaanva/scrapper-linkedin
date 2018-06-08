@@ -805,6 +805,7 @@ public class FacebookScrap extends Scrap {
 				
 				try {
 					boolean firstTime = true;
+					int vecesSinComentarios = 0;
 					while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 						showMoreLink = container.findElement(By.xpath(xPathExpression));
 						try {
@@ -832,19 +833,29 @@ public class FacebookScrap extends Scrap {
 						
 						if(!firstTime) {
 							comentarios = container.findElements(By.xpath(commentsFilter));
-							
-							for (int j = 0; j < comentarios.size(); j++) {
-								comments.add(this.extractCommentData(comentarios.get(j)));
-								if (debug)
-									System.out.print(j + "|");
+							if(comentarios.size()>0) {
+									for (int j = 0; j < comentarios.size(); j++) {
+									comments.add(this.extractCommentData(comentarios.get(j)));
+									if (debug)
+										System.out.print(j + "|");
+								}
+								
+								if(debug) {
+									System.out.println(" ");
+									System.out.println("[INFO] comentarios size: " + comentarios.size());
+									System.out.println("[INFO] comments size: " + comments.size());
+								}
+								
+								vecesSinComentarios=0;
+							}else {
+								//Si 2 veces consecutivas el proceso no encuentra comentarios, asumo que ya no hay más comentarios en esas fechas.
+								if(vecesSinComentarios>1) {
+									//corto el while
+									break;
+								}else {
+									vecesSinComentarios++;
+								}
 							}
-							
-							if(debug) {
-								System.out.println(" ");
-								System.out.println("[INFO] comentarios size: " + comentarios.size());
-								System.out.println("[INFO] comments size: " + comments.size());
-							}
-							
 							
 							//Luego de que ya los procesé Busco TODOS los visibles y los pongo hidden.
 							for(int i=0; i<comentarios.size();i++) {

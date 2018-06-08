@@ -34,13 +34,15 @@ public class Application {
 			access = new Credential(user, password, 0L, "");
 		}
 
-		Long uTIME_INI = 1527811200L; // 06/01/2018 @ 00:00:00
+		Long uTIME_INI = 1527811200L; // 01/06/2018 @ 00:00:00
 		Long uTIME_FIN = System.currentTimeMillis() / 1000; // 04/22/2018 @ 07:14:08
 		// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
 
-		Long COMMENTS_uTIME_INI = uTIME_INI;
-		Long COMMENTS_uTIME_FIN = uTIME_FIN;
+		Long COMMENTS_uTIME_INI = 1528329600L;//07/06/2018@ 00:00:00
+		Long COMMENTS_uTIME_FIN = 1528416000L; //07/06/2018@ 24:00:00
+		
+		
 		for (int i = 0; i < 1; i++) {
 			FacebookScrap fs = null;
 			if (seleniumHost != null && seleniumPort != null) {
