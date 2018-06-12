@@ -29,6 +29,58 @@ public class ApplicationTestSinLogin {
 		}
 	}
 
+	
+	
+	@Test
+	public void teamisurusSinLoginConFiltroComments() throws MalformedURLException {
+		//Test para 1 solo comentario el 06/06.
+		Long uTIME_INI = 1528243200L;// 06/06/2018 00:00:00hs;
+		Long uTIME_FIN = 1528329599L;// 06/06/2018 23:59:59hs;
+		
+		Long COMMENTS_uTIME_INI = 1528243200L;//06/06/2018  00:00:00hs
+		Long COMMENTS_uTIME_FIN = 1528761600L;//11/06/2018  24:00:00hs
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		Page page = null;
+		try {
+			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(2, page.getPublications().size());
+		
+		System.out.println("Comentarios Publicacion 1: "+ page.getPublications().get(0).getComments().size());
+		System.out.println("Comentarios Publicacion 2: "+ page.getPublications().get(1).getComments().size());
+		
+		//assertEquals(0, page.getPublications().get(0).getComments().size());
+	}
+	
+	/*
+	@Test
+	public void teamisurusSinLoginSinFiltroComments() throws MalformedURLException {
+		Long uTIME_INI = getFecha("15/3/2018 00:00");
+		Long uTIME_FIN = getFecha("16/3/2018 00:00");
+		Long COMMENTS_uTIME_INI = null;
+		Long COMMENTS_uTIME_FIN = null;
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		Page page = null;
+		try {
+			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		fs.quit();
+		assertNotNull(page.getPublications());
+		assertEquals(1, page.getPublications().size());
+		assertEquals(2, page.getPublications().get(0).getComments().size());
+	}
+
+	
 	@Test
 	public void herbalifeSinLoginConFiltroComments() throws MalformedURLException {
 		Long uTIME_INI = getFecha("15/3/2018 00:00");
@@ -74,49 +126,7 @@ public class ApplicationTestSinLogin {
 		assertEquals(10, page.getPublications().get(0).getComments().size());
 	}
 
-	@Test
-	public void teamisurusSinLoginConFiltroComments() throws MalformedURLException {
-		Long uTIME_INI = getFecha("15/3/2018 00:00");
-		Long uTIME_FIN = getFecha("16/3/2018 00:00");
-		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
-		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		Page page = null;
-		try {
-			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
-
-	}
-
-	@Test
-	public void teamisurusSinLoginSinFiltroComments() throws MalformedURLException {
-		Long uTIME_INI = getFecha("15/3/2018 00:00");
-		Long uTIME_FIN = getFecha("16/3/2018 00:00");
-		Long COMMENTS_uTIME_INI = null;
-		Long COMMENTS_uTIME_FIN = null;
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		Page page = null;
-		try {
-			page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		fs.quit();
-		assertNotNull(page.getPublications());
-		assertEquals(1, page.getPublications().size());
-		assertEquals(2, page.getPublications().get(0).getComments().size());
-	}
-
+	
 	@Test
 	public void mauriciomacriSinLoginConFiltroComments() throws MalformedURLException {
 		Long uTIME_INI = 1524106800L; // 04/19/2018 @ 03:00:00
@@ -149,5 +159,5 @@ public class ApplicationTestSinLogin {
 		}
 		return null;
 	}
-
+	*/
 }

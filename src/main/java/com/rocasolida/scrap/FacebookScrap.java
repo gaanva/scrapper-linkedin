@@ -813,9 +813,11 @@ public class FacebookScrap extends Scrap {
 				
 				WebElement showMoreLink;
 				//while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
+				//Obtengo los comentarios según el filtro de fechas...
+				comentarios = container.findElements(By.xpath(commentsFilter));
+				System.out.println("CANT COMENTARIOS");
 				do {
-					//Obtengo los comentarios según el filtro de fechas...
-					comentarios = container.findElements(By.xpath(commentsFilter));
+					
 					//Si existen comentarios, los proceso.-
 					if(comentarios.size()>0) {
 							for (int j = 0; j < comentarios.size(); j++) {
@@ -869,10 +871,17 @@ public class FacebookScrap extends Scrap {
 							throw e;
 						}
 					}
-				}while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression));
+					
+					//Obtengo los comentarios según el filtro de fechas...
+					comentarios = container.findElements(By.xpath(commentsFilter));
+					if (debug)
+						System.out.println("CANT COMENTARIOS: " + comentarios.size());
+					
+				}while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression) || comentarios.size()>0);
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					if (debug) {
+						e.printStackTrace();
 						this.saveScreenShot("tiemoutexception_SM");
 						System.out.println("[WARN] TIEMPO DE ESPERA SHOW MORE MESSAGES LINK EXCEDIDO.");
 					}
