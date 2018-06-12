@@ -268,29 +268,116 @@ public class FacebookScrap extends Scrap {
 
 	public void ctrlLoadPost() throws Exception {
 		try {
-			this.waitForPublicationsLoaded(this);
-			if (this.getAccess() == null) {
-				try {
-					if (this.waitUntilPopupLoginAppears(this)) {
-						this.checkAndClosePopupLogin();
-					}
-				} catch (Exception e) {
-					if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-						if (debug)
-							System.out.println("[WARN] TIEMPO ESPERA POPUPLOGIN AGOTADO");
-					} else {
-						throw e;
+			if(this.getAccess()==null) {
+				this.waitForPublicationsLoaded(this);
+				if (this.getAccess() == null) {
+					try {
+						if (this.waitUntilPopupLoginAppears(this)) {
+							this.checkAndClosePopupLogin();
+						}
+					} catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+							if (debug)
+								System.out.println("[WARN] TIEMPO ESPERA POPUPLOGIN AGOTADO");
+						} else {
+							throw e;
+						}
 					}
 				}
+	
+				if (debug)
+					this.saveScreenShot("PostLoaded");
+			}else {
+				if(this.getDriver().getCurrentUrl().contains("video")) {
+					try {
+						//if(this.waitForVideoLoaded()) { //Es por spinner loading
+						if(this.waitUntilNotSpinnerLoading()) {
+							this.getDriver().findElement(By.xpath("//button[@data-testid='play_pause_control']")).click();
+							this.getDriver().findElement(By.xpath("//a[@role='tab'][1]")).click();
+						}
+						
+					}catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+							if (debug)
+								System.out.println("[WARN] TIEMPO ESPERA POPUPLOGIN AGOTADO");
+						} else {
+							throw e;
+						}
+					}
+						
+				}else {
+					try {
+						this.waitForClosingPost();
+						this.getDriver().findElement(By.xpath("//i[@class='img sp_Gc-AtOOGa_D sx_c3f24f'][1]")).click();
+					}catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+							if (debug)
+								System.out.println("[WARN] TIEMPO ESPERA POPUPLOGIN AGOTADO");
+						} else {
+							throw e;
+						}
+					}
+				}
+				//Controlar que cargue la parte de comentarios si es video
+				//--- //video 
+				//--- //div[@class="_2e7p"] --- esta es la lista de videos a la derecha
+				//Pausar el video click: //button[@data-testid="play_pause_control"]
 			}
-
-			if (debug)
-				this.saveScreenShot("PostLoaded");
 		} catch (Exception e) {
 			System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 			throw e;
 		}
 	}
+	
+	
+	public boolean waitForClosingPost() {
+		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				//Si existe la lista de Videos y se muestra en pantalla...
+				if (driver.findElements(By.xpath("//i[@class='img sp_Gc-AtOOGa_D sx_c3f24f'][1]")).size()>0 && driver.findElement(By.xpath("//i[@class='img sp_Gc-AtOOGa_D sx_c3f24f'][1]")).isDisplayed()){
+					if (debug) {
+						System.out.println("Container publications TRUE");
+						//fs.saveScreenShot("container_pub_true");
+					}
+					return true;
+				} else {
+					if (debug)
+						System.out.println("Container publications FALSE");
+					//fs.scrollMainPublicationsPage();
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(StaleElementReferenceException.class).ignoring(NoSuchElementException.class);
+		return wait.until(pubsLoaded);
+	}
+	
+	
+	
+	public boolean waitForVideoLoaded() {
+		ExpectedCondition<Boolean> pubsLoaded = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				//Si existe la lista de Videos y se muestra en pantalla...
+				if (driver.findElements(By.xpath("//div[@class='_2e7p']")).size()>0 && driver.findElement(By.xpath("//div[@class='_2e7p']")).isDisplayed()){
+					if (debug) {
+						System.out.println("Container publications TRUE");
+						//fs.saveScreenShot("container_pub_true");
+					}
+					return true;
+				} else {
+					if (debug)
+						System.out.println("Container publications FALSE");
+					//fs.scrollMainPublicationsPage();
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(this.WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(StaleElementReferenceException.class).ignoring(NoSuchElementException.class);
+		return wait.until(pubsLoaded);
+	}
+	
+	
+	
 
 	public List<WebElement> publicationCommentSectionClick() throws Exception {
 		List<WebElement> pubsNew = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + "[1]"));

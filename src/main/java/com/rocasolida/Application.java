@@ -18,8 +18,8 @@ public class Application {
 	public static void main(String[] args) throws MalformedURLException {
 		Long aux = System.currentTimeMillis();
 		Boolean debug = true;
-		Credential access = null;
-//		 Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		//Credential access = null;
+		 Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		String os = System.getenv("OS");
 		String user = System.getenv("LOGIN_FACEBOOK");
 		String password = System.getenv("PASSWORD_FACEBOOK");
@@ -33,14 +33,17 @@ public class Application {
 		if (user != null && password != null) {
 			access = new Credential(user, password, 0L, "");
 		}
-
-		Long uTIME_INI = 1527811200L; // 01/06/2018 @ 00:00:00
-		Long uTIME_FIN = System.currentTimeMillis() / 1000; // 04/22/2018 @ 07:14:08
+		//POST: 1528747836 (Mauri - mama luchetti)
+		//VIDEO: 1528835710 (Mauri)
+		//Long uTIME_INI = 1528156800L; // 05/06/2018 @ 00:00:00
+		//Long uTIME_FIN = 1528243200L; // 05/06/2018 @ 24:00:00
+		Long uTIME_INI = 1528835709L; // 05/06/2018 @ 00:00:00
+		Long uTIME_FIN = 1528835711L; // 05/06/2018 @ 24:00:00
 		// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs del 15/03
 		// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las 0hs dle 16/03
 
-		Long COMMENTS_uTIME_INI = 1528329600L;//07/06/2018@ 00:00:00
-		Long COMMENTS_uTIME_FIN = 1528416000L; //07/06/2018@ 24:00:00
+		Long COMMENTS_uTIME_INI = 1528588800L; // 10/06/2018 @ 00:00:00
+		Long COMMENTS_uTIME_FIN = 1528761600L; //11/06/2018 24:00:00
 		
 		
 		for (int i = 0; i < 1; i++) {
@@ -61,8 +64,8 @@ public class Application {
 					try {
 						//page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-						// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
-						// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+						//page= fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+						//COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 						// COMMENTS_uTIME_INI,COMMENTS_uTIME_FIN);
 						// fs.obtainPageInformation("cocacola", uTIME_INI, uTIME_FIN,
@@ -82,7 +85,7 @@ public class Application {
 				try {
 					//page = fs.obtainPageInformation("CKED-Centro-kinésico-y-Entrenamiento-Deportivo-154152138076469", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-					// fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
+					//page = fs.obtainPageInformation("teamisurus", uTIME_INI, uTIME_FIN,
 					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 					// fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN,
 					// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
