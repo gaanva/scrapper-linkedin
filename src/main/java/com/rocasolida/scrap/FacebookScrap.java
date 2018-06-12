@@ -790,110 +790,113 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 
-			if (this.existElement(container, xPathExpression)) {
+			//if (this.existElement(container, xPathExpression)) {
+				
+				
+			//Obtengo filtro de comentarios
+			String commentsFilter = "";
+			String ctrlCommentsOutIniFilter = "";
+			if (COMMENTS_uTIME_FIN != null) {
+				commentsFilter=".//abbr[@data-utime>" + String.valueOf(COMMENTS_uTIME_INI) + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
+				//Comentarios anteriores a la fecha inicial del filtro
+				ctrlCommentsOutIniFilter = ".//abbr[@data-utime<" + String.valueOf(COMMENTS_uTIME_INI) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]"; 
+						
+			}else 
+				commentsFilter= ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
+			
+			if (debug)
+				System.out.println("FILTRO XPATH-COMMENTS APLICADO: " + commentsFilter);
+			
+			try {
+				//boolean firstTime = true;
+				//int vecesSinComentarios = 0;
+				
 				WebElement showMoreLink;
-				
-				//Obtengo filtro de comentarios
-				String commentsFilter = "";
-				if (COMMENTS_uTIME_FIN != null)
-					commentsFilter=".//abbr[@data-utime>" + String.valueOf(COMMENTS_uTIME_INI) + " and @data-utime<=" + String.valueOf(COMMENTS_uTIME_FIN) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
-				else 
-					commentsFilter= ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
-				
-				if (debug)
-					System.out.println("FILTRO XPATH-COMMENTS APLICADO: " + commentsFilter);
-				
-				try {
-					boolean firstTime = true;
-					int vecesSinComentarios = 0;
-					while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
-						showMoreLink = container.findElement(By.xpath(xPathExpression));
-						try {
-							// this.moveTo(showMoreLink);
-							showMoreLink.click();
-						} catch (Exception e) {
-							if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-								// this.saveScreenShot("SM_ElementClickIntercepted");
-								this.getActions().sendKeys(Keys.ESCAPE).perform();
-								this.overlayHandler();
-								this.checkAndClosePopupLogin();
-								if (debug)
-									System.out.println("[INFO] SPINNER ACTIVE?...");
-								this.waitUntilNotSpinnerLoading();
-								this.scrollDown();
-								this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
-								showMoreLink.click();
-							} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
-								if (debug)
-									System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
-							} else {
-								throw e;
-							}
+				//while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
+				do {
+					//Obtengo los comentarios según el filtro de fechas...
+					comentarios = container.findElements(By.xpath(commentsFilter));
+					//Si existen comentarios, los proceso.-
+					if(comentarios.size()>0) {
+							for (int j = 0; j < comentarios.size(); j++) {
+							comments.add(this.extractCommentData(comentarios.get(j)));
+							if (debug)
+								System.out.print(j + "|");
 						}
 						
-						if(!firstTime) {
-							comentarios = container.findElements(By.xpath(commentsFilter));
-							if(comentarios.size()>0) {
-									for (int j = 0; j < comentarios.size(); j++) {
-									comments.add(this.extractCommentData(comentarios.get(j)));
-									if (debug)
-										System.out.print(j + "|");
-								}
-								
-								if(debug) {
-									System.out.println(" ");
-									System.out.println("[INFO] comentarios size: " + comentarios.size());
-									System.out.println("[INFO] comments size: " + comments.size());
-								}
-								
-								vecesSinComentarios=0;
-							}else {
-								//Si 2 veces consecutivas el proceso no encuentra comentarios, asumo que ya no hay más comentarios en esas fechas.
-								if(vecesSinComentarios>1) {
-									//corto el while
-									break;
-								}else {
-									vecesSinComentarios++;
-								}
-							}
-							
-							//Luego de que ya los procesé Busco TODOS los visibles y los pongo hidden.
-							for(int i=0; i<comentarios.size();i++) {
-								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", comentarios.get(i));
-								//Condicion: //div[(contains(@style,"hidden"))]
-							}
-							
-						}else {
-							firstTime = false;
+						if(debug) {
+							System.out.println(" ");
+							System.out.println("[INFO] comentarios size: " + comentarios.size());
+							System.out.println("[INFO] comments size: " + comments.size());
 						}
-
-					}
-				} catch (Exception e) {
-					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-						if (debug) {
-							this.saveScreenShot("tiemoutexception_SM");
-							System.out.println("[WARN] TIEMPO DE ESPERA SHOW MORE MESSAGES LINK EXCEDIDO.");
+						//Luego de que ya los procesé Busco TODOS los visibles que machean con el filtro y los pongo hidden.
+						for(int i=0; i<comentarios.size();i++) {
+							((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", comentarios.get(i));
+							//Condicion: //div[(contains(@style,"hidden"))]
 						}
-					} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
-						if (debug)
-							System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
-					} else if (e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
-						if (debug)
-							System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
-					} else {
-						if (debug)
-							this.saveScreenShot("exception_SM_1");
-						throw e;
+						//vecesSinComentarios=0;
+					}else {
+						//swi no hubo comentarios, puede ser porque se generaron muchos comentarios el dia de hoy...
+						//lo que daría por fuera del rango filtro...
+						
+						if(ctrlCommentsOutIniFilter!="" && container.findElements(By.xpath(ctrlCommentsOutIniFilter)).size()>2) {
+							//Quiere decir que ya se cargaron más de 2 mensajes con fecha anterior al filtro
+							break;
+						}
+						
 					}
-
+					
+					showMoreLink = container.findElement(By.xpath(xPathExpression));
+					try {
+						// this.moveTo(showMoreLink);
+						showMoreLink.click();
+					} catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+							// this.saveScreenShot("SM_ElementClickIntercepted");
+							this.getActions().sendKeys(Keys.ESCAPE).perform();
+							this.overlayHandler();
+							this.checkAndClosePopupLogin();
+							if (debug)
+								System.out.println("[INFO] SPINNER ACTIVE?...");
+							this.waitUntilNotSpinnerLoading();
+							this.scrollDown();
+							this.waitUntilShowMoreCommAppears(this, container, xPathExpression);
+							showMoreLink.click();
+						} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+							if (debug)
+								System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
+						} else {
+							throw e;
+						}
+					}
+				}while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression));
+			} catch (Exception e) {
+				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					if (debug) {
+						this.saveScreenShot("tiemoutexception_SM");
+						System.out.println("[WARN] TIEMPO DE ESPERA SHOW MORE MESSAGES LINK EXCEDIDO.");
+					}
+				} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+					if (debug)
+						System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
+				} else if (e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
+					if (debug)
+						System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
+				} else {
+					if (debug)
+						this.saveScreenShot("exception_SM_1");
+					throw e;
 				}
 
-			} else {
+			}
+
+			/*} else {
+				//chequeo que
 				if (debug) {
 					System.out.println("NO HAY MÁS MENSAJES PARA CARGAR.");
 					this.saveScreenShot("NOHAYMASMENSAJESCARGA");
 				}
-			}
+			}*/
 			
 			return comments;
 			/*
@@ -1037,6 +1040,14 @@ public class FacebookScrap extends Scrap {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		
+		
+		
+		//Extraer likes.
+		if(this.getAccess()!=null) {
+			auxComment.setLikes(comentario.findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText());
+		}
+		
 		return auxComment;
 	}
 	
@@ -1183,13 +1194,14 @@ public class FacebookScrap extends Scrap {
 			/**
 			 * DATETIME
 			 */
-
+			/*
+			Usaremos siempre el UTC.
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
 				aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title"));
 			} else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
 				aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title"));
 			}
-
+			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
 			 */

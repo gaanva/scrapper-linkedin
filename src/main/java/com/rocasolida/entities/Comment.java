@@ -11,5 +11,6 @@ public class Comment {
 	private String userId;
 	private String mensaje;
 	private String uTime;
+	private String likes;
 	private List<Reply> replies;
 }
