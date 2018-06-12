@@ -815,7 +815,6 @@ public class FacebookScrap extends Scrap {
 				//while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression)) {
 				//Obtengo los comentarios según el filtro de fechas...
 				comentarios = container.findElements(By.xpath(commentsFilter));
-				System.out.println("CANT COMENTARIOS");
 				do {
 					
 					//Si existen comentarios, los proceso.-
@@ -872,12 +871,13 @@ public class FacebookScrap extends Scrap {
 						}
 					}
 					
+					//this.waitUntilNotSpinnerLoading();
 					//Obtengo los comentarios según el filtro de fechas...
 					comentarios = container.findElements(By.xpath(commentsFilter));
 					if (debug)
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
 					
-				}while (this.waitUntilShowMoreCommAppears(this, container, xPathExpression) || comentarios.size()>0);
+				}while (comentarios.size()>0 || this.waitUntilShowMoreCommAppears(this, container, xPathExpression));
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					if (debug) {
@@ -1163,11 +1163,12 @@ public class FacebookScrap extends Scrap {
 			/**
 			 * Extraigo LINK del post, que es su ID.
 			 */
-			if (this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href")) == "") {
+			String postID = this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+			if (postID == "") {
 				if (debug)
 					System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
 			} else {
-				aux.setId(this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href")));
+				aux.setId(postID);
 			}
 			/**
 			 * TIMESTAMP El timestamp viene en GMT.
@@ -1656,25 +1657,31 @@ public class FacebookScrap extends Scrap {
 		// www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
 		// www.facebook.com/teamisurus/posts/2143052825719776
 		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826
+		//https://www.facebook.com/154152138076469/videos/972094692948872/
+		String lastMatched = "";
 		if (link.contains("permalink")) {
 			String[] a = link.split("\\?")[1].split("&");
 			for (String b : a) {
 				if (b.contains("story_fbid=")) {
 					return b.replace("story_fbid=", "");
+					
 				}
 			}
 		} else {
+			
 			String[] stringArray = link.split("/");
-			Pattern pat = Pattern.compile("[0-9]{16,18}");
+			Pattern pat = Pattern.compile("[0-9]{15,18}");
 			for (int i = 0; i < stringArray.length; i++) {
 				Matcher mat = pat.matcher(stringArray[i]);
 				if (mat.matches()) {
 					// System.out.println("[INFO] Post ID: " + stringArray[i]);
-					return stringArray[i];
+					//return stringArray[i];
+					System.out.println("Valor macheado: " + stringArray[i]);
+					lastMatched = stringArray[i];
 				}
 			}
 		}
-		return "";
+		return lastMatched;
 	}
 
 	public static void main(String args[]) {
