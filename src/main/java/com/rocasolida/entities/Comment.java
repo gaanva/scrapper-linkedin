@@ -9,8 +9,9 @@ public class Comment {
 
 	private String id;
 	private String userId;
+	private String userName;
 	private String mensaje;
-	private String uTime;
-	private String likes;
+	private Long uTime;
+	private Integer cantLikes;
 	private List<Reply> replies;
 }

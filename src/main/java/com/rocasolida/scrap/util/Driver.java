@@ -24,8 +24,7 @@ public class Driver {
 		return new Driver(type, os);
 	}
 
-	public static Driver from(final DriverType type, final String os, final String seleniumHost,
-			final String seleniumPort) {
+	public static Driver from(final DriverType type, final String os, final String seleniumHost, final String seleniumPort) {
 		return new Driver(type, os, seleniumHost, seleniumPort);
 	}
 }

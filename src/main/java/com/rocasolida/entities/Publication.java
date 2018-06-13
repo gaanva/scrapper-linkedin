@@ -9,8 +9,7 @@ public class Publication {
 
 	private String id;
 	private String owner;
-	private Long timeStamp;
-	private String dateTime;
+	private Long uTime;
 	private String titulo;
 	private Integer cantShare;
 	private Integer cantReproducciones;

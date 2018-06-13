@@ -16,6 +16,7 @@ import com.rocasolida.entities.Page;
 import com.rocasolida.scrap.FacebookScrap;
 import com.rocasolida.scrap.util.Driver;
 import com.rocasolida.scrap.util.DriverType;
+import com.rocasolida.scrap.util.ScrapUtils;
 
 public class ApplicationTestConLogin {
 
@@ -24,10 +25,7 @@ public class ApplicationTestConLogin {
 
 	@BeforeClass
 	public static void loadOs() {
-		OS = System.getenv("OS");
-		if (OS == null || OS.equalsIgnoreCase("Windows_NT")) {
-			OS = "Windows";
-		}
+		OS = ScrapUtils.getOSName();
 	}
 
 	@Test

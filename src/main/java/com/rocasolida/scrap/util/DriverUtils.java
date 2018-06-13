@@ -10,8 +10,6 @@ import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxBinary;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
@@ -20,7 +18,6 @@ import org.openqa.selenium.firefox.FirefoxProfile;
 public class DriverUtils {
 
 	private static Path tempPath;
-
 	private static WebDriver driver;
 
 	static {
@@ -63,7 +60,7 @@ public class DriverUtils {
 		return driver;
 	}
 
-//	public static WebDri FI
+	// public static WebDri FI
 
 	public static Path getTempPath() {
 		return tempPath;
