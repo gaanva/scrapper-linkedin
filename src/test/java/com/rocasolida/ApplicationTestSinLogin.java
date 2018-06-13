@@ -124,7 +124,7 @@ public class ApplicationTestSinLogin {
 		Long COMMENTS_uTIME_INI = 1528588800L; // 10/06/2018 @ 00:00:00
 		Long COMMENTS_uTIME_FIN = 1528761600L; //11/06/2018 24:00:00
 		
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), true);
 		Page page = null;
 		try {
 			page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
@@ -137,6 +137,7 @@ public class ApplicationTestSinLogin {
 		assertNotNull(page.getPublications());
 		assertEquals(1, page.getPublications().size());
 		
+		System.out.println("Cantidad mensajes: " + page.getPublications().get(0).getComments().size());
 		assertEquals(28, page.getPublications().get(0).getComments().size());
 		
 	}

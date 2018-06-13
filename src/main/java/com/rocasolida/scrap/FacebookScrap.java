@@ -903,7 +903,6 @@ public class FacebookScrap extends Scrap {
 				//Obtengo los comentarios según el filtro de fechas...
 				comentarios = container.findElements(By.xpath(commentsFilter));
 				do {
-					
 					//Si existen comentarios, los proceso.-
 					if(comentarios.size()>0) {
 							for (int j = 0; j < comentarios.size(); j++) {
@@ -927,8 +926,10 @@ public class FacebookScrap extends Scrap {
 						//swi no hubo comentarios, puede ser porque se generaron muchos comentarios el dia de hoy...
 						//lo que daría por fuera del rango filtro...
 						
-						if(ctrlCommentsOutIniFilter!="" && container.findElements(By.xpath(ctrlCommentsOutIniFilter)).size()>2) {
+						if(ctrlCommentsOutIniFilter!="" && container.findElements(By.xpath(ctrlCommentsOutIniFilter)).size()>50) {
 							//Quiere decir que ya se cargaron más de 2 mensajes con fecha anterior al filtro
+							if (debug) 
+								this.saveScreenShot("SALIDA_PRECOZ");
 							break;
 						}
 						
@@ -953,7 +954,10 @@ public class FacebookScrap extends Scrap {
 						} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
 							if (debug)
 								System.out.println("[WARN] La referencia al botón ShowMore Comments desapareció.");
-						} else {
+						} else if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+							
+						}else {
+							e.printStackTrace();
 							throw e;
 						}
 					}
@@ -963,7 +967,7 @@ public class FacebookScrap extends Scrap {
 					comentarios = container.findElements(By.xpath(commentsFilter));
 					if (debug)
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
-					
+					this.waitUntilNotSpinnerLoading();
 				}while (comentarios.size()>0 || this.waitUntilShowMoreCommAppears(this, container, xPathExpression));
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -979,6 +983,7 @@ public class FacebookScrap extends Scrap {
 					if (debug)
 						System.out.println("[WARN] Desapareció el botón de ShowMore Comments. [no such element exception]");
 				} else {
+					e.printStackTrace();
 					if (debug)
 						this.saveScreenShot("exception_SM_1");
 					throw e;
@@ -1597,6 +1602,8 @@ public class FacebookScrap extends Scrap {
 					if (debug)
 						this.saveScreenShot("Antes_Sel_TipoCargAComentarios");
 					Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+					if (debug)
+						this.saveScreenShot("Despues_Sel_TipoCargAComentarios");
 				} catch (Exception e) {
 					if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException") || e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
 						this.overlayHandler();
@@ -1617,13 +1624,15 @@ public class FacebookScrap extends Scrap {
 							}
 						}
 						Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
+						if (debug)
+							this.saveScreenShot("Despues_Sel_TipoCargAComentarios");
 					} else {
 						if (debug)
 							this.saveScreenShot("ERR_Sel_OptionPpal");
 						throw e;
 					}
 				}
-
+				
 				/*
 				 * if(this.getAccess()==null) { this.scrollDown(); }
 				 */
