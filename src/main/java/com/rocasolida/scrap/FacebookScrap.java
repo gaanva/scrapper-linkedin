@@ -44,6 +44,7 @@ public class FacebookScrap extends Scrap {
 	final Pattern pattern = Pattern.compile(countRegex);
 	private static Integer WAIT_UNTIL_SECONDS = 10;
 	private static Integer WAIT_UNTIL_SPINNER = 10;
+	private static Integer MAX_COMMENTS_PER_POST = 100;
 
 	public FacebookScrap(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -954,8 +955,8 @@ public class FacebookScrap extends Scrap {
 					if (debug)
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
 					a2 = System.currentTimeMillis() - a2;
-					System.out.println("a2: " + a2);
-				} while (comentarios.size() > 0 || this.waitUntilNotSpinnerLoading());
+					System.out.println("a2: " + a2 + ". comentarios.size(): " + comentarios.size() + ". comments.size(): " + comments.size() + ".");
+				} while (comments.size() < MAX_COMMENTS_PER_POST && (comentarios.size() > 0 || this.waitUntilNotSpinnerLoading()));
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					if (debug) {
@@ -1094,23 +1095,13 @@ public class FacebookScrap extends Scrap {
 		ExpectedCondition<Boolean> moreTextLink = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (fs.existElement(comentario, ".//a[@class='_5v47 fss']")) {
-					// System.out.println("[INFO] DocumentReady");
-
 					return true;
 				} else {
-					// if (debug)
-					// System.out.println("[INFO] no se muestra el link de mostrar más texto del
-					// comentario");
 					return false;
 				}
-
-				// return (Boolean)((JavascriptExecutor)driver).executeScript("return
-				// jQuery.active == 0");
 			}
 		};
-
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(1)).pollingEvery(Duration.ofMillis(50)).ignoring(NoSuchElementException.class);
-
 		return wait.until(moreTextLink);
 	}
 
@@ -1118,22 +1109,15 @@ public class FacebookScrap extends Scrap {
 		ExpectedCondition<Boolean> jsLoad = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (((JavascriptExecutor) driver).executeScript("return document.readyState").toString().equals("complete")) {
-					// System.out.println("[INFO] DocumentReady");
-
 					return true;
 				} else {
 					if (debug)
 						System.out.println("[INFO] DocumentReadyState UNCOMPLETE");
 					return false;
 				}
-
-				// return (Boolean)((JavascriptExecutor)driver).executeScript("return
-				// jQuery.active == 0");
 			}
 		};
-
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(NoSuchElementException.class);
-
 		return wait.until(jsLoad);
 	}
 
