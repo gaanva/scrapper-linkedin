@@ -8,6 +8,7 @@ import lombok.Data;
 public class Publication {
 
 	private String id;
+	private String url;
 	private String owner;
 	private Long uTime;
 	private String titulo;
