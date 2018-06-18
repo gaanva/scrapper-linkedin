@@ -241,6 +241,7 @@ public class FacebookScrap extends Scrap {
 		try {
 			// Cargo los likes del post
 			List<WebElement> wes = pubsNew.findElements(By.xpath("//*[contains(@class,'commentable_item')]//div[contains(@class,'_sa_')]//span"));
+			//*[@id="u_0_o"]/div[1]/div/div/div/div/div/a/span[1]
 			if (wes != null) {
 				for (WebElement we : wes) {
 					String aux = we.getText().toLowerCase();
@@ -603,7 +604,6 @@ public class FacebookScrap extends Scrap {
 				} else {
 					throw e;
 				}
-
 			}
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("otra parte: " + aux);

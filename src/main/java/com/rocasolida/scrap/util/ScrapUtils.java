@@ -19,7 +19,7 @@ public class ScrapUtils {
 	}
 
 	public static Integer parseLikeCount(String aux) {
-		// 28 likes, 6.6K Likes
+		// 28 likes, 6.6K Likes, 59 Me gusta
 		try {
 			if (aux != null) {
 				aux = aux.toLowerCase();
@@ -45,5 +45,6 @@ public class ScrapUtils {
 	public static void main(String args[]) {
 		System.out.println(parseLikeCount("28 likes"));
 		System.out.println(parseLikeCount("6.6K Likes"));
+		System.out.println(parseLikeCount("59 Me gusta"));
 	}
 }
