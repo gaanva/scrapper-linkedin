@@ -88,13 +88,15 @@ public class Scrap {
 	}
 
 	public void initLocalDriver(Driver driver) {
-		if (driver != null && driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
+		if (driver != null && (driver.getType().equals(DriverType.FIREFOX_HEADLESS) || driver.getType().equals(DriverType.FIREFOX))) {
 			System.setProperty("webdriver.gecko.driver", DriverFinder.findFirefoxDriver(driver.getOs()));
 			System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
 			System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 
 			FirefoxBinary firefoxBinary = new FirefoxBinary();
-			firefoxBinary.addCommandLineOptions("--headless");
+			if (driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
+				firefoxBinary.addCommandLineOptions("--headless");
+			}
 			FirefoxOptions firefoxOptions = new FirefoxOptions();
 			firefoxOptions.setBinary(firefoxBinary);
 			FirefoxProfile firefoxProfile = new FirefoxProfile();

@@ -35,6 +35,7 @@ import com.rocasolida.entities.Comment;
 import com.rocasolida.entities.Credential;
 import com.rocasolida.entities.Page;
 import com.rocasolida.entities.Publication;
+import com.rocasolida.scrap.util.CommentsSort;
 import com.rocasolida.scrap.util.Driver;
 import com.rocasolida.scrap.util.ScrapUtils;
 
@@ -44,7 +45,7 @@ public class FacebookScrap extends Scrap {
 	final Pattern pattern = Pattern.compile(countRegex);
 	private static Integer WAIT_UNTIL_SECONDS = 10;
 	private static Integer WAIT_UNTIL_SPINNER = 10;
-	private static Integer MAX_COMMENTS_PER_POST = 100;
+	private static Integer MAX_COMMENTS_PER_POST = 200;
 
 	public FacebookScrap(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -167,7 +168,7 @@ public class FacebookScrap extends Scrap {
 							if (debug)
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
-							if (!this.TipoCargaComentarios(pubsNew, 2)) {
+							if (!this.tipoCargaComentarios(pubsNew, 2)) {
 								publicationsImpl.get(i).setComments(null);
 								page.setPublications(publicationsImpl);
 								continue;
@@ -188,7 +189,7 @@ public class FacebookScrap extends Scrap {
 										if (debug)
 											System.out.println("[INFO] SPINNER ACTIVE?...");
 										this.waitUntilNotSpinnerLoading();
-										this.TipoCargaComentarios(pubsNew, 2);
+										this.tipoCargaComentarios(pubsNew, 2);
 										j = 3;
 									} catch (Exception e1) {
 										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -211,7 +212,7 @@ public class FacebookScrap extends Scrap {
 						if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
 							if (debug)
 								System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": " + FacebookConfig.URL + publicationsImpl.get(i).getId());
-							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN));
+							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, MAX_COMMENTS_PER_POST));
 						} else {
 							if (debug)
 								System.out.println("[WARN] LA PUBLICACION NO TIENE COMENTARIOS");
@@ -237,17 +238,236 @@ public class FacebookScrap extends Scrap {
 		}
 	}
 
+	public Page obtainPageInformationWithoutComments(String facebookPage, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+		long tardo = System.currentTimeMillis();
+		try {
+			Page page = new Page();
+			page.setName(facebookPage);
+			List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN, page);
+			if (publicationsElements != null) {
+				List<Publication> publicationsImpl = new ArrayList<Publication>();
+				for (int i = 0; i < publicationsElements.size(); i++) {
+					if (this.waitForJStoLoad()) {
+						this.moveTo(publicationsElements.get(i));
+						publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
+					} else {
+						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
+						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
+					}
+
+				}
+				page.setPublications(publicationsImpl);
+				// Recorro publicaciones encontradas
+				for (int i = 0; i < publicationsImpl.size(); i++) {
+					// Voy a la pagina de la publicacion
+					try {
+						this.navigateTo(FacebookConfig.URL + publicationsImpl.get(i).getId());
+					} catch (Exception e) {
+						System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
+						this.saveScreenShot("ERR_ACCESO_POST");
+						throw e;
+					}
+					try {
+						this.ctrlLoadPost();
+						if (debug)
+							this.saveScreenShot("PostLoaded");
+					} catch (Exception e) {
+						System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
+						throw e;
+					}
+					WebElement pubsNew;
+					try {
+						pubsNew = this.publicationCommentSectionClick();
+						if (pubsNew == null) {
+							for (int h = 0; h < 3; h++) {
+								if (debug)
+									System.out.println("[INFO]recargando el post... no tiene más scroll.");
+								this.getDriver().navigate().refresh();
+								this.ctrlLoadPost();
+								pubsNew = this.publicationCommentSectionClick();
+								if (pubsNew != null) {
+									h = 3;
+								}
+							}
+						}
+						try {
+							if (debug)
+								System.out.println("[INFO] SPINNER ACTIVE?...");
+							this.waitUntilNotSpinnerLoading();
+							if (!this.tipoCargaComentarios(pubsNew, 2)) {
+								publicationsImpl.get(i).setComments(null);
+								continue;
+							}
+						} catch (Exception e) {
+							if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+								if (debug) {
+									System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
+									this.saveScreenShot("WARN_SPINNERLOAD");
+								}
+								for (int j = 0; j < 3; j++) {
+									if (debug)
+										System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
+									try {
+										this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
+										this.ctrlLoadPost();
+										pubsNew = this.publicationCommentSectionClick();
+										if (debug)
+											System.out.println("[INFO] SPINNER ACTIVE?...");
+										this.waitUntilNotSpinnerLoading();
+										this.tipoCargaComentarios(pubsNew, 2);
+										j = 3;
+									} catch (Exception e1) {
+										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+											if (debug) {
+												System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
+												this.saveScreenShot("WARN_SPINNERLOAD");
+											}
+										} else {
+											e1.printStackTrace();
+											throw e;
+										}
+									}
+
+								}
+							} else {
+								throw e;
+							}
+						}
+						extractPublicationDataFromDivOnPublicationPage(publicationsImpl.get(i), pubsNew);
+					} catch (Exception e) {
+						if (debug) {
+							System.out.println("[ERROR] AL ACCEDER AL POST.");
+							this.saveScreenShot("ERR_ACCESO_POST");
+						}
+						throw e;
+					}
+				}
+				return page;
+			} else {
+				if (debug)
+					System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
+				return null;
+			}
+		} finally {
+			tardo = System.currentTimeMillis() - tardo;
+			System.out.println("obtainPageInformation tardo: " + tardo);
+		}
+	}
+
+	public Publication obtainPostInformation(String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
+		// Voy a la pagina de la publicacion
+		try {
+			Publication pub = new Publication();
+			pub.setId(postId);
+			try {
+				this.navigateTo(FacebookConfig.URL + postId);
+			} catch (Exception e) {
+				System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
+				this.saveScreenShot("ERR_ACCESO_POST");
+				throw e;
+			}
+			try {
+				this.ctrlLoadPost();
+				if (debug)
+					this.saveScreenShot("PostLoaded");
+			} catch (Exception e) {
+				System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
+				throw e;
+			}
+			WebElement pubsNew;
+			pubsNew = this.publicationCommentSectionClick();
+			if (pubsNew == null) {
+				for (int h = 0; h < 3; h++) {
+					if (debug)
+						System.out.println("[INFO]recargando el post... no tiene más scroll.");
+					this.getDriver().navigate().refresh();
+					this.ctrlLoadPost();
+					pubsNew = this.publicationCommentSectionClick();
+					if (pubsNew != null) {
+						break;
+					}
+				}
+			}
+			if (cs == null || cs.equals(CommentsSort.NEW)) {
+				try {
+					if (debug)
+						System.out.println("[INFO] SPINNER ACTIVE?...");
+					this.waitUntilNotSpinnerLoading();
+					if (!this.tipoCargaComentarios(pubsNew, 2)) {
+						pub.setComments(null);
+						return pub;
+					}
+				} catch (Exception e) {
+					if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+						if (debug) {
+							System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
+							this.saveScreenShot("WARN_SPINNERLOAD");
+						}
+						for (int j = 0; j < 3; j++) {
+							if (debug)
+								System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
+							try {
+								this.navigateTo(FacebookConfig.URL + postId);
+								this.ctrlLoadPost();
+								pubsNew = this.publicationCommentSectionClick();
+								if (debug)
+									System.out.println("[INFO] SPINNER ACTIVE?...");
+								this.waitUntilNotSpinnerLoading();
+								this.tipoCargaComentarios(pubsNew, 2);
+								break;
+							} catch (Exception e1) {
+								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+									if (debug) {
+										System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
+										this.saveScreenShot("WARN_SPINNERLOAD");
+									}
+								} else {
+									e1.printStackTrace();
+									throw e;
+								}
+							}
+
+						}
+					} else {
+						throw e;
+					}
+				}
+			}
+			extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
+			if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
+				if (debug)
+					System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION " + ": " + FacebookConfig.URL + pub.getId());
+				pub.setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments));
+			} else {
+				if (debug)
+					System.out.println("[WARN] LA PUBLICACION NO TIENE COMENTARIOS");
+			}
+			return pub;
+		} catch (Exception e) {
+			if (debug) {
+				System.out.println("[ERROR] AL ACCEDER AL POST.");
+				this.saveScreenShot("ERR_ACCESO_POST");
+			}
+			throw e;
+		}
+	}
+
 	private void extractPublicationDataFromDivOnPublicationPage(Publication publication, WebElement pubsNew) {
 		try {
-			// Cargo los likes del post
+			// Cargo los likes del post y la cantidad de comments
 			List<WebElement> wes = pubsNew.findElements(By.xpath("//*[contains(@class,'commentable_item')]//div[contains(@class,'_sa_')]//span"));
-			//*[@id="u_0_o"]/div[1]/div/div/div/div/div/a/span[1]
+			// *[@id="u_0_o"]/div[1]/div/div/div/div/div/a/span[1]
 			if (wes != null) {
 				for (WebElement we : wes) {
 					String aux = we.getText().toLowerCase();
 					if (aux.contains("likes") || aux.contains("gusta")) {
-						publication.setCantLikes(ScrapUtils.parseLikeCount(aux));
-						break;
+						publication.setCantLikes(ScrapUtils.parseCount(aux));
+					} else if (aux.contains("comments")) {
+						publication.setCantComments(ScrapUtils.parseCount(aux));
+					} else if (aux.contains("shares")) {
+						publication.setCantShare(ScrapUtils.parseCount(aux));
+					} else if (aux.contains("views")) {
+						publication.setCantReproducciones(ScrapUtils.parseCount(aux));
 					}
 				}
 			}
@@ -469,14 +689,14 @@ public class FacebookScrap extends Scrap {
 		return wait.until(commentSection);
 	}
 
-	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception {
+	public List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments) throws Exception {
 		long tardo = System.currentTimeMillis();
 		try {
 			if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")) {
 				// this.TipoCargaComentarios(pub, 3);
 				if (debug)
 					System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
-				return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+				return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER + "//*")), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments);
 			} else {
 				if (debug) {
 					System.out.println("[INFO] LA PUBLICACION NO TIENE COMENTARIOS.");
@@ -831,11 +1051,17 @@ public class FacebookScrap extends Scrap {
 
 	/**
 	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los comentarios.
+	 * 
+	 * @param cantComments
+	 * @param cs
 	 */
-	public List<Comment> obtainAllPublicationComments(WebElement container, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception {
+	public List<Comment> obtainAllPublicationComments(WebElement container, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments) throws Exception {
 		long tardo = System.currentTimeMillis();
 		try {
 			long a1 = System.currentTimeMillis();
+			if (cantComments == null) {
+				cantComments = MAX_COMMENTS_PER_POST;
+			}
 			List<Comment> comments = new ArrayList<Comment>();
 			if (container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size() > 0) {
 				if (debug)
@@ -886,10 +1112,15 @@ public class FacebookScrap extends Scrap {
 				List<WebElement> comentarios = container.findElements(By.xpath(commentsFilter));
 				do {
 					long a2 = System.currentTimeMillis();
+					Comment comment = null;
 					// Si existen comentarios, los proceso.-
 					if (comentarios.size() > 0) {
 						for (int j = 0; j < comentarios.size(); j++) {
-							comments.add(this.extractCommentData(comentarios.get(j)));
+							long a = System.currentTimeMillis();
+							comment = this.extractCommentData(comentarios.get(j));
+							a = System.currentTimeMillis() - a;
+							System.out.println(comment + ". Tardo: " + a);
+							comments.add(comment);
 							if (debug)
 								System.out.print(j + "|");
 						}
@@ -950,7 +1181,7 @@ public class FacebookScrap extends Scrap {
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
 					a2 = System.currentTimeMillis() - a2;
 					System.out.println("a2: " + a2 + ". comentarios.size(): " + comentarios.size() + ". comments.size(): " + comments.size() + ".");
-				} while (comments.size() < MAX_COMMENTS_PER_POST && (comentarios.size() > 0 || this.waitUntilNotSpinnerLoading()));
+				} while (comments.size() < cantComments && (comentarios.size() > 0 || this.waitUntilNotSpinnerLoading()));
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					if (debug) {
@@ -1015,8 +1246,8 @@ public class FacebookScrap extends Scrap {
 	 */
 	public Comment extractCommentData(WebElement comentario) throws Exception {
 		Comment auxComment = new Comment();
-
 		// Mensaje
+		long a = System.currentTimeMillis();
 		if (this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
 			WebElement aux;
 			while (this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
@@ -1033,24 +1264,21 @@ public class FacebookScrap extends Scrap {
 							throw e;
 						}
 					}
-					// Thread.sleep(50);
-
 				} catch (Exception e) {
 					if (debug)
 						this.saveScreenShot("Error VerMasContenidoMensaje");
-					// e.printStackTrace();
 					throw e;
-					// break;
 				}
 			}
 		}
+		a = System.currentTimeMillis() - a;
+		System.out.println("ver mas texto del comentario tardo: " + a);
 		if (this.existElement(comentario, FacebookConfig.XPATH_USER_COMMENT)) {
 			String aux = "";
 			for (int i = 0; i < comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size(); i++) {
 				aux += comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).get(i).getText();
 			}
 			auxComment.setMensaje(aux);
-			// auxComment.setMensaje(comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
 		} else {
 			// Puede ser porque postea solo una imagen...
 			auxComment.setMensaje("");
@@ -1456,7 +1684,7 @@ public class FacebookScrap extends Scrap {
 	// los posts de Facebook.
 	// "opt=2: Más Recientes" --> Cuando se actualice un post
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
-	private boolean TipoCargaComentarios(WebElement Post, int option) throws Exception {
+	private boolean tipoCargaComentarios(WebElement Post, int option) throws Exception {
 		try {
 			/*
 			 * if(this.getAccess() == null) { this.scrollDown(); }
@@ -1680,4 +1908,5 @@ public class FacebookScrap extends Scrap {
 			}
 		}
 	}
+
 }

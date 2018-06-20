@@ -18,8 +18,8 @@ public class ScrapUtils {
 		return null;
 	}
 
-	public static Integer parseLikeCount(String aux) {
-		// 28 likes, 6.6K Likes, 59 Me gusta
+	public static Integer parseCount(String aux) {
+		// 28 likes, 6.6K Likes, 59 Me gusta, 12 mil Me gusta
 		try {
 			if (aux != null) {
 				aux = aux.toLowerCase();
@@ -43,8 +43,16 @@ public class ScrapUtils {
 	}
 
 	public static void main(String args[]) {
-		System.out.println(parseLikeCount("28 likes"));
-		System.out.println(parseLikeCount("6.6K Likes"));
-		System.out.println(parseLikeCount("59 Me gusta"));
+		// 503k views
+		// 12k likes
+		// 2.7k comments
+		// 4.3k shares
+		System.out.println(parseCount("28 likes"));
+		System.out.println(parseCount("6.6K Likes"));
+		System.out.println(parseCount("59 Me gusta"));
+		System.out.println(parseCount("2.7k comments"));
+		System.out.println(parseCount("503k views"));
+		System.out.println(parseCount("4.3k shares"));
 	}
+
 }

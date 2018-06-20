@@ -15,6 +15,7 @@ public class Publication {
 	private Integer cantShare;
 	private Integer cantReproducciones;
 	private Integer cantLikes;
+	private Integer cantComments;
 	private List<Comment> comments;
 
 }
