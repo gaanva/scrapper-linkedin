@@ -23,7 +23,8 @@ public class Application {
 			Long aux = System.currentTimeMillis();
 			Boolean debug = true;
 			Credential access = null;
-			// Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+			// Credential access = new Credential("estelaquilmes2018@gmail.com",
+			// "qsocialnow2018", 0L, "");
 			String os = ScrapUtils.getOSName();
 			String user = System.getenv("LOGIN_FACEBOOK");
 			String password = System.getenv("PASSWORD_FACEBOOK");
@@ -34,19 +35,19 @@ public class Application {
 				access = new Credential(user, password, 0L, "");
 			}
 			String pageName = "mauriciomacri";
-			String postId = "10156650983338478";
+			String postId = "10156628922723478";
 			// POST: 1528747836 (Mauri - mama luchetti)
 			// VIDEO: 1528835710 (Mauri)
 			// Long uTIME_INI = 1528156800L; // 05/06/2018 @ 00:00:00
 			// Long uTIME_FIN = 1528243200L; // 05/06/2018 @ 24:00:00
-			Long uTIME_INI = 1529428516L; // 05/06/2018 @ 00:00:00
-			Long uTIME_FIN = 1529428516L; // 05/06/2018 @ 24:00:00
+			Long uTIME_INI = 1528747836L; // 05/06/2018 @ 00:00:00
+			Long uTIME_FIN = 1528747836L; // 05/06/2018 @ 24:00:00
 			// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs
 			// del 15/03
 			// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las
 			// 0hs dle 16/03
 
-			// Long COMMENTS_uTIME_INI = 1528934400L; // 10/06/2018 @ 00:00:00
+			// Long COMMENTS_uTIME_INI = 1528747836L; // 10/06/2018 @ 00:00:00
 			// Long COMMENTS_uTIME_FIN = 1529069440L; // 11/06/2018 24:00:00
 			Long COMMENTS_uTIME_INI = null;
 			Long COMMENTS_uTIME_FIN = null;
@@ -68,11 +69,13 @@ public class Application {
 					System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 				}
 			}
-			// page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-			// page = fs.obtainPageInformationWithoutComments(pageName, uTIME_INI, uTIME_FIN);
+			// page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN,
+			// COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// page = fs.obtainPageInformationWithoutComments(pageName, uTIME_INI,
+			// uTIME_FIN);
 			publication = fs.obtainPostInformation(postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
-//			System.out.println(page);
-//			System.out.println(publication);
+			// System.out.println(page);
+			System.out.println(publication);
 			if (publication != null && publication.getComments() != null) {
 				System.out.println("cant comments extraidos: " + publication.getComments().size());
 			}

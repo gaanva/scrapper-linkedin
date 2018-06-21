@@ -25,6 +25,7 @@ public final class FacebookConfig {
 
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XPATH_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
+	public static String XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER = "//div[contains(@class,'uiScrollableAreaBody')]";
 
 	public static String XPATH_PUBLICATION_ID = ".//a[contains(@ajaxify,'ft_id')]";// getAttribute("ajaxify")
 	public static String XPATH_PUBLICATION_ID_1 = ".//span[contains(@class,'fsm fwn fcg')]//a";
