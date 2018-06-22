@@ -105,10 +105,12 @@ public class Scrap {
 			firefoxOptions.setCapability("permissions.default.image", 2);
 			this.driver = new FirefoxDriver(firefoxOptions);
 			this.configureDriver();
-		} else if (driver != null && driver.getType().equals(DriverType.CHROME_HEADLESS)) {
+		} else if (driver != null && (driver.getType().equals(DriverType.CHROME_HEADLESS) || driver.getType().equals(DriverType.CHROME))) {
 			ChromeOptions chromeOptions = new ChromeOptions();
 			System.setProperty("webdriver.chrome.driver", DriverFinder.findChromeDriver(driver.getOs()));
-			chromeOptions.addArguments("--headless");
+			if (driver.getType().equals(DriverType.CHROME_HEADLESS)) {
+				chromeOptions.addArguments("--headless");
+			}
 			// chromeOptions.addArguments("--disable-gpu");
 			this.driver = new ChromeDriver(chromeOptions);
 		}

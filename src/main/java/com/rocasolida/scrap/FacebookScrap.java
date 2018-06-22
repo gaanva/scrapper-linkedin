@@ -395,7 +395,9 @@ public class FacebookScrap extends Scrap {
 	}
 
 	private Publication obtainPostTypePhotoInformation(String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub) throws Exception {
-		WebElement pubsNew = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER + "[1]"));
+		this.getDriver().navigate().refresh();
+		waitUntilOverlayPhotoAppears();
+		WebElement pubsNew = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER));
 		if (cs == null || cs.equals(CommentsSort.NEW)) {
 			try {
 				if (debug)
@@ -417,7 +419,7 @@ public class FacebookScrap extends Scrap {
 						try {
 							this.navigateTo(FacebookConfig.URL + postId);
 							this.ctrlLoadPost();
-							pubsNew = this.publicationCommentSectionClick();
+							pubsNew = this.publicationPhotoCommentSectionClick();
 							if (debug)
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
@@ -564,16 +566,12 @@ public class FacebookScrap extends Scrap {
 
 	public void zoomOut() {
 		/*
-		 * WebElement html = this.getDriver().findElement(By.tagName("html"));
-		 * html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
-		 * html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
-		 * html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
-		 * html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		 * WebElement html = this.getDriver().findElement(By.tagName("html")); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL,
+		 * Keys.SUBTRACT));
 		 */
 
 		/*
-		 * JavascriptExecutor js = (JavascriptExecutor) this.getDriver();
-		 * js.executeScript("document.body.style.zoom='40%'");
+		 * JavascriptExecutor js = (JavascriptExecutor) this.getDriver(); js.executeScript("document.body.style.zoom='40%'");
 		 */
 
 		Robot robot;
@@ -741,6 +739,55 @@ public class FacebookScrap extends Scrap {
 		return pubsNew;
 	}
 
+	public WebElement publicationPhotoCommentSectionClick() throws Exception {
+		System.out.println(this.getDriver().getCurrentUrl());
+		WebElement pubsNew = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER + "[1]"));
+		if (this.getAccess() == null) {
+			if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)) {
+				try {
+					this.waitUntilCommentSectionVisible(pubsNew);
+					waitUntilPopupLoginAppears();
+					checkAndClosePopupLogin();
+					try {
+						if (debug)
+							this.saveScreenShot("antesClickCommentSection_NL_1");
+						pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+						return pubsNew;
+					} catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+							if (!(Boolean) ((JavascriptExecutor) this.getDriver()).executeScript("return window.innerHeight+window.scrollY>=document.body.offsetHeight;")) {
+								this.scrollDown();
+							} else {
+								if (debug)
+									System.out.println("[INFO] LA VENTANA NO TIENE MAS SCROLL!!!!!!!!!");
+								if (this.existElement(null, "//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']")) {
+									WebElement divButtom = this.getDriver().findElement(By.xpath("//a[@class='_42ft _4jy0 _3obb _4jy6 _4jy1 selected _51sy']//parent::div//parent::div//parent::div//parent::div//parent::div[1]"));
+									((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'height:0px')", divButtom);
+								}
+								if (debug)
+									this.saveScreenShot("SINMASSCROLL_ClickCommentSection_NL_2");
+								// return null;
+							}
+							this.checkAndClosePopupLogin();
+							if (debug)
+								this.saveScreenShot("antesClickCommentSection_NL_2");
+							pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							return pubsNew;
+						}
+					}
+
+				} catch (Exception e) {
+					if (debug) {
+						System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
+						this.saveScreenShot("ERR_ACCESO_COMM_PUB");
+					}
+					throw e;
+				}
+			}
+		}
+		return pubsNew;
+	}
+
 	public boolean waitUntilPopupLoginAppears() {
 		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -749,6 +796,20 @@ public class FacebookScrap extends Scrap {
 				} else {
 					JavascriptExecutor jsx = (JavascriptExecutor) driver;
 					jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(commentSection);
+	}
+
+	private boolean waitUntilOverlayPhotoAppears() {
+		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER)).size() > 0 && driver.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER)).isDisplayed()) {
+					return true;
+				} else {
 					return false;
 				}
 			}
@@ -1157,9 +1218,7 @@ public class FacebookScrap extends Scrap {
 	}
 
 	/**
-	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron
-	 * todos los mensajes para luego obtenerlos con un XPATH query y extraerle los
-	 * datos. Me servirá para las replies y para los comentarios.
+	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los comentarios.
 	 * 
 	 * @param cantComments
 	 * @param cs
@@ -1351,8 +1410,7 @@ public class FacebookScrap extends Scrap {
 	}
 
 	/**
-	 * Se cargan todas las publicaciones, haciendo scrolls, del timestamp definido
-	 * en las variables del CONFIG.
+	 * Se cargan todas las publicaciones, haciendo scrolls, del timestamp definido en las variables del CONFIG.
 	 */
 	public Comment extractCommentData(WebElement comentario) throws Exception {
 		Comment auxComment = new Comment();
@@ -1503,9 +1561,7 @@ public class FacebookScrap extends Scrap {
 			 */
 
 			/*
-			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se
-			 * confunde cuando comparten un post de otra cuenta de facebook): <abbr
-			 * data-utime='' class='timestamp'> <abbr data-utime=''><span class='timestamp'>
+			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr data-utime=''><span class='timestamp'>
 			 */
 
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
@@ -1515,8 +1571,7 @@ public class FacebookScrap extends Scrap {
 			}
 
 			/**
-			 * TITULO TODO HAY QUE VER QUE PASA CUANDO EL TEXTO DEL TITULO ES MUY LARGO...
-			 * SI RECARGA LA PAGINA O LA MANTIENE EN LA MISMA.
+			 * TITULO TODO HAY QUE VER QUE PASA CUANDO EL TEXTO DEL TITULO ES MUY LARGO... SI RECARGA LA PAGINA O LA MANTIENE EN LA MISMA.
 			 */
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TITLE)) {
 				// puede ser que una publicación no tenga título y puede ser que tenga un link
@@ -1536,14 +1591,8 @@ public class FacebookScrap extends Scrap {
 			 * DATETIME
 			 */
 			/*
-			 * Usaremos siempre el UTC. if (this.existElement(publication,
-			 * FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
-			 * aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.
-			 * XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if
-			 * (this.existElement(publication,
-			 * FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
-			 * aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.
-			 * XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
+			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication,
+			 * FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
 			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
@@ -1613,8 +1662,7 @@ public class FacebookScrap extends Scrap {
 					aux.setUTime(Long.parseLong(publicationsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
 
 					/**
-					 * TITULO TODO HAY QUE VER QUE PASA CUANDO EL TEXTO DEL TITULO ES MUY LARGO...
-					 * SI RECARGA LA PAGINA O LA MANTIENE EN LA MISMA.
+					 * TITULO TODO HAY QUE VER QUE PASA CUANDO EL TEXTO DEL TITULO ES MUY LARGO... SI RECARGA LA PAGINA O LA MANTIENE EN LA MISMA.
 					 */
 					if (this.existElement(publicationsElements.get(i), FacebookConfig.XPATH_PUBLICATION_TITLE)) {
 						// puede ser que una publicación no tenga título y puede ser que tenga un link
@@ -1687,8 +1735,7 @@ public class FacebookScrap extends Scrap {
 	}
 
 	/**
-	 * Es el 'more text' que puede aparecer en el titulo de una publicación cuando
-	 * es muy larga...
+	 * Es el 'more text' que puede aparecer en el titulo de una publicación cuando es muy larga...
 	 * 
 	 * @param element
 	 * @param xpathExpression
@@ -1722,11 +1769,7 @@ public class FacebookScrap extends Scrap {
 			if (page.getPublications() != null) {
 				System.out.println("SE ENCONTRARON UN TOTAL DE " + page.getPublications().size() + "PUBLICACIONES");
 				/*
-				 * for (int j = 0; j < page.getPublications().size(); j++) {
-				 * System.out.println("============== PUBLICATION " + (j + 1) +
-				 * " INICIO	===============");
-				 * System.out.println(page.getPublications().get(j).toString());
-				 * System.out.println("************** PUBLICATION " + (j + 1) +
+				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) +
 				 * " FIN	***************"); }
 				 */
 				for (int j = 0; j < page.getPublications().size(); j++) {
@@ -1768,10 +1811,7 @@ public class FacebookScrap extends Scrap {
 			}
 			if (this.existElement(null, "//div[contains(@id,'globalContainer')]//a[contains(@href,'ref=404')]")) {
 				/**
-				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente,
-				 * ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o
-				 * inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost
-				 * inexistente) - id post válido, pero URL inválida
+				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida
 				 * https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 				 */
 				if (debug) {
