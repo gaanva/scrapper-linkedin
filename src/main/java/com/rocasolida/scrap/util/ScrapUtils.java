@@ -32,7 +32,15 @@ public class ScrapUtils {
 					a = a.replaceAll("m", "");
 					Double d = Double.valueOf(a);
 					return (int) (d * 1000000);
-				} else {
+				} else if (aux.contains("mil ")){
+					a = a.replaceAll(",", ".");
+					Double d = Double.valueOf(a);
+					return (int) (d * 1000);
+				} else if (aux.contains("millones ")){
+					a = a.replaceAll(",", ".");
+					Double d = Double.valueOf(a);
+					return (int) (d * 1000000);
+				}else {
 					return Integer.valueOf(a);
 				}
 			}

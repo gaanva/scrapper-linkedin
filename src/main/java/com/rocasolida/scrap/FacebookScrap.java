@@ -546,7 +546,7 @@ public class FacebookScrap extends Scrap {
 			if (wes != null) {
 				for (WebElement we : wes) {
 					String aux = we.getText().toLowerCase();
-					if (aux.contains("likes") || aux.contains("gusta")) {
+					if (aux.contains("likes") || aux.contains(" me gusta")) {
 						publication.setCantLikes(ScrapUtils.parseCount(aux));
 					} else if (aux.contains("comments")) {
 						publication.setCantComments(ScrapUtils.parseCount(aux));
