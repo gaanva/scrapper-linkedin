@@ -135,11 +135,12 @@ public class FacebookScrap extends Scrap {
 
 				}
 				// Recorro publicaciones encontradas
-				List<Publication> result = new ArrayList<Publication>();
+				Publication result = null;
 				for (int i = 0; i < publicationsImpl.size(); i++) {
-					result.add(obtainPostInformation(publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null));
+					result = obtainPostInformation(publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null);
+					merge(publicationsImpl.get(i), result);
 				}
-				page.setPublications(result);
+				page.setPublications(publicationsImpl);
 				return page;
 			} else {
 				if (debug)
@@ -149,6 +150,41 @@ public class FacebookScrap extends Scrap {
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("obtainPageInformation tardo: " + tardo);
+		}
+	}
+
+	private void merge(Publication publication, Publication result) {
+		if (result != null) {
+			if (result.getId() != null) {
+				publication.setId(result.getId());
+			}
+			if (result.getCantComments() != null) {
+				publication.setCantComments(result.getCantComments());
+			}
+			if (result.getCantLikes() != null) {
+				publication.setCantLikes(result.getCantLikes());
+			}
+			if (result.getCantReproducciones() != null) {
+				publication.setCantReproducciones(result.getCantReproducciones());
+			}
+			if (result.getCantShare() != null) {
+				publication.setCantShare(result.getCantShare());
+			}
+			if (result.getComments() != null) {
+				publication.setComments(result.getComments());
+			}
+			if (result.getOwner() != null) {
+				publication.setOwner(result.getOwner());
+			}
+			if (result.getTitulo() != null) {
+				publication.setTitulo(result.getTitulo());
+			}
+			if (result.getUrl() != null) {
+				publication.setUrl(result.getUrl());
+			}
+			if (result.getUTime() != null) {
+				publication.setUTime(result.getUTime());
+			}
 		}
 	}
 
@@ -381,6 +417,7 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		}
+		extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
 		if (cs == null || cs.equals(CommentsSort.NEW)) {
 			try {
 				if (debug)
@@ -426,7 +463,6 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		}
-		extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
 		if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
 			if (debug)
 				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION " + ": " + FacebookConfig.URL + pub.getId());
@@ -633,7 +669,10 @@ public class FacebookScrap extends Scrap {
 							this.checkAndClosePopupLogin();
 							if (debug)
 								this.saveScreenShot("antesClickCommentSection_NL_2");
-							pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							try {
+								pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).click();
+							} catch (Exception ex) {
+							}
 							return pubsNew;
 						}
 					}
