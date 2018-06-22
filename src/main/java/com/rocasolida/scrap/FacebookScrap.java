@@ -135,100 +135,11 @@ public class FacebookScrap extends Scrap {
 
 				}
 				// Recorro publicaciones encontradas
+				List<Publication> result = new ArrayList<Publication>();
 				for (int i = 0; i < publicationsImpl.size(); i++) {
-					// Voy a la pagina de la publicacion
-					try {
-						this.navigateTo(FacebookConfig.URL + publicationsImpl.get(i).getId());
-					} catch (Exception e) {
-						System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
-						this.saveScreenShot("ERR_ACCESO_POST");
-						throw e;
-					}
-					try {
-						this.ctrlLoadPost();
-						if (debug)
-							this.saveScreenShot("PostLoaded");
-					} catch (Exception e) {
-						System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
-						throw e;
-					}
-					WebElement pubsNew;
-					try {
-						pubsNew = this.publicationCommentSectionClick();
-						if (pubsNew == null) {
-							for (int h = 0; h < 3; h++) {
-								if (debug)
-									System.out.println("[INFO]recargando el post... no tiene más scroll.");
-								this.getDriver().navigate().refresh();
-								this.ctrlLoadPost();
-								pubsNew = this.publicationCommentSectionClick();
-								if (pubsNew != null) {
-									h = 3;
-								}
-							}
-						}
-						try {
-							if (debug)
-								System.out.println("[INFO] SPINNER ACTIVE?...");
-							this.waitUntilNotSpinnerLoading();
-							if (!this.tipoCargaComentarios(pubsNew, 2)) {
-								publicationsImpl.get(i).setComments(null);
-								page.setPublications(publicationsImpl);
-								continue;
-							}
-						} catch (Exception e) {
-							if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-								if (debug) {
-									System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-									this.saveScreenShot("WARN_SPINNERLOAD");
-								}
-								for (int j = 0; j < 3; j++) {
-									if (debug)
-										System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
-									try {
-										this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-										this.ctrlLoadPost();
-										pubsNew = this.publicationCommentSectionClick();
-										if (debug)
-											System.out.println("[INFO] SPINNER ACTIVE?...");
-										this.waitUntilNotSpinnerLoading();
-										this.tipoCargaComentarios(pubsNew, 2);
-										j = 3;
-									} catch (Exception e1) {
-										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-											if (debug) {
-												System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-												this.saveScreenShot("WARN_SPINNERLOAD");
-											}
-										} else {
-											e1.printStackTrace();
-											throw e;
-										}
-									}
-
-								}
-							} else {
-								throw e;
-							}
-						}
-						extractPublicationDataFromDivOnPublicationPage(publicationsImpl.get(i), pubsNew);
-						if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
-							if (debug)
-								System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION NRO#" + (i + 1) + ": " + FacebookConfig.URL + publicationsImpl.get(i).getId());
-							publicationsImpl.get(i).setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, MAX_COMMENTS_PER_POST));
-						} else {
-							if (debug)
-								System.out.println("[WARN] LA PUBLICACION NO TIENE COMENTARIOS");
-						}
-						page.setPublications(publicationsImpl);
-					} catch (Exception e) {
-						if (debug) {
-							System.out.println("[ERROR] AL ACCEDER AL POST.");
-							this.saveScreenShot("ERR_ACCESO_POST");
-						}
-						throw e;
-					}
+					result.add(obtainPostInformation(publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null));
 				}
+				page.setPublications(result);
 				return page;
 			} else {
 				if (debug)
