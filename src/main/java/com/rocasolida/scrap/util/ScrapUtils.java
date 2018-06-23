@@ -19,7 +19,7 @@ public class ScrapUtils {
 	}
 
 	public static Integer parseCount(String aux) {
-		// 28 likes, 6.6K Likes, 59 Me gusta, 12 mil Me gusta
+		// 28 likes, 6.6K Likes, 59 Me gusta, 12 mil Me gusta, 1 vez compartido
 		try {
 			if (aux != null) {
 				aux = aux.toLowerCase();
@@ -32,15 +32,15 @@ public class ScrapUtils {
 					a = a.replaceAll("m", "");
 					Double d = Double.valueOf(a);
 					return (int) (d * 1000000);
-				} else if (aux.contains("mil ")){
+				} else if (aux.contains("mil ")) {
 					a = a.replaceAll(",", ".");
 					Double d = Double.valueOf(a);
 					return (int) (d * 1000);
-				} else if (aux.contains("millones ")){
+				} else if (aux.contains("millones ")) {
 					a = a.replaceAll(",", ".");
 					Double d = Double.valueOf(a);
 					return (int) (d * 1000000);
-				}else {
+				} else {
 					return Integer.valueOf(a);
 				}
 			}
@@ -61,6 +61,8 @@ public class ScrapUtils {
 		System.out.println(parseCount("2.7k comments"));
 		System.out.println(parseCount("503k views"));
 		System.out.println(parseCount("4.3k shares"));
+		System.out.println(parseCount("1 vez compartido"));
+
 	}
 
 }

@@ -127,7 +127,7 @@ public class FacebookScrap extends Scrap {
 				for (int i = 0; i < publicationsElements.size(); i++) {
 					if (this.waitForJStoLoad()) {
 						this.moveTo(publicationsElements.get(i));
-						publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
+						publicationsImpl.add(this.extractPublicationData(facebookPage, publicationsElements.get(i)));
 					} else {
 						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
 						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
@@ -137,7 +137,7 @@ public class FacebookScrap extends Scrap {
 				// Recorro publicaciones encontradas
 				Publication result = null;
 				for (int i = 0; i < publicationsImpl.size(); i++) {
-					result = obtainPostInformation(publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null);
+					result = obtainPostInformation(facebookPage, publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null);
 					merge(publicationsImpl.get(i), result);
 				}
 				page.setPublications(publicationsImpl);
@@ -199,7 +199,7 @@ public class FacebookScrap extends Scrap {
 				for (int i = 0; i < publicationsElements.size(); i++) {
 					if (this.waitForJStoLoad()) {
 						this.moveTo(publicationsElements.get(i));
-						publicationsImpl.add(this.extractPublicationData(publicationsElements.get(i)));
+						publicationsImpl.add(this.extractPublicationData(facebookPage, publicationsElements.get(i)));
 					} else {
 						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
 						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
@@ -304,7 +304,7 @@ public class FacebookScrap extends Scrap {
 		}
 	}
 
-	public Publication obtainPostInformation(String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
+	public Publication obtainPostInformation(String pageName, String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
 		// Voy a la pagina de la publicacion
 		try {
 			Publication pub = new Publication();
@@ -328,9 +328,9 @@ public class FacebookScrap extends Scrap {
 			FacebookPostType fpt = getPostType(currentURL);
 			System.out.println("currentURL: " + currentURL + ". fpt: " + fpt);
 			if (fpt != null && fpt.equals(FacebookPostType.PHOTO)) {
-				return obtainPostTypePhotoInformation(postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
+				return obtainPostTypePhotoInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
 			} else {
-				return obtainPostTypeOtherInformation(postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
+				return obtainPostTypeOtherInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
 			}
 		} catch (Exception e) {
 			if (debug) {
@@ -341,7 +341,7 @@ public class FacebookScrap extends Scrap {
 		}
 	}
 
-	private Publication obtainPostTypePhotoInformation(String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub) throws Exception {
+	private Publication obtainPostTypePhotoInformation(String pageName, String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub) throws Exception {
 		this.getDriver().navigate().refresh();
 		waitUntilOverlayPhotoAppears();
 		WebElement pubsNew = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER));
@@ -390,6 +390,8 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		}
+		Publication p = this.extractPublicationData(pageName, pubsNew);
+		merge(pub, p);
 		extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
 		if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
 			if (debug)
@@ -402,7 +404,7 @@ public class FacebookScrap extends Scrap {
 		return pub;
 	}
 
-	private Publication obtainPostTypeOtherInformation(String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub) throws Exception {
+	private Publication obtainPostTypeOtherInformation(String pageName, String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub) throws Exception {
 		WebElement pubsNew;
 		pubsNew = this.publicationCommentSectionClick();
 		if (pubsNew == null) {
@@ -417,6 +419,8 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		}
+		Publication p = this.extractPublicationData(pageName, pubsNew);
+		merge(pub, p);
 		extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
 		if (cs == null || cs.equals(CommentsSort.NEW)) {
 			try {
@@ -490,18 +494,19 @@ public class FacebookScrap extends Scrap {
 	private void extractPublicationDataFromDivOnPublicationPage(Publication publication, WebElement pubsNew) {
 		try {
 			// Cargo los likes del post y la cantidad de comments
-			List<WebElement> wes = pubsNew.findElements(By.xpath("//*[contains(@class,'commentable_item')]//div[contains(@class,'_sa_')]//span"));
-			// *[@id="u_0_o"]/div[1]/div/div/div/div/div/a/span[1]
+			List<WebElement> wes = pubsNew.findElements(By.xpath(".//*[contains(@class,'commentable_item')]//div[contains(@class,'_sa_')]//span"));
+			wes.addAll(pubsNew.findElements(By.xpath(".//div[contains(@class,'UFIShareRow')]//span")));
+			wes.addAll(pubsNew.findElements(By.xpath(".//a[contains(@class,'UFIShareLink')]")));
 			if (wes != null) {
 				for (WebElement we : wes) {
 					String aux = we.getText().toLowerCase();
-					if (aux.contains("likes") || aux.contains(" me gusta")) {
+					if (aux.contains(" likes") || aux.contains(" me gusta")) {
 						publication.setCantLikes(ScrapUtils.parseCount(aux));
-					} else if (aux.contains("comments")) {
+					} else if (aux.contains(" comments") || aux.contains(" comentarios")) {
 						publication.setCantComments(ScrapUtils.parseCount(aux));
-					} else if (aux.contains("shares")) {
+					} else if (aux.contains(" share") || aux.contains(" shares") || aux.contains(" compartido")) {
 						publication.setCantShare(ScrapUtils.parseCount(aux));
-					} else if (aux.contains("views")) {
+					} else if (aux.contains(" views")) {
 						publication.setCantReproducciones(ScrapUtils.parseCount(aux));
 					}
 				}
@@ -678,11 +683,13 @@ public class FacebookScrap extends Scrap {
 					}
 
 				} catch (Exception e) {
-					if (debug) {
-						System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
-						this.saveScreenShot("ERR_ACCESO_COMM_PUB");
+					if (!e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+						if (debug) {
+							System.err.println("[ERROR] ACCESO A SECCION COMENTARIOS DE LA PUBLICACIÓN");
+							this.saveScreenShot("ERR_ACCESO_COMM_PUB");
+						}
+						throw e;
 					}
-					throw e;
 				}
 			}
 		}
@@ -955,7 +962,6 @@ public class FacebookScrap extends Scrap {
 							}
 						}
 					} else {
-
 						if (debug) {
 							this.saveScreenShot("posts");
 							System.out.println("[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
@@ -1489,7 +1495,7 @@ public class FacebookScrap extends Scrap {
 		}
 	}
 
-	public Publication extractPublicationData(WebElement publication) {
+	public Publication extractPublicationData(String pageName, WebElement publication) {
 		long tardo = System.currentTimeMillis();
 		try {
 			Publication aux = new Publication();
@@ -1535,7 +1541,11 @@ public class FacebookScrap extends Scrap {
 			/**
 			 * OWNER La pubicación siempre tiene un OWNER.
 			 */
-			aux.setOwner(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_OWNER)).getText());// .getAttribute("aria-label"));
+			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_OWNER)) {
+				aux.setOwner(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_OWNER)).getText());
+			} else {
+				aux.setOwner(pageName);
+			}
 
 			/**
 			 * DATETIME

@@ -34,24 +34,24 @@ public class Application {
 			if (user != null && password != null) {
 				access = new Credential(user, password, 0L, "");
 			}
-			String pageName = "DiarioLaCapital";
-			String postId = "898351593681047";
+			String pageName = "airedesantafe";
+			String postId = "903841639788342";
 			// 10156628922723478 mauri no anda queda spinner girando 10156654894768478
 			// POST: 1528747836 (Mauri - mama luchetti) 10156656338013478
 			// VIDEO: 1528835710 (Mauri)
 			// Long uTIME_INI = 1528156800L; // 05/06/2018 @ 00:00:00
 			// Long uTIME_FIN = 1528243200L; // 05/06/2018 @ 24:00:00
-			Long uTIME_INI = 1529625600L; // 05/06/2018 @ 00:00:00
-			Long uTIME_FIN = 1529692231L; // 05/06/2018 @ 24:00:00
+			Long uTIME_INI = 1529096600L; // 05/06/2018 @ 00:00:00
+			Long uTIME_FIN = 1529701400L; // 05/06/2018 @ 24:00:00
 			// Long uTIME_INI = 1521072000L; // 03/15/2018 @ 12:00am (UTC) - Desde las 0hs
 			// del 15/03
 			// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las
 			// 0hs dle 16/03
 
-			Long COMMENTS_uTIME_INI = 1529687495L; // 10/06/2018 @ 00:00:00
-			Long COMMENTS_uTIME_FIN = 1529692231L; // 11/06/2018 24:00:00
-			// Long COMMENTS_uTIME_INI = null;
-			// Long COMMENTS_uTIME_FIN = null;
+			 Long COMMENTS_uTIME_INI = 1529688321L; // 10/06/2018 @ 00:00:00
+			 Long COMMENTS_uTIME_FIN = 1529701400L; // 11/06/2018 24:00:00
+//			Long COMMENTS_uTIME_INI = null;
+//			Long COMMENTS_uTIME_FIN = null;
 			Integer cantComments = 100;
 			CommentsSort cs = CommentsSort.NEW;
 			DriverType dt = DriverType.FIREFOX;
@@ -70,14 +70,14 @@ public class Application {
 					System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 				}
 			}
-			page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			 page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// page = fs.obtainPageInformationWithoutComments(pageName, uTIME_INI, uTIME_FIN);
-			// publication = fs.obtainPostInformation(postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
-			System.out.println(page);
-			// System.out.println(publication);
-			// if (publication != null && publication.getComments() != null) {
-			// System.out.println("cant comments extraidos: " + publication.getComments().size());
-			// }
+			publication = fs.obtainPostInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
+			 System.out.println(page);
+//			System.out.println(publication);
+//			if (publication != null && publication.getComments() != null) {
+//				System.out.println("cant comments extraidos: " + publication.getComments().size());
+//			}
 			fs.quit();
 			System.out.println("[APP] FIN");
 			aux = System.currentTimeMillis() - aux;
