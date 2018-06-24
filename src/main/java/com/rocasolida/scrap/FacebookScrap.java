@@ -204,94 +204,8 @@ public class FacebookScrap extends Scrap {
 						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
 						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
 					}
-
 				}
 				page.setPublications(publicationsImpl);
-				// Recorro publicaciones encontradas
-				for (int i = 0; i < publicationsImpl.size(); i++) {
-					// Voy a la pagina de la publicacion
-					try {
-						this.navigateTo(FacebookConfig.URL + publicationsImpl.get(i).getId());
-					} catch (Exception e) {
-						System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
-						this.saveScreenShot("ERR_ACCESO_POST");
-						throw e;
-					}
-					try {
-						this.ctrlLoadPost();
-						if (debug)
-							this.saveScreenShot("PostLoaded");
-					} catch (Exception e) {
-						System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
-						throw e;
-					}
-					WebElement pubsNew;
-					try {
-						pubsNew = this.publicationCommentSectionClick();
-						if (pubsNew == null) {
-							for (int h = 0; h < 3; h++) {
-								if (debug)
-									System.out.println("[INFO]recargando el post... no tiene más scroll.");
-								this.getDriver().navigate().refresh();
-								this.ctrlLoadPost();
-								pubsNew = this.publicationCommentSectionClick();
-								if (pubsNew != null) {
-									h = 3;
-								}
-							}
-						}
-						try {
-							if (debug)
-								System.out.println("[INFO] SPINNER ACTIVE?...");
-							this.waitUntilNotSpinnerLoading();
-							if (!this.tipoCargaComentarios(pubsNew, 2)) {
-								publicationsImpl.get(i).setComments(null);
-								continue;
-							}
-						} catch (Exception e) {
-							if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-								if (debug) {
-									System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-									this.saveScreenShot("WARN_SPINNERLOAD");
-								}
-								for (int j = 0; j < 3; j++) {
-									if (debug)
-										System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
-									try {
-										this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST + publicationsImpl.get(i).getId());
-										this.ctrlLoadPost();
-										pubsNew = this.publicationCommentSectionClick();
-										if (debug)
-											System.out.println("[INFO] SPINNER ACTIVE?...");
-										this.waitUntilNotSpinnerLoading();
-										this.tipoCargaComentarios(pubsNew, 2);
-										j = 3;
-									} catch (Exception e1) {
-										if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-											if (debug) {
-												System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-												this.saveScreenShot("WARN_SPINNERLOAD");
-											}
-										} else {
-											e1.printStackTrace();
-											throw e;
-										}
-									}
-
-								}
-							} else {
-								throw e;
-							}
-						}
-						extractPublicationDataFromDivOnPublicationPage(publicationsImpl.get(i), pubsNew);
-					} catch (Exception e) {
-						if (debug) {
-							System.out.println("[ERROR] AL ACCEDER AL POST.");
-							this.saveScreenShot("ERR_ACCESO_POST");
-						}
-						throw e;
-					}
-				}
 				return page;
 			} else {
 				if (debug)
@@ -518,8 +432,7 @@ public class FacebookScrap extends Scrap {
 
 	public void zoomOut() {
 		/*
-		 * WebElement html = this.getDriver().findElement(By.tagName("html")); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL,
-		 * Keys.SUBTRACT));
+		 * WebElement html = this.getDriver().findElement(By.tagName("html")); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
 		 */
 
 		/*
@@ -1551,8 +1464,7 @@ public class FacebookScrap extends Scrap {
 			 * DATETIME
 			 */
 			/*
-			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication,
-			 * FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
+			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
 			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
@@ -1729,8 +1641,7 @@ public class FacebookScrap extends Scrap {
 			if (page.getPublications() != null) {
 				System.out.println("SE ENCONTRARON UN TOTAL DE " + page.getPublications().size() + "PUBLICACIONES");
 				/*
-				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) +
-				 * " FIN	***************"); }
+				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************"); }
 				 */
 				for (int j = 0; j < page.getPublications().size(); j++) {
 					System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	===============");
@@ -1771,8 +1682,7 @@ public class FacebookScrap extends Scrap {
 			}
 			if (this.existElement(null, "//div[contains(@id,'globalContainer')]//a[contains(@href,'ref=404')]")) {
 				/**
-				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida
-				 * https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
+				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 				 */
 				if (debug) {
 					System.out.println("[ERROR] NO EXISTE LINK " + URL + ": " + this.getDriver().findElement(By.xpath("//div[contains(@id,'globalContainer')]//h2")).getText());
