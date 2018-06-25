@@ -210,7 +210,7 @@ public class FacebookScrap extends Scrap {
 			} else {
 				if (debug)
 					System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
-				return null;
+				return page;
 			}
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;

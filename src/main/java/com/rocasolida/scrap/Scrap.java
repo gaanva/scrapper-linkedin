@@ -117,7 +117,10 @@ public class Scrap {
 	}
 
 	public void quit() {
-		this.driver.quit();
+		try {
+			this.driver.quit();
+		} catch (Exception ex) {
+		}
 	}
 
 	private void configureDriver() {
