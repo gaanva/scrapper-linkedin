@@ -41,10 +41,12 @@ public class ScrapUtils {
 					Double d = Double.valueOf(a);
 					return (int) (d * 1000000);
 				} else {
+					a = a.replaceAll(",", "");
 					return Integer.valueOf(a);
 				}
 			}
 		} catch (Exception ex) {
+			System.out.println(aux);
 			ex.printStackTrace();
 		}
 		return null;

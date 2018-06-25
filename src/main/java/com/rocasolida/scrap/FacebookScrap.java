@@ -432,7 +432,8 @@ public class FacebookScrap extends Scrap {
 
 	public void zoomOut() {
 		/*
-		 * WebElement html = this.getDriver().findElement(By.tagName("html")); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT));
+		 * WebElement html = this.getDriver().findElement(By.tagName("html")); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL, Keys.SUBTRACT)); html.sendKeys(Keys.chord(Keys.CONTROL,
+		 * Keys.SUBTRACT));
 		 */
 
 		/*
@@ -684,7 +685,7 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(commentSection);
 	}
 
@@ -1464,7 +1465,8 @@ public class FacebookScrap extends Scrap {
 			 * DATETIME
 			 */
 			/*
-			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
+			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication,
+			 * FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
 			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
@@ -1641,7 +1643,8 @@ public class FacebookScrap extends Scrap {
 			if (page.getPublications() != null) {
 				System.out.println("SE ENCONTRARON UN TOTAL DE " + page.getPublications().size() + "PUBLICACIONES");
 				/*
-				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************"); }
+				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) +
+				 * " FIN	***************"); }
 				 */
 				for (int j = 0; j < page.getPublications().size(); j++) {
 					System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	===============");
@@ -1682,7 +1685,8 @@ public class FacebookScrap extends Scrap {
 			}
 			if (this.existElement(null, "//div[contains(@id,'globalContainer')]//a[contains(@href,'ref=404')]")) {
 				/**
-				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
+				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida
+				 * https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 				 */
 				if (debug) {
 					System.out.println("[ERROR] NO EXISTE LINK " + URL + ": " + this.getDriver().findElement(By.xpath("//div[contains(@id,'globalContainer')]//h2")).getText());

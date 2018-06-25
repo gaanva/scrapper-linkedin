@@ -35,7 +35,7 @@ public class Application {
 				access = new Credential(user, password, 0L, "");
 			}
 			String pageName = "airedesantafe";
-			String postId = "903841639788342";
+			String postId = "2286099791415078";
 			// 10156628922723478 mauri no anda queda spinner girando 10156654894768478
 			// POST: 1528747836 (Mauri - mama luchetti) 10156656338013478
 			// VIDEO: 1528835710 (Mauri)
@@ -48,8 +48,8 @@ public class Application {
 			// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las
 			// 0hs dle 16/03
 
-			 Long COMMENTS_uTIME_INI = 1529688321L; // 10/06/2018 @ 00:00:00
-			 Long COMMENTS_uTIME_FIN = 1529701400L; // 11/06/2018 24:00:00
+			 Long COMMENTS_uTIME_INI = 1529882321L; // 10/06/2018 @ 00:00:00
+			 Long COMMENTS_uTIME_FIN = 1529884011L; // 11/06/2018 24:00:00
 //			Long COMMENTS_uTIME_INI = null;
 //			Long COMMENTS_uTIME_FIN = null;
 			Integer cantComments = 100;
@@ -70,14 +70,14 @@ public class Application {
 					System.out.println("Error en LOGIN con el usuario: " + access.getUser() + " PASS: " + access.getPass());
 				}
 			}
-			 page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			// page = fs.obtainPageInformation(pageName, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			// page = fs.obtainPageInformationWithoutComments(pageName, uTIME_INI, uTIME_FIN);
 			publication = fs.obtainPostInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
-			 System.out.println(page);
-//			System.out.println(publication);
-//			if (publication != null && publication.getComments() != null) {
-//				System.out.println("cant comments extraidos: " + publication.getComments().size());
-//			}
+			// System.out.println(page);
+			System.out.println(publication);
+			if (publication != null && publication.getComments() != null) {
+				System.out.println("cant comments extraidos: " + publication.getComments().size());
+			}
 			fs.quit();
 			System.out.println("[APP] FIN");
 			aux = System.currentTimeMillis() - aux;
