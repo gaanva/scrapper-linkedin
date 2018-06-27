@@ -35,7 +35,7 @@ public class Application {
 				access = new Credential(user, password, 0L, "");
 			}
 			String pageName = "omarperotti";
-			String postId = "1384724608295616";
+			String postId = "2277838878899180";
 			// 10156628922723478 mauri no anda queda spinner girando 10156654894768478
 			// POST: 1528747836 (Mauri - mama luchetti) 10156656338013478
 			// VIDEO: 1528835710 (Mauri)
@@ -54,7 +54,7 @@ public class Application {
 //			Long COMMENTS_uTIME_FIN = null;
 			Integer cantComments = 100;
 			CommentsSort cs = CommentsSort.NEW;
-			DriverType dt = DriverType.FIREFOX;
+			DriverType dt = DriverType.FIREFOX_HEADLESS;
 			FacebookScrap fs = null;
 			if (seleniumHost != null && seleniumPort != null) {
 				fs = new FacebookScrap(Driver.from(dt, os, seleniumHost, seleniumPort), debug);

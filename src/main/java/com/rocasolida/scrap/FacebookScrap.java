@@ -1457,6 +1457,8 @@ public class FacebookScrap extends Scrap {
 			 */
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_OWNER)) {
 				aux.setOwner(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_OWNER)).getText());
+			} else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_PHOTO_OWNER)) {
+				aux.setOwner(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_PHOTO_OWNER)).getText());
 			} else {
 				aux.setOwner(pageName);
 			}
