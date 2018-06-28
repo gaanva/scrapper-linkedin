@@ -14,7 +14,7 @@ import com.rocasolida.scrap.util.Driver;
 import com.rocasolida.scrap.util.DriverType;
 import com.rocasolida.scrap.util.ScrapUtils;
 
-public class ApplicationTestSinLogin {
+public class TestSinLogin {
 
 	private static String OS;
 	private static final boolean DEBUG = false;
