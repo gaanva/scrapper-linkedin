@@ -24,29 +24,29 @@ public class TestSinLogin {
 		OS = ScrapUtils.getOSName();
 	}
 
-	@Test
-	public void mauriciomacriConFiltroComments1Mes() throws MalformedURLException {
-		// Test para 1 solo comentario el 06/06.
-		Long uTIME_INI = 1528657898L; // 10/06/2018 @ 00:00:00
-		Long uTIME_FIN = 1528917098L; // 13/06/2018 @ 24:00:00
-
-		Long COMMENTS_uTIME_INI = 1528657898L; // 10/06/2018 @ 00:00:00
-		Long COMMENTS_uTIME_FIN = 1528917098L; // 11/06/2018 24:00:00
-
-		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		Page page = null;
-		try {
-			page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		fs.quit();
-		System.out.println("page: " + page);
-
-		assertNotNull(page.getPublications());
-		assertEquals(8, page.getPublications().size());
-	}
+//	@Test
+//	public void mauriciomacriConFiltroComments1Mes() throws MalformedURLException {
+//		// Test para 1 solo comentario el 06/06.
+//		Long uTIME_INI = 1528657898L; // 10/06/2018 @ 00:00:00
+//		Long uTIME_FIN = 1528917098L; // 13/06/2018 @ 24:00:00
+//
+//		Long COMMENTS_uTIME_INI = 1528657898L; // 10/06/2018 @ 00:00:00
+//		Long COMMENTS_uTIME_FIN = 1528917098L; // 11/06/2018 24:00:00
+//
+//		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+//		Page page = null;
+//		try {
+//			page = fs.obtainPageInformation("mauriciomacri", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//
+//		fs.quit();
+//		System.out.println("page: " + page);
+//
+//		assertNotNull(page.getPublications());
+//		assertEquals(8, page.getPublications().size());
+//	}
 
 	@Test
 	public void teamisurusConFiltroComments() throws MalformedURLException {

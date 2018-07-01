@@ -242,7 +242,13 @@ public class FacebookScrap extends Scrap {
 			FacebookPostType fpt = getPostType(currentURL);
 			System.out.println("currentURL: " + currentURL + ". fpt: " + fpt);
 			if (fpt != null && fpt.equals(FacebookPostType.PHOTO)) {
-				return obtainPostTypePhotoInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
+				try {
+					waitUntilOverlayPhotoAppears();
+					return obtainPostTypePhotoInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
+				} catch (org.openqa.selenium.TimeoutException ex) {
+					// Si tira timemout es porque no tiene overlay entonces proceso como la otra forma
+					return obtainPostTypeOtherInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
+				}
 			} else {
 				return obtainPostTypeOtherInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
 			}
