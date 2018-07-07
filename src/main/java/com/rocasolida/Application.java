@@ -34,8 +34,8 @@ public class Application {
 			if (user != null && password != null) {
 				access = new Credential(user, password, 0L, "");
 			}
-			String pageName = "omarperotti";
-			String postId = "2277838878899180";
+			String pageName = "mauriciomacri";
+			String postId = "10156689484548478";
 			// 10156628922723478 mauri no anda queda spinner girando 10156654894768478
 			// POST: 1528747836 (Mauri - mama luchetti) 10156656338013478
 			// VIDEO: 1528835710 (Mauri)
@@ -48,13 +48,13 @@ public class Application {
 			// Long uTIME_FIN = 1521158400L; // 03/15/2018 @ 12:59:59pm (UTC) - Hasta las
 			// 0hs dle 16/03
 
-			 Long COMMENTS_uTIME_INI = 1529575201L; // 10/06/2018 @ 00:00:00
-			 Long COMMENTS_uTIME_FIN = 1529957521L; // 11/06/2018 24:00:00
-//			Long COMMENTS_uTIME_INI = null;
-//			Long COMMENTS_uTIME_FIN = null;
-			Integer cantComments = 100;
-			CommentsSort cs = CommentsSort.NEW;
-			DriverType dt = DriverType.FIREFOX_HEADLESS;
+			// Long COMMENTS_uTIME_INI = 1529575201L; // 10/06/2018 @ 00:00:00
+			// Long COMMENTS_uTIME_FIN = 1529957521L; // 11/06/2018 24:00:00
+			Long COMMENTS_uTIME_INI = null;
+			Long COMMENTS_uTIME_FIN = null;
+			Integer cantComments = 1000;
+			CommentsSort cs = CommentsSort.RELEVANCE;
+			DriverType dt = DriverType.FIREFOX;
 			FacebookScrap fs = null;
 			if (seleniumHost != null && seleniumPort != null) {
 				fs = new FacebookScrap(Driver.from(dt, os, seleniumHost, seleniumPort), debug);
@@ -74,7 +74,7 @@ public class Application {
 			// page = fs.obtainPageInformationWithoutComments(pageName, uTIME_INI, uTIME_FIN);
 			publication = fs.obtainPostInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
 			// System.out.println(page);
-			System.out.println(publication);
+			// System.out.println(publication);
 			if (publication != null && publication.getComments() != null) {
 				System.out.println("cant comments extraidos: " + publication.getComments().size());
 			}
