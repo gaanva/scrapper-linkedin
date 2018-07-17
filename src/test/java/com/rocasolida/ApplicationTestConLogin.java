@@ -1,19 +1,13 @@
 package com.rocasolida;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.rocasolida.entities.Credential;
-import com.rocasolida.entities.Page;
-import com.rocasolida.scrap.FacebookScrap;
+import com.rocasolida.scrap.FacebookUserLikesScrap;
 import com.rocasolida.scrap.util.Driver;
 import com.rocasolida.scrap.util.DriverType;
 import com.rocasolida.scrap.util.ScrapUtils;
@@ -28,18 +22,34 @@ public class ApplicationTestConLogin {
 		OS = ScrapUtils.getOSName();
 	}
 
+	
+	@Test
+	public void LikesProfile() throws MalformedURLException {
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		FacebookUserLikesScrap fu = new FacebookUserLikesScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		
+		try {
+			fu.login(access);
+			List<String> likespages = fu.ObtainProfileLikes("gitana.camino.3");
+			for(int i=0; i<likespages.size(); i++) {
+				System.out.println("LIKE "+i+":" + likespages.get(i));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		fu.quit();
+
+	}
+/*
 	@Test
 	public void herbalifeConLoginConFiltroComments() throws MalformedURLException {
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
-		Long uTIME_INI = getFecha("15/3/2018 00:00");
-		Long uTIME_FIN = getFecha("16/3/2018 00:00");
-		Long COMMENTS_uTIME_INI = getFecha("15/3/2018 00:00");
-		Long COMMENTS_uTIME_FIN = getFecha("16/3/2018 00:00");
 		FacebookScrap fs = new FacebookScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		fs.login(access);
-		Page page = null;
+		
 		try {
-			page = fs.obtainPageInformation("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
+			fs.login(access);
+			fs.ob("HerbalifeLatino", uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN);
 			fs.quit();
 
 		} catch (Exception e) {
@@ -138,5 +148,5 @@ public class ApplicationTestConLogin {
 		}
 		return null;
 	}
-
+*/
 }
