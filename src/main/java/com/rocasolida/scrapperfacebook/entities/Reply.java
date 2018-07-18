@@ -1,4 +1,4 @@
-package com.rocasolida.entities;
+package com.rocasolida.scrapperfacebook.entities;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package com.rocasolida;
+package com.rocasolida.scrapperfacebook;
 
 public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";

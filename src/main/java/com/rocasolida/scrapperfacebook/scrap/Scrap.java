@@ -1,4 +1,4 @@
-package com.rocasolida.scrap;
+package com.rocasolida.scrapperfacebook.scrap;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -18,10 +18,10 @@ import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.rocasolida.entities.Credential;
-import com.rocasolida.scrap.util.Driver;
-import com.rocasolida.scrap.util.DriverFinder;
-import com.rocasolida.scrap.util.DriverType;
+import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.scrap.util.DriverFinder;
+import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
 
 import lombok.Data;
 
