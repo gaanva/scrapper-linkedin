@@ -8,11 +8,11 @@ import java.net.MalformedURLException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.rocasolida.entities.Page;
-import com.rocasolida.scrap.FacebookScrap;
-import com.rocasolida.scrap.util.Driver;
-import com.rocasolida.scrap.util.DriverType;
-import com.rocasolida.scrap.util.ScrapUtils;
+import com.rocasolida.scrapperfacebook.entities.Page;
+import com.rocasolida.scrapperfacebook.scrap.FacebookScrap;
+import com.rocasolida.scrapperfacebook.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
+import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 
 public class TestSinLogin {
 

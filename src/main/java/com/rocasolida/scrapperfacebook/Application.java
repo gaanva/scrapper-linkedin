@@ -1,15 +1,15 @@
-package com.rocasolida;
+package com.rocasolida.scrapperfacebook;
 
 import java.net.MalformedURLException;
 
-import com.rocasolida.entities.Credential;
-import com.rocasolida.entities.Page;
-import com.rocasolida.entities.Publication;
-import com.rocasolida.scrap.FacebookScrap;
-import com.rocasolida.scrap.util.CommentsSort;
-import com.rocasolida.scrap.util.Driver;
-import com.rocasolida.scrap.util.DriverType;
-import com.rocasolida.scrap.util.ScrapUtils;
+import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.entities.Page;
+import com.rocasolida.scrapperfacebook.entities.Publication;
+import com.rocasolida.scrapperfacebook.scrap.FacebookScrap;
+import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
+import com.rocasolida.scrapperfacebook.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
+import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 
 /*
  * NOTA: Si estás Loggeado, no te muestra por default las historias (o tal vez mi profile tenga algo).

@@ -1,4 +1,4 @@
-package com.rocasolida.scrap;
+package com.rocasolida.scrapperfacebook.scrap;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,9 +17,9 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebElement;
 
-import com.rocasolida.FacebookConfig;
-import com.rocasolida.entities.Credential;
-import com.rocasolida.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.FacebookConfig;
+import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 
 public class FacebookUserLikesScrap extends Scrap{
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";

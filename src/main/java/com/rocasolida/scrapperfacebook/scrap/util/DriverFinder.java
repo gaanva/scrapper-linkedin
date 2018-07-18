@@ -1,4 +1,4 @@
-package com.rocasolida.scrap.util;
+package com.rocasolida.scrapperfacebook.scrap.util;
 
 import java.io.IOException;
 import java.nio.file.Files;

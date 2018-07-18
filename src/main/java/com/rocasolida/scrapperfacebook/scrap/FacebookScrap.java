@@ -1,4 +1,4 @@
-package com.rocasolida.scrap;
+package com.rocasolida.scrapperfacebook.scrap;
 
 import java.awt.AWTException;
 import java.awt.Robot;
@@ -30,15 +30,15 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
-import com.rocasolida.FacebookConfig;
-import com.rocasolida.entities.Comment;
-import com.rocasolida.entities.Credential;
-import com.rocasolida.entities.Page;
-import com.rocasolida.entities.Publication;
-import com.rocasolida.scrap.util.CommentsSort;
-import com.rocasolida.scrap.util.Driver;
-import com.rocasolida.scrap.util.FacebookPostType;
-import com.rocasolida.scrap.util.ScrapUtils;
+import com.rocasolida.scrapperfacebook.FacebookConfig;
+import com.rocasolida.scrapperfacebook.entities.Comment;
+import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.entities.Page;
+import com.rocasolida.scrapperfacebook.entities.Publication;
+import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
+import com.rocasolida.scrapperfacebook.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.scrap.util.FacebookPostType;
+import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 
 public class FacebookScrap extends Scrap {
 
