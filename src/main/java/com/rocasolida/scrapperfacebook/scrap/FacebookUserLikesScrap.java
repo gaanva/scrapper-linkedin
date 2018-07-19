@@ -80,11 +80,11 @@ public class FacebookUserLikesScrap extends Scrap{
 		// ASUMO QUE SI (Encuentro: INICIO || PUBLICACIONES || COMUNIDAD EN MENU DE LA
 		// IZQ) ES UNA PÁGINA.
 		try {
-			if (this.existElement(null, "//div[@id='entity_sidebar']//div//div[@data-key='tab_posts' or @data-key='tab_community' or @data-key='tab_home']//descendant::a")) {
+			if (this.getDriver().findElements(By.xpath("//div[@id='entity_sidebar']//div//div[@data-key='tab_posts' or @data-key='tab_community' or @data-key='tab_home']//descendant::a")).size()>0) {
 				return "PAGE";
 			}
 			// Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES UN PERFIL
-			if (this.existElement(null, "//div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a")) {
+			if (this.getDriver().findElements(By.xpath("//div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a")).size()>0) {
 				return "PROFILE";
 			}
 		} catch (Exception e) {
@@ -97,17 +97,24 @@ public class FacebookUserLikesScrap extends Scrap{
 	}
 
 	public List<String> ObtainProfileLikes(String profile) throws Exception{
-		this.validateProfileLink(profile);
+		//this.validateProfileLink(profile);
 		List<String> listaLikes;
 		//voy a los likes derecho viejo, de una a lo guapo.
 		//ir al link con el /likes_all
 		this.navigateTo(FacebookConfig.URL + profile + "/likes_all");
 		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/ul")).size()>0) {
 			listaLikes= new ArrayList<String>();
- 			do {
-				List<WebElement> aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
+			List<WebElement> aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
+			do {
+				
 				for(int i=0; i<aux.size(); i++) {
-					listaLikes.add(aux.get(i).getAttribute("href"));
+					System.out.println("Processed " + i + ")");
+					//System.out.println("HTML: " + aux.get(i).getAttribute("innerHTML"));
+					listaLikes.add(aux.get(i).findElement(By.xpath("//div[@class='_3owb']/div/a")).getAttribute("href"));
+					//System.out.println("LINK: " + aux.get(i).findElement(By.xpath("./div/div/a")).getAttribute("href"));
+					//System.out.println("TITULO: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsl fwb fcb']/a")).getText());
+					//System.out.println("CATEGORIA: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsm fwn fcg']")).getText());
+					
 				}
 				
 				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
@@ -116,7 +123,7 @@ public class FacebookUserLikesScrap extends Scrap{
 				}
 				
 				this.scrollDown();
-				
+				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
 			//mientras haya spinner loader...
 			}while(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]")).size()>0 || this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]")).size()>0);
 			
@@ -140,13 +147,13 @@ public class FacebookUserLikesScrap extends Scrap{
 		
 		String linkType = this.facebookLinkType(); // POR AHORA CHEQUEA SI ES PAGINA O PERFIL
 		switch (linkType) {
-		case "PROFILE":
-			if (debug)
-				System.out.println("[INFO] Es un Perfil.");
-		case "PAGE":
-			throw new Exception("[ERROR] ES un página! ");			
-		default:
-			throw new Exception("[WARNING] No se reconoce el tipo de página para hacer SCRAP");
+			case "PROFILE":
+				if (debug)
+					System.out.println("[INFO] Es un Perfil.");
+			case "PAGE":
+				throw new Exception("[ERROR] ES un página! ");			
+			default:
+				throw new Exception("[WARNING] No se reconoce el tipo de página para hacer SCRAP");
 		}
 		
 	}
