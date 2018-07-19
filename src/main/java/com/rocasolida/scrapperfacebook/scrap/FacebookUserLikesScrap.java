@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -105,12 +106,17 @@ public class FacebookUserLikesScrap extends Scrap{
 		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/ul")).size()>0) {
 			listaLikes= new ArrayList<String>();
 			List<WebElement> aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
+			
+			if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
+				this.getActions().sendKeys(Keys.ESCAPE).perform();
+			}
+			
 			do {
 				
 				for(int i=0; i<aux.size(); i++) {
-					System.out.println("Processed " + i + ")");
+					System.out.println("Processed " + i + ") " + aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
 					//System.out.println("HTML: " + aux.get(i).getAttribute("innerHTML"));
-					listaLikes.add(aux.get(i).findElement(By.xpath("//div[@class='_3owb']/div/a")).getAttribute("href"));
+					listaLikes.add(aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
 					//System.out.println("LINK: " + aux.get(i).findElement(By.xpath("./div/div/a")).getAttribute("href"));
 					//System.out.println("TITULO: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsl fwb fcb']/a")).getText());
 					//System.out.println("CATEGORIA: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsm fwn fcg']")).getText());
@@ -123,8 +129,10 @@ public class FacebookUserLikesScrap extends Scrap{
 				}
 				
 				this.scrollDown();
-				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
+				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
+				//aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
 			//mientras haya spinner loader...
+				this.saveScreenShot("SCROLL");
 			}while(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]")).size()>0 || this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]")).size()>0);
 			
 		}else {
