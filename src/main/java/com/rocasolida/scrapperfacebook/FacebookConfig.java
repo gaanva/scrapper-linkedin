@@ -3,6 +3,15 @@ package com.rocasolida.scrapperfacebook;
 public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
+	
+	public static String URL_LIKES = "/likes_all";
+	
+	public static String XP_HAS_LIKES_CONTENT = "//div[contains(@class,'_5h60 _30f')]";
+	public static String XP_USER_LIKES = "//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]";
+	public static String XP_LIKES_LOADING = "//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]";
+	
+	
+	
 	//// title[@lang='en']
 	public static Integer CANT_PUBLICATIONS_TO_BE_LOAD = 10;
 

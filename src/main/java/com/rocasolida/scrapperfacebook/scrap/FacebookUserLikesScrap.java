@@ -20,6 +20,7 @@ import org.openqa.selenium.WebElement;
 
 import com.rocasolida.scrapperfacebook.FacebookConfig;
 import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.entities.UserLike;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 
 public class FacebookUserLikesScrap extends Scrap{
@@ -29,15 +30,6 @@ public class FacebookUserLikesScrap extends Scrap{
 	public FacebookUserLikesScrap(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
 	}
-
-	/*
-	 *  - Logueo con el usuario.
-	 *  - Accedo al link del profile que me den.
-	 *  - Me aseguro que es un profile
-	 *  - voy a la sección de likes 
-	 *  - capturo los datos
-	 *  - imprimo los datos
-	 */
 	
 	public void login(Credential access) throws Exception{
 		long tardo = System.currentTimeMillis();
@@ -97,47 +89,48 @@ public class FacebookUserLikesScrap extends Scrap{
 
 	}
 
-	public List<String> ObtainProfileLikes(String profile) throws Exception{
+	public List<UserLike> ObtainProfileLikes(String profile) throws Exception{
 		//this.validateProfileLink(profile);
-		List<String> listaLikes;
+		List<UserLike> listaLikes = new ArrayList<UserLike>();
 		//voy a los likes derecho viejo, de una a lo guapo.
 		//ir al link con el /likes_all
 		this.navigateTo(FacebookConfig.URL + profile + "/likes_all");
-		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/ul")).size()>0) {
-			listaLikes= new ArrayList<String>();
-			List<WebElement> aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_HAS_LIKES_CONTENT)).size()>0) {
 			
+			//Me fijo que no aparezca un overlay...
 			if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
 				this.getActions().sendKeys(Keys.ESCAPE).perform();
 			}
 			
+			List<WebElement> aux = this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES));
+			if(aux.size()==0) {
+				return listaLikes;
+			}
 			do {
 				
 				for(int i=0; i<aux.size(); i++) {
-					System.out.println("Processed " + i + ") " + aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
-					//System.out.println("HTML: " + aux.get(i).getAttribute("innerHTML"));
-					listaLikes.add(aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
-					//System.out.println("LINK: " + aux.get(i).findElement(By.xpath("./div/div/a")).getAttribute("href"));
-					//System.out.println("TITULO: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsl fwb fcb']/a")).getText());
-					//System.out.println("CATEGORIA: " + aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsm fwn fcg']")).getText());
-					
+					UserLike aux1 = new UserLike();
+					aux1.setUrl(aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
+					aux1.setTitle(aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsl fwb fcb']/a")).getText());
+					aux1.setCategory(aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsm fwn fcg']")).getText());
+					listaLikes.add(aux1);
 				}
 				
-				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
 				for(int i =0; i<aux.size(); i++) {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", aux.get(i));
 				}
 				
 				this.scrollDown();
-				aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
+				aux = this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES));
 				//aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
 			//mientras haya spinner loader...
-				this.saveScreenShot("SCROLL");
-			}while(this.getDriver().findElements(By.xpath("//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]")).size()>0 || this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]")).size()>0);
+			}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_LIKES_LOADING)).size()>0 || this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES)).size()>0);
+			
+			aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
 			
 		}else {
 			if(this.getDriver().getCurrentUrl().equalsIgnoreCase(FacebookConfig.URL + profile)) {
-				throw new Exception("[ERROR] Este profile no tiene likes!");
+				throw new Exception("SIN_PERMISOS_VER_LIKES");
 			}else {
 				this.saveScreenShot("PROFILE_ErrorNotHandled");
 				throw new Exception("[ERROR] UNHANDLED ERROR! check log snapshot: 'PROFILE_ErrorNotHandled'");
