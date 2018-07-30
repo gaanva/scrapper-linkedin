@@ -3,6 +3,9 @@ package com.rocasolida.scrapperfacebook;
 public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
+	public static String URL_GROUP = "groups/";
+	
+	
 	//// title[@lang='en']
 	public static Integer CANT_PUBLICATIONS_TO_BE_LOAD = 10;
 
@@ -23,7 +26,10 @@ public final class FacebookConfig {
 
 	public static String XPATH_CLOSE_BUTTON = "//a[@class='_xlt _418x']";
 
+	public static String XP_MORE_PUBS_GROUP = "//div[@id='pagelet_group_pager']";
+	
 	/** DATOS DE LA PUBLICACIÓN **/
+	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper') and not(contains(@style,'hidden'))]";
 	public static String XPATH_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER = "//div[contains(@class,'uiScrollableAreaBody')]";
 
