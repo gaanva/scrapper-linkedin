@@ -195,11 +195,11 @@ public class FacebookGroupScrap extends Scrap {
 	public List<Publication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long tardo = System.currentTimeMillis();
 		
-		List<WebElement> groupPubsHTML = this.obtainGroupPublications(facebookGroup, uTIME_INI, uTIME_FIN);
+		List<WebElement> groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
 		List<Publication> groupPubs = new ArrayList<Publication>();
 		
 		for(int i=0; i<groupPubsHTML.size(); i++) {
-			groupPubs.add(this.extractPublicationData(facebookGroup, groupPubsHTML.get(i)));
+			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
 		}
 		
 		tardo = System.currentTimeMillis() - tardo;
@@ -209,8 +209,32 @@ public class FacebookGroupScrap extends Scrap {
 	
 	}
 	
+	/**
+	 * PARA EVITAR LA CARGA VISUAL DE TODOS LOS POSTS EN LA PAGINA PPAL,
+	 * EXTRAIGO EL ID
+	 */
+	public Publication extractMainPagePublicationID(String pageName, WebElement publication) {
+		long tardo = System.currentTimeMillis();
+		
+		Publication aux = new Publication();
+
+		/**
+		 * Extraigo LINK del post, que es su ID.
+		 */
+		//String postID = this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+		String postID = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
+		if (postID == "") {
+			if (debug)
+				System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+		} else {
+			aux.setId(postID);
+			aux.setUrl(FacebookConfig.URL + postID);
+		}
+		
+		return aux.getId()==null?null:aux;
+	}
 	
-	public List<WebElement> obtainGroupPublications(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+	public List<WebElement> obtainGroupPublicationsHTML(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long aux = System.currentTimeMillis();
 		aux = System.currentTimeMillis();
 		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): ");
@@ -1505,6 +1529,7 @@ public class FacebookGroupScrap extends Scrap {
 		}
 	}
 
+	
 	public Publication extractPublicationData(String pageName, WebElement publication) {
 		long tardo = System.currentTimeMillis();
 		try {

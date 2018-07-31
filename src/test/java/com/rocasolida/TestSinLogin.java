@@ -28,6 +28,7 @@ public class TestSinLogin {
 	
 	@Test
 	public void groupPublicationsHTMLFilteredByUTime() throws MalformedURLException {
+		System.out.println("------> groupPublicationsHTMLFilteredByUTime");
 		Long PUBSuTIME_INI = 1532476800L; // 25/07/2018 @ 00:00:00
 		Long PUBSuTIME_FIN = 1532822400L; // 28/07/2018 @ 24:00:00
 
@@ -39,7 +40,7 @@ public class TestSinLogin {
 		List<WebElement> aux = new ArrayList<WebElement>();
 		try {
 			//CAFE RACER ARGENTINA
-			aux = fg.obtainGroupPublications("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
+			aux = fg.obtainGroupPublicationsHTML("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -49,7 +50,8 @@ public class TestSinLogin {
 	}
 	
 	@Test
-	public void groupPublicationsFilteredByUTime() throws MalformedURLException {
+	public void groupPublicationsIDFilteredByUTime() throws MalformedURLException {
+		System.out.println("-----> groupPublicationsIDFilteredByUTime");
 		Long PUBSuTIME_INI = 1532476800L; // 25/07/2018 @ 00:00:00
 		Long PUBSuTIME_FIN = 1532822400L; // 28/07/2018 @ 24:00:00
 
@@ -64,6 +66,10 @@ public class TestSinLogin {
 			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		for(int i=0; i<aux.size(); i++) {
+			System.out.println("ID("+i+") " + aux.get(i).getId());
 		}
 		
 		fg.quit();

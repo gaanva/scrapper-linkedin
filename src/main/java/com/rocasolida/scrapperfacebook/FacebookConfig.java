@@ -30,6 +30,13 @@ public final class FacebookConfig {
 	
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper') and not(contains(@style,'hidden'))]";
+	
+	/**
+	 * La búsqueda para grupos la tengo que hacer en dos secciones...
+	 */
+	public static String XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER = "//div[@role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+XP_GROUP_PUBLICATIONS_CONTAINER;
+	public static String XP_GROUP_PUBLICATIONS_OLD_CONTAINER = "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+XP_GROUP_PUBLICATIONS_CONTAINER;
+	
 	public static String XPATH_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER = "//div[contains(@class,'uiScrollableAreaBody')]";
 
