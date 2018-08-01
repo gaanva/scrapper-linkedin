@@ -245,26 +245,30 @@ public class FacebookGroupScrap extends Scrap {
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
 		List<WebElement> groupPubElements = new ArrayList<WebElement>();
-		groupPubElements = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
+		List<WebElement> auxList = new ArrayList<WebElement>();
+		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
 		
 		if(debug)
 			System.out.println("FILTRO: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
 		
-		if (groupPubElements.size() > 0) {
+		if (auxList.size() > 0) {
 			do {
 				
-				for(int i =0; i<groupPubElements.size(); i++) {
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", groupPubElements.get(i));
+				groupPubElements.addAll(auxList);
+				
+				for(int i =0; i<auxList.size(); i++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", auxList.get(i));
 				}
 				this.scrollDown();
 				
-				groupPubElements = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
+				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
 				
-				if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_MORE_PUBS_GROUP)).size()>0)){
+				//if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_MORE_PUBS_GROUP)).size()>0)){
+				if(auxList.size()==0){
 					break;
 				}
 			
-			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0));
+			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0));
 		} else {
 			if (debug) {
 				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
@@ -274,11 +278,11 @@ public class FacebookGroupScrap extends Scrap {
 		}	
 			
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
-		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
+		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
 		if (match > 0) {
 			if (debug)
 				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
-			return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
+			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
 		} else {
 			if (debug)
 				System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" + uTIME_INI + " FIN:" + uTIME_FIN);
@@ -286,6 +290,64 @@ public class FacebookGroupScrap extends Scrap {
 		}
 			
 	}
+	
+	//ESte trabaja sobre la lista de los posts más activos que facebook pone primero...
+	//Los cuales no se repiten en la lista de publicaciones más abajo.
+	public List<WebElement> obtainGroupNewsFeedPublicationsHTML(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+		long aux = System.currentTimeMillis();
+		aux = System.currentTimeMillis();
+		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): ");
+		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
+		aux = System.currentTimeMillis() - aux;
+		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + aux);
+			
+		if (debug)
+			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
+		List<WebElement> groupPubElements = new ArrayList<WebElement>();
+		List<WebElement> auxList = new ArrayList<WebElement>();
+		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
+		
+		if(debug)
+			System.out.println("FILTRO: " + FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
+		
+		if (auxList.size() > 0) {
+			System.out.println("AUXLIST = " + auxList.size());
+			System.out.println("FILTRO2: " + FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
+			System.out.println("size F2:" + this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size());
+			do {
+				groupPubElements.addAll(auxList);
+				this.scrollDown();
+				
+				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
+				
+				//if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_MORE_PUBS_GROUP)).size()>0)){
+				if(auxList.size()==0){
+					break;
+				}
+				
+			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0));
+		} else {
+			if (debug) {
+				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
+				this.saveScreenShot("GRUPO_SIN_PUBS");
+			}
+			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
+		}	
+			
+		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
+		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
+		if (match > 0) {
+			if (debug)
+				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
+			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
+		} else {
+			if (debug)
+				System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" + uTIME_INI + " FIN:" + uTIME_FIN);
+			return null;
+		}
+			
+	}
+	
 	
 	
 	private void navigateTo(String URL) throws Exception{

@@ -50,6 +50,30 @@ public class TestSinLogin {
 	}
 	
 	@Test
+	public void groupNewsFeedPublicationsHTMLFilteredByUTime() throws MalformedURLException {
+		System.out.println("------> groupNewsFeedPublicationsHTMLFilteredByUTime");
+		Long PUBSuTIME_INI = 1532476800L; // 25/07/2018 @ 00:00:00
+		Long PUBSuTIME_FIN = 1532822400L; // 28/07/2018 @ 24:00:00
+
+		//Long COMMENTS_uTIME_INI = 1528657898L; // 10/06/2018 @ 00:00:00
+		//Long COMMENTS_uTIME_FIN = 1528917098L; // 11/06/2018 24:00:00
+
+		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		Page page = null;
+		List<WebElement> aux = new ArrayList<WebElement>();
+		try {
+			//CAFE RACER ARGENTINA
+			aux = fg.obtainGroupNewsFeedPublicationsHTML("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		fg.quit();
+		System.out.println("Cantidad de pubs: " + aux.size());
+	}
+	
+	
+	@Test
 	public void groupPublicationsIDFilteredByUTime() throws MalformedURLException {
 		System.out.println("-----> groupPublicationsIDFilteredByUTime");
 		Long PUBSuTIME_INI = 1532476800L; // 25/07/2018 @ 00:00:00

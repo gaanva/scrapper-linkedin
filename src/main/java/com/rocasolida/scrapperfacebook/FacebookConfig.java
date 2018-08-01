@@ -63,6 +63,28 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
+	
+	/**
+	 * Group publications condition
+	 */
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_PART1 = XP_GROUP_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
+
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
+	}
+	
+	/**
+	 * Group Last news publications condition
+	 */
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART1 = XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
+
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(String facebookGroup, Long utimeINI, Long utimeFIN) {
+		return XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_PART3;
+	}
 
 	/**
 	 * Controlar que no tome el timestamp de un comentario!!!! Controlar que la cantidad de publicaciones, no sean de solo las destacadas.
@@ -80,6 +102,28 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
+	
+	/**
+	 * group Posts
+	 */
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XP_GROUP_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
+
+	public static String XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
+		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
+	}
+	
+	
+	/**
+	 * group last news publicactions
+	 */
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
+
+	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookGroup, Long utimeINI) {
+		return XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
+	}
+	
 
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
 	public static String XPATH_PUBLICATION_DATE_TIME = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("title")
