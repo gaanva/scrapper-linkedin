@@ -29,7 +29,7 @@ public final class FacebookConfig {
 	public static String XP_MORE_PUBS_GROUP = "//div[@id='pagelet_group_pager']";
 	
 	/** DATOS DE LA PUBLICACIÓN **/
-	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper') and not(contains(@style,'hidden'))]";
+	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	
 	/**
 	 * La búsqueda para grupos la tengo que hacer en dos secciones...

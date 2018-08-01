@@ -244,7 +244,6 @@ public class FacebookGroupScrap extends Scrap {
 			
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
-		List<WebElement> groupPubElements = new ArrayList<WebElement>();
 		List<WebElement> auxList = new ArrayList<WebElement>();
 		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
 		
@@ -253,8 +252,6 @@ public class FacebookGroupScrap extends Scrap {
 		
 		if (auxList.size() > 0) {
 			do {
-				
-				groupPubElements.addAll(auxList);
 				
 				for(int i =0; i<auxList.size(); i++) {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", auxList.get(i));
@@ -303,19 +300,19 @@ public class FacebookGroupScrap extends Scrap {
 			
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
-		List<WebElement> groupPubElements = new ArrayList<WebElement>();
+		//List<WebElement> groupPubElements = new ArrayList<WebElement>();
 		List<WebElement> auxList = new ArrayList<WebElement>();
 		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
-		
+			
 		if(debug)
 			System.out.println("FILTRO: " + FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
 		
 		if (auxList.size() > 0) {
-			System.out.println("AUXLIST = " + auxList.size());
-			System.out.println("FILTRO2: " + FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
-			System.out.println("size F2:" + this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size());
+			
 			do {
-				groupPubElements.addAll(auxList);
+				for(int i =0; i<auxList.size(); i++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", auxList.get(i));
+				}
 				this.scrollDown();
 				
 				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
@@ -333,8 +330,8 @@ public class FacebookGroupScrap extends Scrap {
 			}
 			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
 		}	
-			
-		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
+		System.out.println("QUERY MATCH: " + FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");	
+		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.s
 		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
 		if (match > 0) {
 			if (debug)
