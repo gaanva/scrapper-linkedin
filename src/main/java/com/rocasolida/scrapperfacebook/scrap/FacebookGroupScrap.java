@@ -194,13 +194,19 @@ public class FacebookGroupScrap extends Scrap {
 	
 	public List<Publication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long tardo = System.currentTimeMillis();
+		List<WebElement> groupPubsHTML = this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN); 
 		
-		List<WebElement> groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
 		List<Publication> groupPubs = new ArrayList<Publication>();
 		
 		for(int i=0; i<groupPubsHTML.size(); i++) {
 			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
 		}
+		
+		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
+		for(int i=0; i<groupPubsHTML.size(); i++) {
+			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+		}
+		
 		
 		tardo = System.currentTimeMillis() - tardo;
 		System.out.println("obtainPageInformation tardo: " + tardo);
@@ -218,6 +224,8 @@ public class FacebookGroupScrap extends Scrap {
 		
 		Publication aux = new Publication();
 
+		
+		
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
@@ -228,7 +236,59 @@ public class FacebookGroupScrap extends Scrap {
 				System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
 		} else {
 			aux.setId(postID);
-			aux.setUrl(FacebookConfig.URL + postID);
+			aux.setUrl(FacebookConfig.URL);
+		}
+		
+		/**
+		 * TIMESTAMP El timestamp viene en GMT.
+		 */
+
+		/*
+		 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr data-utime=''><span class='timestamp'>
+		 */
+
+		if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
+			aux.setUTime(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
+		} else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
+			aux.setUTime(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)).getAttribute("data-utime")));
+		}
+		
+		/**
+		 * CANTIDAD DE REPRODUCCIONES
+		 */
+		if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)) {
+			aux.setCantReproducciones(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)).getText().replaceAll("\\D+", "")));
+		} else {
+			aux.setCantReproducciones(null);
+		}
+		/**
+		 * CANTIDAD DE SHARES
+		 */
+		/*
+		if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)) {
+			aux.setCantShare(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)).getText().replaceAll("\\D+", "")));
+		} else {
+			aux.setCantShare(0);
+		}
+		*/
+		/**
+		 * CANTIDAD DE LIKES
+		 */
+		try {
+			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)) {
+				String auxLikes = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)).findElement(By.xpath("//span[contains(@class,'_3chu')]")).getAttribute("innerHTML");
+				if (auxLikes.contains("&nbsp;mil")) {
+					auxLikes = auxLikes.replaceAll("&nbsp;mil", "000");
+					if (auxLikes.contains(",")) {
+						auxLikes = auxLikes.replaceAll(",", "");
+					}
+				}
+				aux.setCantLikes(Integer.valueOf(auxLikes));
+			} else {
+				aux.setCantLikes(0);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		
 		return aux.getId()==null?null:aux;

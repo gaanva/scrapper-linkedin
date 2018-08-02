@@ -94,6 +94,8 @@ public class TestSinLogin {
 		
 		for(int i=0; i<aux.size(); i++) {
 			System.out.println("ID("+i+") " + aux.get(i).getId());
+			System.out.println("UTIME: " + aux.get(i).getUTime());
+			System.out.println("LIKES: " + aux.get(i).getCantLikes());
 		}
 		
 		fg.quit();
