@@ -33,6 +33,7 @@ import org.openqa.selenium.support.ui.Wait;
 import com.rocasolida.scrapperfacebook.FacebookConfig;
 import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
@@ -192,11 +193,11 @@ public class FacebookGroupScrap extends Scrap {
 	}
 
 	
-	public List<Publication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+	public List<GroupPublication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long tardo = System.currentTimeMillis();
 		List<WebElement> groupPubsHTML = this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN); 
 		
-		List<Publication> groupPubs = new ArrayList<Publication>();
+		List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
 		
 		for(int i=0; i<groupPubsHTML.size(); i++) {
 			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
@@ -219,24 +220,36 @@ public class FacebookGroupScrap extends Scrap {
 	 * PARA EVITAR LA CARGA VISUAL DE TODOS LOS POSTS EN LA PAGINA PPAL,
 	 * EXTRAIGO EL ID
 	 */
-	public Publication extractMainPagePublicationID(String pageName, WebElement publication) {
+	public GroupPublication extractMainPagePublicationID(String pageName, WebElement publication) {
 		long tardo = System.currentTimeMillis();
 		
-		Publication aux = new Publication();
-
-		
-		
+		GroupPublication aux = new GroupPublication();
+			
 		/**
 		 * Extraigo LINK del post, que es su ID.
 		 */
 		//String postID = this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
-		String postID = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
+		String URL = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
+		
+		String postID;
+		
+		String[] splitURL = URL.split("/");
+		if(splitURL[splitURL.length-1].contains("sale_post_id")) {
+			System.out.println("Es un producto EN VENTA");
+			aux.setSalePost(true);
+			postID = splitURL[splitURL.length-2];
+		}else {
+			aux.setSalePost(false);
+			postID = splitURL[splitURL.length-1];
+		}
+			
+		
 		if (postID == "") {
 			if (debug)
 				System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
 		} else {
 			aux.setId(postID);
-			aux.setUrl(FacebookConfig.URL);
+			aux.setUrl(URL);
 		}
 		
 		/**

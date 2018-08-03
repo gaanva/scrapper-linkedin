@@ -8,8 +8,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
+import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.entities.Page;
-import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
@@ -84,7 +84,7 @@ public class TestSinLogin {
 
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
-		List<Publication> aux = new ArrayList<Publication>();
+		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
 			//CAFE RACER ARGENTINA
 			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
@@ -93,9 +93,11 @@ public class TestSinLogin {
 		}
 		
 		for(int i=0; i<aux.size(); i++) {
+			System.out.println("URL("+i+") " + aux.get(i).getUrl());
 			System.out.println("ID("+i+") " + aux.get(i).getId());
-			System.out.println("UTIME: " + aux.get(i).getUTime());
-			System.out.println("LIKES: " + aux.get(i).getCantLikes());
+			System.out.println("VENDIBLE("+i+") " + aux.get(i).isSalePost());
+			System.out.println("UTIME: ("+i+") " + aux.get(i).getUTime());
+			System.out.println("LIKES: ("+i+") " + aux.get(i).getCantLikes());
 		}
 		
 		fg.quit();
