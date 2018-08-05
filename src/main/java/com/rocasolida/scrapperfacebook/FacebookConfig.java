@@ -131,9 +131,15 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TITLE_VER_MAS = ".//div[contains(@class,'_5pbx userContent')]//a[contains(@class,'see_more_link')]";
 
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
+	
+	
 	public static String XPATH_PUBLICATION_CANT_SHARE = ".//a[contains(@class,'UFIShareLink')]";
+	public static String XP_GROUPPUBLICATION_CANT_SHARE = ".//div[@class='_3399 _1f6t _4_dr _20h5']/descendant::div[@class='_ipo']/descendant::a[contains(@data-tooltip-uri,'share')]";
+	
 	public static String XPATH_PUBLICATION_CANT_LIKE = ".//div[contains(@class,'UFILikeSentence')]//a[contains(@class,'_3emk _401_')]";
-
+	public static String XP_GROUPPUBLICATION_CANT_LIKES = ".//div[@class='UFILikeSentenceText']/span";
+	
+	
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
 
 	public static String XPATH_PUBLICATION_VER_RESPUESTAS = ".//a[contains(@class,'UFICommentLink')]";

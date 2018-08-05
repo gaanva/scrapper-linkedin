@@ -98,6 +98,7 @@ public class TestSinLogin {
 			System.out.println("VENDIBLE("+i+") " + aux.get(i).isSalePost());
 			System.out.println("UTIME: ("+i+") " + aux.get(i).getUTime());
 			System.out.println("LIKES: ("+i+") " + aux.get(i).getCantLikes());
+			System.out.println("SHARES: ("+i+") " + aux.get(i).getCantShare());
 		}
 		
 		fg.quit();

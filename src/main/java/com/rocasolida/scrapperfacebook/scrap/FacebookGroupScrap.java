@@ -195,20 +195,26 @@ public class FacebookGroupScrap extends Scrap {
 	
 	public List<GroupPublication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long tardo = System.currentTimeMillis();
-		List<WebElement> groupPubsHTML = this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN); 
+		
+		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
+		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + tardo);
+		
 		
 		List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
-		
-		for(int i=0; i<groupPubsHTML.size(); i++) {
-			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+		List<WebElement> groupPubsHTML = this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
+		if(groupPubsHTML!=null) {
+			for(int i=0; i<groupPubsHTML.size(); i++) {
+				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+			}
 		}
 		
 		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
-		for(int i=0; i<groupPubsHTML.size(); i++) {
-			groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+		if(groupPubsHTML!=null) {
+			for(int i=0; i<groupPubsHTML.size(); i++) {
+				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+			}
 		}
-		
-		
+			
 		tardo = System.currentTimeMillis() - tardo;
 		System.out.println("obtainPageInformation tardo: " + tardo);
 		
@@ -277,19 +283,56 @@ public class FacebookGroupScrap extends Scrap {
 		/**
 		 * CANTIDAD DE SHARES
 		 */
-		/*
-		if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)) {
-			aux.setCantShare(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)).getText().replaceAll("\\D+", "")));
+		//System.out.println("HTML: "+publication.getAttribute("outerHTML"));
+		if (this.existElement(publication, FacebookConfig.XP_GROUPPUBLICATION_CANT_SHARE)) {
+			aux.setCantShare(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_SHARE)).getText().replaceAll("\\D+", "")));
+			System.out.println("CANT SHARE: " + publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_SHARE)).getText());
+			
 		} else {
 			aux.setCantShare(0);
 		}
-		*/
+		
 		/**
 		 * CANTIDAD DE LIKES
 		 */
+		if(publication.findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).size()>0) {
+			String likes = publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).getAttribute("innerHTML");
+			int cantLikes = 0;
+			String[] aux1;
+			if(likes.contains(",")) {
+				aux1 = likes.split(",");
+				/*for(int i =0; i<aux1.length; i++) {
+					System.out.println("Split , ("+i+"):" + aux1[i]);
+				}*/
+				cantLikes += aux1.length;
+				aux1 = aux1[aux1.length-1].split("y");
+				aux1 = aux1[aux1.length-1].split(" ");
+			}else {
+				aux1 = likes.split(" ");
+				/*for(int i=0; i<aux1.length; i++) {
+					System.out.println("SPlit: ("+i+"): " + aux1[i]);
+				}*/
+			}
+			
+			cantLikes += Integer.valueOf(aux1[1]);
+			if(debug)
+				System.out.println("cant Likes = " + cantLikes);
+			aux.setCantLikes(cantLikes);
+			
+			
+		}else {
+			aux.setCantLikes(0);
+		}
+		
+		/*
+		aux1 = aux1[aux1.length].split(" ");
+		cantLikes += aux1[1];
+		*/
+		/*
 		try {
-			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)) {
-				String auxLikes = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)).findElement(By.xpath("//span[contains(@class,'_3chu')]")).getAttribute("innerHTML");
+			if (this.existElement(publication, FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)) {
+				String auxLikes = publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).getText();
+				System.out.println("likes: " + auxLikes);
 				if (auxLikes.contains("&nbsp;mil")) {
 					auxLikes = auxLikes.replaceAll("&nbsp;mil", "000");
 					if (auxLikes.contains(",")) {
@@ -303,6 +346,7 @@ public class FacebookGroupScrap extends Scrap {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+		*/
 		
 		return aux.getId()==null?null:aux;
 	}
@@ -310,10 +354,7 @@ public class FacebookGroupScrap extends Scrap {
 	public List<WebElement> obtainGroupPublicationsHTML(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long aux = System.currentTimeMillis();
 		aux = System.currentTimeMillis();
-		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): ");
-		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
-		aux = System.currentTimeMillis() - aux;
-		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + aux);
+		System.out.println("obtainGroupPublicationsHTML");
 			
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
@@ -352,10 +393,16 @@ public class FacebookGroupScrap extends Scrap {
 		if (match > 0) {
 			if (debug)
 				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
+			
+			aux = System.currentTimeMillis() - aux;
+			System.out.println("obtainGroupPublicationsHTML tardo: " + aux);
+					
 			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
 		} else {
 			if (debug)
 				System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" + uTIME_INI + " FIN:" + uTIME_FIN);
+			aux = System.currentTimeMillis() - aux;
+			System.out.println("FIN obtainGroupPublicationsHTML tardo: " + aux);
 			return null;
 		}
 			
@@ -366,11 +413,7 @@ public class FacebookGroupScrap extends Scrap {
 	public List<WebElement> obtainGroupNewsFeedPublicationsHTML(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
 		long aux = System.currentTimeMillis();
 		aux = System.currentTimeMillis();
-		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): ");
-		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
-		aux = System.currentTimeMillis() - aux;
-		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + aux);
-			
+		System.out.println("obtainGroupNewsFeedPublicationsHTML");
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
 		//List<WebElement> groupPubElements = new ArrayList<WebElement>();
@@ -409,10 +452,14 @@ public class FacebookGroupScrap extends Scrap {
 		if (match > 0) {
 			if (debug)
 				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
+			aux = System.currentTimeMillis()-aux;
+			System.out.println("obtainGroupNewsFeedPublicationsHTML tardo: " + aux);
 			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
 		} else {
 			if (debug)
 				System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" + uTIME_INI + " FIN:" + uTIME_FIN);
+			aux = System.currentTimeMillis()-aux;
+			System.out.println("obtainGroupNewsFeedPublicationsHTML tardo: " + aux);
 			return null;
 		}
 			
