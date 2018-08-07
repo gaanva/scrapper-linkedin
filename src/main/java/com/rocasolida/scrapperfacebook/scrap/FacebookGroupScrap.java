@@ -201,12 +201,12 @@ public class FacebookGroupScrap extends Scrap {
 		
 		
 		List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
-		List<WebElement> groupPubsHTML = this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
+		List<WebElement> groupPubsHTML; /*= this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
 		if(groupPubsHTML!=null) {
 			for(int i=0; i<groupPubsHTML.size(); i++) {
 				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
 			}
-		}
+		}*/
 		
 		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
 		if(groupPubsHTML!=null) {
@@ -359,27 +359,26 @@ public class FacebookGroupScrap extends Scrap {
 		if (debug)
 			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
 		List<WebElement> auxList = new ArrayList<WebElement>();
-		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
+		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
 		
-		if(debug)
-			System.out.println("FILTRO: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
 		
+		System.out.println("Busqueda de posts: " + FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER);
+		System.out.println("Condicion de corte: " + "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI));
+		int tot=0;
 		if (auxList.size() > 0) {
-			do {
-				
-				for(int i =0; i<auxList.size(); i++) {
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", auxList.get(i));
-				}
+			tot = auxList.size();
+			while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
 				this.scrollDown();
+				this.waitForJStoLoad();
+				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
 				
-				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_CONTAINER));
-				
-				//if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_MORE_PUBS_GROUP)).size()>0)){
-				if(auxList.size()==0){
+				if(!(auxList.size()>tot)){
+					System.out.println("BREAK!");
 					break;
+				}else {
+					tot = auxList.size();
 				}
-			
-			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0));
+			}
 		} else {
 			if (debug) {
 				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
@@ -389,6 +388,7 @@ public class FacebookGroupScrap extends Scrap {
 		}	
 			
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
+		System.out.println("TOTAL: "+tot+"CONDICION EXTRACCION: "  + FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
 		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
 		if (match > 0) {
 			if (debug)
@@ -396,7 +396,8 @@ public class FacebookGroupScrap extends Scrap {
 			
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("obtainGroupPublicationsHTML tardo: " + aux);
-					
+			
+			System.out.println("QUERY BUSQUEDA: " + FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
 			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
 		} else {
 			if (debug)

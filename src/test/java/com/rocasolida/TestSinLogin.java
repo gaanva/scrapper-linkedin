@@ -25,7 +25,7 @@ public class TestSinLogin {
 		OS = ScrapUtils.getOSName();
 	}
 	
-	
+	/*
 	@Test
 	public void groupPublicationsHTMLFilteredByUTime() throws MalformedURLException {
 		System.out.println("------> groupPublicationsHTMLFilteredByUTime");
@@ -71,7 +71,7 @@ public class TestSinLogin {
 		fg.quit();
 		System.out.println("Cantidad de pubs: " + aux.size());
 	}
-	
+	*/
 	
 	@Test
 	public void groupPublicationsIDFilteredByUTime() throws MalformedURLException {
