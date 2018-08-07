@@ -208,7 +208,7 @@ public class FacebookGroupScrap extends Scrap {
 			}
 		}*/
 		
-		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, uTIME_INI, uTIME_FIN);
+		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, 10);
 		if(groupPubsHTML!=null) {
 			for(int i=0; i<groupPubsHTML.size(); i++) {
 				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
@@ -295,34 +295,37 @@ public class FacebookGroupScrap extends Scrap {
 		/**
 		 * CANTIDAD DE LIKES
 		 */
-		if(publication.findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).size()>0) {
-			String likes = publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).getAttribute("innerHTML");
-			int cantLikes = 0;
-			String[] aux1;
-			if(likes.contains(",")) {
-				aux1 = likes.split(",");
-				/*for(int i =0; i<aux1.length; i++) {
-					System.out.println("Split , ("+i+"):" + aux1[i]);
-				}*/
-				cantLikes += aux1.length;
-				aux1 = aux1[aux1.length-1].split("y");
-				aux1 = aux1[aux1.length-1].split(" ");
-			}else {
-				aux1 = likes.split(" ");
-				/*for(int i=0; i<aux1.length; i++) {
-					System.out.println("SPlit: ("+i+"): " + aux1[i]);
-				}*/
-			}
-			
-			cantLikes += Integer.valueOf(aux1[1]);
-			if(debug)
-				System.out.println("cant Likes = " + cantLikes);
-			aux.setCantLikes(cantLikes);
-			
-			
-		}else {
-			aux.setCantLikes(0);
-		}
+		
+		
+//		if(publication.findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).size()>0) {
+//			String likes = publication.findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_CANT_LIKES)).getAttribute("innerHTML");
+//			int cantLikes = 0;
+//			String[] aux1;
+//			if(likes.contains(",")) {
+//				aux1 = likes.split(",");
+//				/*for(int i =0; i<aux1.length; i++) {
+//					System.out.println("Split , ("+i+"):" + aux1[i]);
+//				}*/
+//				cantLikes += aux1.length;
+//				aux1 = aux1[aux1.length-1].split("y");
+//				aux1 = aux1[aux1.length-1].split(" ");
+//			}else {
+//				aux1 = likes.split(" ");
+//				/*for(int i=0; i<aux1.length; i++) {
+//					System.out.println("SPlit: ("+i+"): " + aux1[i]);
+//				}*/
+//			}
+//			
+//			cantLikes += Integer.valueOf(aux1[1]);
+//			if(debug)
+//				System.out.println("cant Likes = " + cantLikes);
+//			aux.setCantLikes(cantLikes);
+//			
+//			
+//		}else {
+//			aux.setCantLikes(0);
+//		}
+//		
 		
 		/*
 		aux1 = aux1[aux1.length].split(" ");
@@ -351,33 +354,33 @@ public class FacebookGroupScrap extends Scrap {
 		return aux.getId()==null?null:aux;
 	}
 	
-	public List<WebElement> obtainGroupPublicationsHTML(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+	public List<WebElement> obtainGroupPublicationsHTML(String facebookGroup, int cantidadPublicacionesInicial) throws Exception {
 		long aux = System.currentTimeMillis();
 		aux = System.currentTimeMillis();
 		System.out.println("obtainGroupPublicationsHTML");
 			
 		if (debug)
-			System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FECHAS DADA....");
+			System.out.println("[INFO] BUSCANDO LAS PRIMERAS " + cantidadPublicacionesInicial +" PUBLICACIONES.");
 		List<WebElement> auxList = new ArrayList<WebElement>();
 		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
 		
 		
-		System.out.println("Busqueda de posts: " + FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER);
-		System.out.println("Condicion de corte: " + "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI));
 		int tot=0;
 		if (auxList.size() > 0) {
 			tot = auxList.size();
-			while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+			while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
 				this.scrollDown();
-				this.waitForJStoLoad();
 				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
 				
-				if(!(auxList.size()>tot)){
-					System.out.println("BREAK!");
-					break;
-				}else {
+				//Control de corte por no haber más publicaciones...
+				try {
+					this.waitUntilGroupPubsLoad(tot);
 					tot = auxList.size();
+				}catch(Exception e) {
+					break;
 				}
+				
 			}
 		} else {
 			if (debug) {
@@ -386,27 +389,26 @@ public class FacebookGroupScrap extends Scrap {
 			}
 			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
 		}	
+		
+		//retorno hasta las primeras cantidad de publicaciones indicadas.
+		return auxList.size()>=cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
+		
+		
 			
-		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
-		System.out.println("TOTAL: "+tot+"CONDICION EXTRACCION: "  + FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
-		int match = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]")).size();
-		if (match > 0) {
-			if (debug)
-				System.out.println("[INFO] SE ENCONTRARON " + String.valueOf(match) + " PUBLICACIONES ENTRE LAS FECHAS > a " + uTIME_INI + " y < a " + uTIME_FIN);
-			
-			aux = System.currentTimeMillis() - aux;
-			System.out.println("obtainGroupPublicationsHTML tardo: " + aux);
-			
-			System.out.println("QUERY BUSQUEDA: " + FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]");
-			return this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper')]"));
-		} else {
-			if (debug)
-				System.out.println("[WARN] NO SE ENCONTRARON PUBLICACIONES EN LAS FECHAS INDICADAS." + " INICIO:" + uTIME_INI + " FIN:" + uTIME_FIN);
-			aux = System.currentTimeMillis() - aux;
-			System.out.println("FIN obtainGroupPublicationsHTML tardo: " + aux);
-			return null;
-		}
-			
+	}
+	private boolean waitUntilGroupPubsLoad(final int cantAnterior) {
+		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>cantAnterior) {
+					
+					return true;
+				} else {
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(loadMorePublications);
 	}
 	
 	//ESte trabaja sobre la lista de los posts más activos que facebook pone primero...
