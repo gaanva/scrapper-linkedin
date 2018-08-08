@@ -56,7 +56,7 @@ public final class FacebookConfig {
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
 	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART4;
 	// }
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XP_GROUP_PUBLICATIONS_OLD_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
 
@@ -71,7 +71,7 @@ public final class FacebookConfig {
 	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
 	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
 
-	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
+	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(String facebookGroup, Long utimeINI, Long utimeFIN) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
 	
