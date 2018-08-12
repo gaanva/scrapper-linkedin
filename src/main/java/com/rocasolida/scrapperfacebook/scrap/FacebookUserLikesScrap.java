@@ -89,7 +89,7 @@ public class FacebookUserLikesScrap extends Scrap{
 
 	}
 
-	public List<UserLike> ObtainProfileLikes(String profile) throws Exception{
+	public List<UserLike> obtainProfileLikes(String profile) throws Exception{
 		//this.validateProfileLink(profile);
 		List<UserLike> listaLikes = new ArrayList<UserLike>();
 		//voy a los likes derecho viejo, de una a lo guapo.

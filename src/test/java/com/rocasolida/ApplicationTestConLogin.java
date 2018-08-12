@@ -44,7 +44,7 @@ public class ApplicationTestConLogin {
 		System.out.println("PERFIL: " + perfil);
 		try {
 			fu.login(access);
-			likesPages = fu.ObtainProfileLikes(perfil);
+			likesPages = fu.obtainProfileLikes(perfil);
 			for(int i=0; i<likesPages.size(); i++) {
 				System.out.println("TITLE "+(i+1)+":" + likesPages.get(i).getTitle());
 				System.out.println("URL "+(i+1)+":" + likesPages.get(i).getUrl());
@@ -78,7 +78,7 @@ public class ApplicationTestConLogin {
 		
 		try {
 			fu.login(access);
-			likesPages = fu.ObtainProfileLikes(perfil);
+			likesPages = fu.obtainProfileLikes(perfil);
 			for(int i=0; i<likesPages.size(); i++) {
 				System.out.println("TITLE "+(i+1)+":" + likesPages.get(i).getTitle());
 				System.out.println("URL "+(i+1)+":" + likesPages.get(i).getUrl());
@@ -113,7 +113,7 @@ public class ApplicationTestConLogin {
 		System.out.println("PERFIL: " + perfil);
 		try {
 			fu.login(access);
-			likesPages = fu.ObtainProfileLikes(perfil);
+			likesPages = fu.obtainProfileLikes(perfil);
 			for(int i=0; i<likesPages.size(); i++) {
 				System.out.println("TITLE "+(i+1)+":" + likesPages.get(i).getTitle());
 				System.out.println("URL "+(i+1)+":" + likesPages.get(i).getUrl());
