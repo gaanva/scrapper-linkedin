@@ -84,10 +84,11 @@ public class TestSinLogin {
 
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
+		int CANTPUBS = 30;
 		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
 			//CAFE RACER ARGENTINA
-			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", PUBSuTIME_INI, PUBSuTIME_FIN);
+			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", CANTPUBS);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

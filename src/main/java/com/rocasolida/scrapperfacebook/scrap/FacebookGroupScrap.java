@@ -193,39 +193,59 @@ public class FacebookGroupScrap extends Scrap {
 	}
 
 	
-	public List<GroupPublication> obtainGroupPubsWithoutComments(String facebookGroup, Long uTIME_INI, Long uTIME_FIN) throws Exception {
+	/**
+	 * Me pasan el grupo a acceder y la cantidad de publicaciones a extraer...
+	 * @param facebookGroup
+	 * @param cantPublications
+	 * @return Lista de tipo GroupPublication
+	 * @throws Exception
+	 */
+	public List<GroupPublication> obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications) throws Exception {
 		long tardo = System.currentTimeMillis();
 		
 		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
 		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + tardo);
 		
-		
-		List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
-		/*
-		 * Obtiene la cantidad de publicaciones de la sección de newsfeed.
-		 */
-		List<WebElement> groupPubsHTML= this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, 20);
-		if(groupPubsHTML!=null) {
-			for(int i=0; i<groupPubsHTML.size(); i++) {
-				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+		if(cantPublications > 0) {
+			List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
+			/*
+			 * Obtiene la cantidad de publicaciones de la sección de newsfeed.
+			 */
+			List<WebElement> groupPubsHTML= this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, cantPublications);
+			if(groupPubsHTML!=null) {
+				for(int i=0; i<groupPubsHTML.size(); i++) {
+					groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+				}
 			}
-		}
-		/*
-		 * Obtiene la cantidad de publicaciones desde la sección de 'old' publications o lo que no está
-		 * en la parte de news.
-		 */
-		groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, 10);
-		if(groupPubsHTML!=null) {
-			for(int i=0; i<groupPubsHTML.size(); i++) {
-				groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
-			}
-		}
 			
-		tardo = System.currentTimeMillis() - tardo;
-		System.out.println("obtainPageInformation tardo: " + tardo);
-		
-		return groupPubs.size()>0?groupPubs:null;
-	
+			if(debug)
+				System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES DE LA SECCIÓN NEWSFEED");
+			
+			int cantPubRestantes = cantPublications - groupPubs.size();
+			if(cantPubRestantes>0) {
+				/*
+				 * Obtiene la cantidad de publicaciones desde la sección de 'old' publications o lo que no está
+				 * en la parte de newsFeed.
+				 */
+				groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, cantPubRestantes);
+				if(groupPubsHTML!=null) {
+					for(int i=0; i<groupPubsHTML.size(); i++) {
+						groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
+					}
+				}
+				
+				if(debug)
+					System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES DE LA SECCIÓN OLD PUBLICATIONS");
+				
+			}
+					
+			tardo = System.currentTimeMillis() - tardo;
+			System.out.println("obtainPageInformation tardo: " + tardo);
+			return groupPubs.size()>0?groupPubs:null;
+						
+		}else {
+			throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
+		}		
 	}
 		
 	public GroupPublication extractMainPagePublicationID(String pageName, WebElement publication) {
