@@ -191,7 +191,6 @@ public class FacebookGroupScrap extends Scrap {
 			}
 		}
 	}
-
 	
 	/**
 	 * Me pasan el grupo a acceder y la cantidad de publicaciones a extraer...
@@ -247,7 +246,7 @@ public class FacebookGroupScrap extends Scrap {
 			throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
 		}		
 	}
-		
+	
 	public GroupPublication extractMainPagePublicationID(String pageName, WebElement publication) {
 		long tardo = System.currentTimeMillis();
 		
@@ -444,12 +443,12 @@ public class FacebookGroupScrap extends Scrap {
 			System.out.println("[INFO] BUSCANDO LAS PRIMERAS " + cantidadPublicacionesInicial +" PUBLICACIONES.");
 		//List<WebElement> groupPubElements = new ArrayList<WebElement>();
 		List<WebElement> auxList = new ArrayList<WebElement>();
+		//Obtengo las publicaciones del feednews
 		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
 		
 		int tot=0;
 		if (auxList.size() > 0) {
 			tot = auxList.size();
-			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
 			while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
 				this.scrollDown();
 				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
@@ -491,8 +490,7 @@ public class FacebookGroupScrap extends Scrap {
 		return wait.until(loadMorePublications);
 	}
 	
-	
-	//SIN USO... PERO SE PODRÍA HACER QUE SCROLLEE 2 VECES, BUSCANDO DE ESTAS PUBLICACIONES...
+	//***********SIN USO... PERO SE PODRÍA HACER QUE SCROLLEE 2 VECES, BUSCANDO DE ESTAS PUBLICACIONES...
 	//1) Scroll 2 veces 2) filtro rango fechas 3) scroll 4) si se sumaron nuevas, entonces sigo... hasta que 
 	//no se incremente más la cantidad......
 	public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
@@ -541,12 +539,73 @@ public class FacebookGroupScrap extends Scrap {
 	}
 	
 	
+	/*
+	 * Si es una publicacion que por primera vez se extraen datos...
+	 * utilizo este método.
+	 */
+	public List<Comment> publicationCommentsDataExtraction(String url) throws Exception{
+		//accedo al link.
+		this.navigateTo(url);
+		
+		//capturo comentarios
+		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		List<Comment> auxListaComments = new ArrayList<Comment>();
+		if(commentElements.size()>0) {
+			do {
+				for (int k = 0; k < commentElements.size(); k++) {
+					Comment auxComment = new Comment();
+					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
+					auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+					auxComment.setId(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getText());
+					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getText()));
+					auxListaComments.add(auxComment);
+				}
+				
+				System.out.print(auxListaComments.size() + "|");
+				for (int j = 0; j < commentElements.size(); j++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
+				}
+				
+				commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+			//Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-	
+			}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0 || commentElements.size()>0);
+			if(debug)
+				System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
+		}else {
+			if(debug)
+				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
+		}
+		
+		return auxListaComments;
+		
+	}
 	
-	
-	
-	
-	
-	
+	/*
+	 * 
+	 */
+	public void publicationHeaderDataExtraction(String url) throws Exception{
+		//NO espero a que carge el overlay si existe en DOM, lo pongo invisile
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)).size()>0) {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)));
+		}
+		
+		String likes = "0";
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).size()>0) {
+			likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).getText();
+		}
+		
+		String comments = "0";
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_CANTCOMMENTS)).size()>0) {
+			comments = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_CANTCOMMENTS)).getText();
+		}
+		
+		String shares = "0";
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).size()>0) {
+			comments = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).getText();
+		}
+				
+	}
+
 	private void navigateTo(String URL) throws Exception{
 		long aux = System.currentTimeMillis();
 		try {
@@ -577,14 +636,20 @@ public class FacebookGroupScrap extends Scrap {
 			System.out.println("navigateTo tardo: " + aux);
 		}
 	}
-	
-	
-	
-	
-	
-	
-	
 
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	public Publication obtainPostInformation(String pageName, String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
 		// Voy a la pagina de la publicacion
 		try {

@@ -6,9 +6,13 @@ public final class FacebookConfig {
 	public static String URL_GROUP = "groups/";
 	
 	
+	
 	//// title[@lang='en']
 	public static Integer CANT_PUBLICATIONS_TO_BE_LOAD = 10;
 
+	
+	
+	
 	/** FORM_LOGIN **/
 	public static String XPATH_FORM_LOGIN = "//form[contains(@id,'login_form')]";
 	public static String XPATH_INPUT_MAIL_LOGIN = ".//input[contains(@id,'email')]";
@@ -27,6 +31,7 @@ public final class FacebookConfig {
 	public static String XPATH_CLOSE_BUTTON = "//a[@class='_xlt _418x']";
 
 	public static String XP_MORE_PUBS_GROUP = "//div[@id='pagelet_group_pager']";
+	
 	
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
@@ -124,7 +129,17 @@ public final class FacebookConfig {
 		return XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
 	
-
+	
+	/**
+	 * open Group Publication
+	 */
+	public static String XP_PUBLICATION_OVERLAY = "//div[@class='_3ixn']/..";
+	public static String XP_PUBLICATION_LIKES = "//span[@class='_4arz']/span";
+	public static String XP_PUBLICATION_CANTCOMMENTS = "//div[@class='_36_q']/a";
+	public static String XP_PUBLICATION_COMPARTIDOS = "//div[@class='_36_q']/a[contains(@href,'shares')]";
+	
+	/****/
+	
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
 	public static String XPATH_PUBLICATION_DATE_TIME = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("title")
 	public static String XPATH_PUBLICATION_TITLE = ".//div[contains(@class,'_5pbx userContent')]";
@@ -141,6 +156,7 @@ public final class FacebookConfig {
 	
 	
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
+	public static String XP_GROUPPUBLICATION_VER_MAS_MSJS = "//a[contains(@class,'UFIPagerLink')]";
 
 	public static String XPATH_PUBLICATION_VER_RESPUESTAS = ".//a[contains(@class,'UFICommentLink')]";
 	/** DATOS DE LOS MENSAJES **/
@@ -162,13 +178,14 @@ public final class FacebookConfig {
 
 	// public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
 	// public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
-	public static String XPATH_COMMENTS = ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList'])]";
+	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
 	public static String XPATH_COMMENTS_AND_RESPONSES = ".//div[contains(@class,'UFICommentContentBlock')]";
 	public static String XPATH_RESPONSES_LINK = ".//span[contains(@class,'UFIReplySocialSentenceLinkText')]";
 	// span[contains(@class,'UFIReplySocialSentenceLinkText')]
 	/// following-sibling::div[@class=' UFIReplyList'][1]
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
+	
 	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 
