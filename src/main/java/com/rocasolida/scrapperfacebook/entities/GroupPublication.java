@@ -3,7 +3,7 @@ package com.rocasolida.scrapperfacebook.entities;
 
 public class GroupPublication extends Publication{
 	boolean salePost;
-	long value;
+	String value;
 	String ubication;
 
 	public boolean isSalePost() {
@@ -14,11 +14,11 @@ public class GroupPublication extends Publication{
 		this.salePost = salePost;
 	}
 
-	public long getValue() {
+	public String getValue() {
 		return value;
 	}
 
-	public void setValue(long value) {
+	public void setValue(String value) {
 		this.value = value;
 	}
 

@@ -142,7 +142,9 @@ public final class FacebookConfig {
 	public static String XP_PUBLICATION_LIKES_NL ="//div[@class='UFILikeSentenceText']/span";
 	public static String XP_PUBLICATION_CANTCOMMENTS = "//div[@class='_36_q']/a";
 	public static String XP_PUBLICATION_COMPARTIDOS = "//div[@class='_36_q']/a[contains(@href,'shares')]";
-	
+	public static String XP_PUBLICATION_SALEPRICE = "//div[@class='_l56']/div";
+	public static String XP_PUBLICATION_TITLE ="//div[@class='_l53']/span[last()]";
+	public static String XP_PUBLICATION_LOCATION = "//div[@class='_l56']/div[last()]";
 	/****/
 	
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.

@@ -639,23 +639,27 @@ public class FacebookGroupScrap extends Scrap {
 	/*
 	 * 
 	 */
-	public void publicationHeaderDataExtraction() throws Exception{
-		
+	public GroupPublication publicationHeaderDataExtraction() throws Exception{
+		GroupPublication aux = new GroupPublication();
 		String likes = "0";
 		if(this.getAccess() == null) {
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).size()>0) {
-				System.out.println("tiene LIKES");
 				likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).getText();
+				System.out.println("TIENE LIKES: " + likes);
+			}else {
+				System.out.println("NO TIENE LIKES.");
 			}
 		}else {
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).size()>0) {
-				System.out.println("tiene LIKES");
+				/**
+				 * TODO: contar la cantidad de likes en base a likes de personas...
+				 */
 				likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).getText();
+				System.out.println("TIENE LIKES: " + likes);
+			}else {
+				System.out.println("NO TIENE LIKES.");
 			}
 		}
-		
-		System.out.println("LIKES: " + likes);
-		
 		/*
 		String comments = "0";
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_CANTCOMMENTS)).size()>0) {
@@ -668,17 +672,43 @@ public class FacebookGroupScrap extends Scrap {
 		
 		String shares = "0";
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).size()>0) {
-			System.out.println("tiene comments");
 			shares = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).getText();
+			System.out.println("TIENE COMPARTIDOS: " + shares);
+			aux.setCantShare(Integer.valueOf(shares));
+		}else {
+			System.out.println("NO TIENE COMPARTIDOS.");
 		}
 		
-		System.out.println("SHARES: " + shares);
-		
-		
+		String price = "0";
 		//sacar el precio del producto. -->>//div[@class='_l56']/div
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_SALEPRICE)).size()>0) {
+			price = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_SALEPRICE)).getText();
+			aux.setValue(price);
+			System.out.println("TIENE PRECIO: " + price);
+		}else {
+			System.out.println("NO TIENE PRECIO.");
+		}
 		//sacar el titulo -->>//div[@class='_l53']/span[last()]
+		String title = "0";
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_TITLE)).size()>0) {
+			title = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_TITLE)).getText();
+			aux.setTitulo(title);
+			System.out.println("TIENE TITULO: " + title);
+		}else {
+			System.out.println("NO TIENE TITULO.");
+		}
 		//sacar la ubicación -->> //div[@class='_l56']/div[last()]
-				
+		String ubicacion = "";
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LOCATION)).size()>0) {
+			ubicacion = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LOCATION)).getText();
+			aux.setUbication(ubicacion);
+			System.out.println("TIENE UBICACION: " + ubicacion);
+		}else {
+			System.out.println("NO TIENE UBICACION.");
+		}
+		
+		
+		return aux;
 	}
 
 	private void navigateTo(String URL) throws Exception{
