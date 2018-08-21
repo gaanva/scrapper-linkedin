@@ -539,13 +539,59 @@ public class FacebookGroupScrap extends Scrap {
 	}
 	
 	
+	public GroupPublication obtainFullPubInformation(String groupPubURL) throws Exception{
+		this.navigateTo(groupPubURL);
+		//NO espero a que carge el overlay si existe en DOM, lo pongo invisile
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)).size()>0) {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)));
+		}
+		if(this.getAccess()==null) {
+			if(this.getDriver().findElements(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).size()>0) {
+				this.getDriver().findElement(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).click();
+				try {
+					this.waitUntilCommentsLoaded();
+				}catch(Exception e) {
+					if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+						System.err.println("[TIMEOUTEXCEPTION] ESPERA CARGA COMENTARIO SUPERADA.");
+						throw e;
+					}else {
+						throw e;
+					}
+				}
+			}
+		}
+		
+		//if(sección de comentarios...de clicck)
+		GroupPublication aux = new GroupPublication();
+		
+		this.publicationHeaderDataExtraction();
+		
+		aux.setComments(this.publicationCommentsDataExtraction());
+		
+		return aux;
+		
+	}
+	
+	private boolean waitUntilCommentsLoaded() {
+		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(commentSection);
+	}
+	
 	/*
 	 * Si es una publicacion que por primera vez se extraen datos...
 	 * utilizo este método.
 	 */
-	public List<Comment> publicationCommentsDataExtraction(String url) throws Exception{
+	public List<Comment> publicationCommentsDataExtraction() throws Exception{
 		//accedo al link.
-		this.navigateTo(url);
 		
 		//capturo comentarios
 		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
@@ -554,10 +600,20 @@ public class FacebookGroupScrap extends Scrap {
 			do {
 				for (int k = 0; k < commentElements.size(); k++) {
 					Comment auxComment = new Comment();
-					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
+					if(this.getAccess() != null) {
+						auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
+					}else {
+						auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
+					}
 					auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
-					auxComment.setId(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getText());
-					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getText()));
+									
+					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
+					String commentId = href.split("&")[1].split("=")[1];
+					auxComment.setId(commentId);
+					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
+					
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
+					
 					auxListaComments.add(auxComment);
 				}
 				
@@ -583,26 +639,45 @@ public class FacebookGroupScrap extends Scrap {
 	/*
 	 * 
 	 */
-	public void publicationHeaderDataExtraction(String url) throws Exception{
-		//NO espero a que carge el overlay si existe en DOM, lo pongo invisile
-		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)).size()>0) {
-			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)));
-		}
+	public void publicationHeaderDataExtraction() throws Exception{
 		
 		String likes = "0";
-		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).size()>0) {
-			likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).getText();
+		if(this.getAccess() == null) {
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).size()>0) {
+				System.out.println("tiene LIKES");
+				likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).getText();
+			}
+		}else {
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).size()>0) {
+				System.out.println("tiene LIKES");
+				likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).getText();
+			}
 		}
 		
+		System.out.println("LIKES: " + likes);
+		
+		/*
 		String comments = "0";
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_CANTCOMMENTS)).size()>0) {
+			System.out.println("tiene comments");
 			comments = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_CANTCOMMENTS)).getText();
 		}
+		System.out.println("COMMENTS: " + comments);
+		*/
+		
 		
 		String shares = "0";
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).size()>0) {
-			comments = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).getText();
+			System.out.println("tiene comments");
+			shares = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).getText();
 		}
+		
+		System.out.println("SHARES: " + shares);
+		
+		
+		//sacar el precio del producto. -->>//div[@class='_l56']/div
+		//sacar el titulo -->>//div[@class='_l53']/span[last()]
+		//sacar la ubicación -->> //div[@class='_l56']/div[last()]
 				
 	}
 

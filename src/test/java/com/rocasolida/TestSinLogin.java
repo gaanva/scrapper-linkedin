@@ -100,6 +100,34 @@ public class TestSinLogin {
 		System.out.println("Cantidad de pubs: " + aux.size());
 	}
 	
+	
+	@Test
+	public void groupPubFullDataExtraction() throws Exception {
+		System.out.println("-----> groupPublicationsIDFilteredByUTime");
+		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		Page page = null;
+		
+		
+		GroupPublication gp = new GroupPublication();
+		try {
+			gp = fg.obtainFullPubInformation("https://www.facebook.com/groups/caferacerar/permalink/3327979500590611/?sale_post_id=3327979500590611");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		for(int i=0; i<gp.getComments().size(); i++) {
+			System.out.println("ID("+i+") " + gp.getComments().get(i).getId());
+			System.out.println("MENSAJE("+i+") " + gp.getComments().get(i).getMensaje());
+			System.out.println("UTIME: ("+i+") " + gp.getComments().get(i).getUTime());
+			System.out.println("USER NAME: ("+i+") " + gp.getComments().get(i).getUserName());
+		}
+		
+		fg.quit();
+		//System.out.println("Cantidad de pubs: " + aux.size());
+	}
+	
+	
+	
 
 //	@Test
 //	public void mauriciomacriConFiltroComments1Mes() throws MalformedURLException {

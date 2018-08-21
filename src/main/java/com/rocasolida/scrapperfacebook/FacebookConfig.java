@@ -129,12 +129,17 @@ public final class FacebookConfig {
 		return XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
 	
+	/**
+	 * Spinner load More Group Comments
+	 */
+	public static String XP_SPINNERLOAD_COMMENTS ="//div[contains(@class,'UFICommentsLoadingSpinnerContainer ')]";
 	
 	/**
 	 * open Group Publication
 	 */
 	public static String XP_PUBLICATION_OVERLAY = "//div[@class='_3ixn']/..";
 	public static String XP_PUBLICATION_LIKES = "//span[@class='_4arz']/span";
+	public static String XP_PUBLICATION_LIKES_NL ="//div[@class='UFILikeSentenceText']/span";
 	public static String XP_PUBLICATION_CANTCOMMENTS = "//div[@class='_36_q']/a";
 	public static String XP_PUBLICATION_COMPARTIDOS = "//div[@class='_36_q']/a[contains(@href,'shares')]";
 	
@@ -186,7 +191,7 @@ public final class FacebookConfig {
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
 	
-	public static String XPATH_USER_ID_COMMENT = ".//a[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
+	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 
 	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
