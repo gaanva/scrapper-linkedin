@@ -74,8 +74,8 @@ public class TestSinLogin {
 	*/
 	
 	@Test
-	public void groupPublicationsByQuantity() throws MalformedURLException {
-		System.out.println("-----> groupPublicationsIDFilteredByUTime");
+	public void groupPublicationsByQuantity() throws Exception {
+		System.out.println("-----> groupPublicationsByQuantity");
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		int CANTPUBS = 14;
@@ -87,13 +87,38 @@ public class TestSinLogin {
 			e.printStackTrace();
 		}
 		
+		GroupPublication gp = new GroupPublication();
+		
 		for(int i=0; i<aux.size(); i++) {
+			System.out.println("*****************************************************************************************");
+			
 			System.out.println("URL("+i+") " + aux.get(i).getUrl());
 			System.out.println("ID("+i+") " + aux.get(i).getId());
-			System.out.println("VENDIBLE("+i+") " + aux.get(i).isSalePost());
 			System.out.println("UTIME: ("+i+") " + aux.get(i).getUTime());
-			System.out.println("LIKES: ("+i+") " + aux.get(i).getCantLikes());
-			System.out.println("SHARES: ("+i+") " + aux.get(i).getCantShare());
+			
+			
+			gp = fg.obtainFullPubInformation(aux.get(i).getUrl());
+			System.out.println("ID PUB: " +gp.getId()); //ok
+			System.out.println("OWNER: " + gp.getOwner()); //ok
+			System.out.println("TITULO: " + gp.getTitulo()); //ok
+			System.out.println("UBICACION: " + gp.getUbication()); //ok
+			System.out.println("URL: " + gp.getUrl());//ok
+			System.out.println("VALOR: " + gp.getValue());//ok
+			System.out.println("LIKES: " + gp.getCantLikes()); //
+			System.out.println("REPRODUCCIONES: " + gp.getCantReproducciones());
+			System.out.println("SHARES: " + gp.getCantShare());
+			System.out.println("UTIME: " + gp.getUTime());
+			System.out.println("VENDIBLE: " + gp.isSalePost());
+			
+			for(int j=0; j<gp.getComments().size(); j++) {
+				System.out.println("ID("+j+") " + gp.getComments().get(j).getId());
+				System.out.println("MENSAJE("+j+") " + gp.getComments().get(j).getMensaje());
+				System.out.println("UTIME: ("+j+") " + gp.getComments().get(j).getUTime());
+				System.out.println("USER NAME: ("+j+") " + gp.getComments().get(j).getUserName());
+			}
+			
+			System.out.println("*****************************************************************************************");
+			
 		}
 		
 		fg.quit();
@@ -103,7 +128,7 @@ public class TestSinLogin {
 	
 	@Test
 	public void groupPubFullDataExtraction() throws Exception {
-		System.out.println("-----> groupPublicationsIDFilteredByUTime");
+		System.out.println("-----> groupPubFullDataExtraction");
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Page page = null;
 		
@@ -115,6 +140,22 @@ public class TestSinLogin {
 			e.printStackTrace();
 		}
 		
+		fg.quit();
+		
+		//PUBLICATION INFO
+		System.out.println("CANT COMENTARIOS: " + gp.getComments().size());
+		System.out.println("ID PUB: " +gp.getId()); //ok
+		System.out.println("OWNER: " + gp.getOwner()); //ok
+		System.out.println("TITULO: " + gp.getTitulo()); //ok
+		System.out.println("UBICACION: " + gp.getUbication()); //ok
+		System.out.println("URL: " + gp.getUrl());//ok
+		System.out.println("VALOR: " + gp.getValue());//ok
+		System.out.println("LIKES: " + gp.getCantLikes()); //
+		System.out.println("REPRODUCCIONES: " + gp.getCantReproducciones());
+		System.out.println("SHARES: " + gp.getCantShare());
+		System.out.println("UTIME: " + gp.getUTime());
+		System.out.println("VENDIBLE: " + gp.isSalePost());
+		
 		for(int i=0; i<gp.getComments().size(); i++) {
 			System.out.println("ID("+i+") " + gp.getComments().get(i).getId());
 			System.out.println("MENSAJE("+i+") " + gp.getComments().get(i).getMensaje());
@@ -122,7 +163,7 @@ public class TestSinLogin {
 			System.out.println("USER NAME: ("+i+") " + gp.getComments().get(i).getUserName());
 		}
 		
-		fg.quit();
+		
 		//System.out.println("Cantidad de pubs: " + aux.size());
 	}
 	
