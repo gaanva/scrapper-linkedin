@@ -73,6 +73,11 @@ public class TestSinLogin {
 	}
 	*/
 	
+	/**
+	 * Ejemplo de como se deben usar ambos métodos, 1) para recorrer todas(según cantidad ingresada) las publicaciones de la 
+	 * página principal. Y el 2) para tomar cada una página principal extraerle el resto de sus datos...
+	 * @throws Exception
+	 */
 	@Test
 	public void groupPublicationsByQuantity() throws Exception {
 		System.out.println("-----> groupPublicationsByQuantity");
@@ -82,6 +87,7 @@ public class TestSinLogin {
 		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
 			//CAFE RACER ARGENTINA
+			//Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", CANTPUBS);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -96,7 +102,7 @@ public class TestSinLogin {
 			System.out.println("ID("+i+") " + aux.get(i).getId());
 			System.out.println("UTIME: ("+i+") " + aux.get(i).getUTime());
 			
-			
+			//Proceso cada una de las publications encontradas.
 			gp = fg.obtainFullPubInformation(aux.get(i).getUrl());
 			System.out.println("ID PUB: " +gp.getId()); //ok
 			System.out.println("OWNER: " + gp.getOwner()); //ok
@@ -126,6 +132,10 @@ public class TestSinLogin {
 	}
 	
 	
+	/**
+	 * Se Procesa una Publicación, en base a su URL.
+	 * @throws Exception
+	 */
 	@Test
 	public void groupPubFullDataExtraction() throws Exception {
 		System.out.println("-----> groupPubFullDataExtraction");
@@ -135,6 +145,7 @@ public class TestSinLogin {
 		
 		GroupPublication gp = new GroupPublication();
 		try {
+			//SE llama al proceso que extrae los datos de una publicación en base a la URL de la misma.
 			gp = fg.obtainFullPubInformation("https://www.facebook.com/groups/caferacerar/permalink/3327979500590611/?sale_post_id=3327979500590611");
 		} catch (Exception e) {
 			e.printStackTrace();
