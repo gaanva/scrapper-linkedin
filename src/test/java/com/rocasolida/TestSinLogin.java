@@ -102,7 +102,7 @@ public class TestSinLogin {
 			System.out.println("ID("+i+") " + aux.get(i).getId());
 			System.out.println("UTIME: ("+i+") " + aux.get(i).getUTime());
 			
-			//Proceso cada una de las publications encontradas.
+			//PAso 2) Proceso cada una de las publications encontradas.
 			gp = fg.obtainFullPubInformation(aux.get(i).getUrl());
 			System.out.println("ID PUB: " +gp.getId()); //ok
 			System.out.println("OWNER: " + gp.getOwner()); //ok

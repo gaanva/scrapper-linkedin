@@ -88,70 +88,65 @@ public class FacebookGroupScrap extends Scrap {
 		long tardo = System.currentTimeMillis();
 		
 		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
+		tardo = System.currentTimeMillis() - tardo;
 		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + tardo);
-		
-		if(cantPublications > 0) {
-			List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
-			/*
-			 * Obtiene la cantidad de publicaciones de la sección de newsfeed.
-			 */
-			List<WebElement> groupPubsHTML= this.obtainGroupNewsFeedPublicationsHTML(facebookGroup, cantPublications);
-			if(groupPubsHTML!=null) {
-				for(int i=0; i<groupPubsHTML.size(); i++) {
-					groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
-				}
-			}
-			
-			if(debug)
-				System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES DE LA SECCIÓN NEWSFEED");
-			
-			int cantPubRestantes = cantPublications - groupPubs.size();
-			if(cantPubRestantes>0) {
-				/*
-				 * Obtiene la cantidad de publicaciones desde la sección de 'old' publications o lo que no está
-				 * en la parte de newsFeed.
-				 */
-				groupPubsHTML = this.obtainGroupPublicationsHTML(facebookGroup, cantPubRestantes);
-				if(groupPubsHTML!=null) {
-					for(int i=0; i<groupPubsHTML.size(); i++) {
-						groupPubs.add(this.extractMainPagePublicationID(facebookGroup, groupPubsHTML.get(i)));
-					}
+		try {
+			if(cantPublications > 0) {
+				List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
+				//Obtiene la cantidad de publicaciones de la sección de newsfeed.
+				List<WebElement> groupPubsHTML = new ArrayList<WebElement>();
+				groupPubsHTML = this.obtainMainPageGroupPublicationsHTML(cantPublications, FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER);
+				
+				int cantPubRestantes = cantPublications - groupPubsHTML.size();
+				if(cantPubRestantes>0) {
+					//Obtiene la cantidad de publicaciones desde la sección de 'old' publications o lo que no está
+					//en la parte de newsFeed.
+					groupPubsHTML.addAll(this.obtainMainPageGroupPublicationsHTML(cantPubRestantes, FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
+					
 				}
 				
 				if(debug)
 					System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES DE LA SECCIÓN OLD PUBLICATIONS");
 				
+				if(groupPubsHTML!=null) {
+					for(int i=0; i<groupPubsHTML.size(); i++) {
+						//Extraigo el ID-URL y UTIME de la publicacion encontrada
+						groupPubs.add(this.extractMainPagePublicationID(groupPubsHTML.get(i)));
+					}
+				}
+				
+				return groupPubs.size()>0?groupPubs:null;
+							
+			}else {
+				throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
 			}
-					
+		}finally {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("obtainPageInformation tardo: " + tardo);
-			return groupPubs.size()>0?groupPubs:null;
-						
-		}else {
-			throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
-		}		
+		}
+		
 	}
 	
-	public GroupPublication extractMainPagePublicationID(String pageName, WebElement publication) {
+	/**
+	 * De la página ppal del Grupo, los datos identificatorios de una poublicación.
+	 * @param publication
+	 * @return
+	 */
+	public GroupPublication extractMainPagePublicationID(WebElement publication) {
 		GroupPublication aux = new GroupPublication();
-			
-		/**
-		 * Extraigo LINK del post, que es su ID.
-		 */
+		
 		//String postID = this.regexPostID(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
 		String URL = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
-		
 		String postID;
 		
+		
+		//Extraigo el ID del post y la URL.
 		String[] splitURL = URL.split("/");
 		if(splitURL[splitURL.length-1].contains("sale_post_id")) {
-			aux.setSalePost(true);
 			postID = splitURL[splitURL.length-2];
 		}else {
-			aux.setSalePost(false);
 			postID = splitURL[splitURL.length-1];
 		}
-			
 		
 		if (postID == "") {
 			if (debug)
@@ -161,10 +156,7 @@ public class FacebookGroupScrap extends Scrap {
 			aux.setUrl(URL);
 		}
 		
-		/**
-		 * TIMESTAMP El timestamp viene en GMT.
-		 */
-
+		//Extraigo el UTIME DE LA PUBLICACION.
 		if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
 			aux.setUTime(Long.parseLong(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
 		} else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
@@ -174,51 +166,63 @@ public class FacebookGroupScrap extends Scrap {
 		return aux.getId()==null?null:aux;
 	}
 	
-	public List<WebElement> obtainGroupPublicationsHTML(String facebookGroup, int cantidadPublicacionesInicial) throws Exception {
+	/**
+	 * Extraigo el HTML de las publicaciones que lista la página principal de un grupo.
+	 * El xpathExpression hace referencia a news feed o a la lista de publications comun.
+	 * @param cantidadPublicacionesInicial
+	 * @param xpathExpression
+	 * @return
+	 * @throws Exception
+	 */
+	public List<WebElement> obtainMainPageGroupPublicationsHTML(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
 		long aux = System.currentTimeMillis();
 		aux = System.currentTimeMillis();
 		System.out.println("obtainGroupPublicationsHTML");
+		try {
+			List<WebElement> auxList = new ArrayList<WebElement>();
+			auxList = this.getDriver().findElements(By.xpath(xpathExpression));
 			
-		List<WebElement> auxList = new ArrayList<WebElement>();
-		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
-		
-		
-		int tot=0;
-		if (auxList.size() > 0) {
-			tot = auxList.size();
-			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
-			while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
-				this.scrollDown();
-				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
-				
-				//Control de corte por no haber más publicaciones...
-				try {
-					this.waitUntilGroupPubsLoad(tot);
-					tot = auxList.size();
-				}catch(Exception e) {
-					break;
+			
+			int tot=0;
+			if (auxList.size() > 0) {
+				tot = auxList.size();
+				//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+				while(!(this.getDriver().findElements(By.xpath(xpathExpression)).size()>= cantidadPublicacionesInicial)) {	
+					this.scrollDown();
+					auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+					
+					//Control de corte por no haber más publicaciones...
+					try {
+						//this.waitUntilGroupPubsLoad(tot);
+						this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
+						tot = auxList.size();
+					}catch(Exception e) {
+						break;
+					}
+					
 				}
-				
-			}
-		} else {
-			if (debug) {
-				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-				this.saveScreenShot("GRUPO_SIN_PUBS");
-			}
-			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-		}	
-		
-		//retorno hasta las primeras cantidad de publicaciones indicadas.
-		return auxList.size()>=cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
-		
-		
+			} else {
+				return auxList;
+			}	
 			
+			//retorno hasta las primeras cantidad de publicaciones indicadas.
+			return auxList.size()>cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
+		} finally {
+			System.out.println("obtainGroupPublicationsHTML tardo: " + (System.currentTimeMillis()-aux));
+		}
 	}
 	
-	private boolean waitUntilGroupPubsLoad(final int cantAnterior) {
+	/**
+	 * La página ppal de un grupo tiene sección news feed o comun, por eso se espera
+	 * en distintas xpathexpression.
+	 * @param cantAnterior
+	 * @param xpathExpression
+	 * @return
+	 */
+	private boolean waitUntilMainPageGroupPubsLoad(final int cantAnterior, final String xpathExpression) {
 		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>cantAnterior) {
+				if (driver.findElements(By.xpath(xpathExpression)).size()>cantAnterior) {
 					
 					return true;
 				} else {
@@ -230,112 +234,13 @@ public class FacebookGroupScrap extends Scrap {
 		return wait.until(loadMorePublications);
 	}
 	
-	//ESte trabaja sobre la lista de los posts más activos que facebook pone primero...
-	//Los cuales no se repiten en la lista de publicaciones más abajo.
-	public List<WebElement> obtainGroupNewsFeedPublicationsHTML(String facebookGroup,  int cantidadPublicacionesInicial) throws Exception {
-		long aux = System.currentTimeMillis();
-		aux = System.currentTimeMillis();
-		System.out.println("obtainGroupNewsFeedPublicationsHTML");
-		if (debug)
-			System.out.println("[INFO] BUSCANDO LAS PRIMERAS " + cantidadPublicacionesInicial +" PUBLICACIONES.");
-		//List<WebElement> groupPubElements = new ArrayList<WebElement>();
-		List<WebElement> auxList = new ArrayList<WebElement>();
-		//Obtengo las publicaciones del feednews
-		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
-		
-		int tot=0;
-		if (auxList.size() > 0) {
-			tot = auxList.size();
-			while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
-				this.scrollDown();
-				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER));
-				
-				//Control de corte por no haber más publicaciones...
-				try {
-					this.waitUntilNewsFeedGroupPubsLoad(tot);
-					tot = auxList.size();
-				}catch(Exception e) {
-					break;
-				}
-				
-			}
-		} else {
-			if (debug) {
-				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-				this.saveScreenShot("GRUPO_SIN_PUBS");
-			}
-			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-		}	
-		
-		//retorno hasta las primeras cantidad de publicaciones indicadas.
-		return auxList.size()>=cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
-		
-	}
 	
-	private boolean waitUntilNewsFeedGroupPubsLoad(final int cantAnterior) {
-		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
-			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER)).size()>cantAnterior) {
-					
-					return true;
-				} else {
-					return false;
-				}
-			}
-		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
-		return wait.until(loadMorePublications);
-	}
-	
-	//***********SIN USO... PERO SE PODRÍA HACER QUE SCROLLEE 2 VECES, BUSCANDO DE ESTAS PUBLICACIONES...
-	//1) Scroll 2 veces 2) filtro rango fechas 3) scroll 4) si se sumaron nuevas, entonces sigo... hasta que 
-	//no se incremente más la cantidad......
-	public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
-		long aux = System.currentTimeMillis();
-		aux = System.currentTimeMillis();
-		System.out.println("obtainGroupPublicationsHTML");
-			
-		if (debug)
-			System.out.println("[INFO] BUSCANDO LAS PUBLICACIONES ENTRE LAS FECHAS: "+uTimeIni+" Y "+uTimeFin+".");
-		
-		List<WebElement> auxList = new ArrayList<WebElement>();
-		auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTimeIni, uTimeFin)));
-		
-		
-		int tot=0;
-		if (auxList.size() > 0) {
-			tot = auxList.size();
-			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
-			/*
-			while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
-				this.scrollDown();
-				auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
-				
-				//Control de corte por no haber más publicaciones...
-				try {
-					this.waitUntilGroupPubsLoad(tot);
-					tot = auxList.size();
-				}catch(Exception e) {
-					break;
-				}
-				
-			}*/
-		} else {
-			if (debug) {
-				System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-				this.saveScreenShot("GRUPO_SIN_PUBS");
-			}
-			throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
-		}	
-		
-		//retorno hasta las primeras cantidad de publicaciones indicadas.
-		//return auxList.size()>=cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
-		return null;
-		
-			
-	}
-	
-	
+	/**
+	 * Extracción de los datos de cabecera y comentarios de una publicación
+	 * @param groupPubURL
+	 * @return
+	 * @throws Exception
+	 */
 	public GroupPublication obtainFullPubInformation(String groupPubURL) throws Exception{
 		this.navigateTo(groupPubURL);
 		//NO espero a que carge el overlay si existe en DOM, lo pongo invisile
@@ -382,9 +287,10 @@ public class FacebookGroupScrap extends Scrap {
 		return wait.until(commentSection);
 	}
 	
-	/*
-	 * Si es una publicacion que por primera vez se extraen datos...
-	 * utilizo este método.
+	/**
+	 * Extraigo los comentarios de una publicación
+	 * @return
+	 * @throws Exception
 	 */
 	public List<Comment> publicationCommentsDataExtraction() throws Exception{
 		//accedo al link.
@@ -396,10 +302,20 @@ public class FacebookGroupScrap extends Scrap {
 			do {
 				for (int k = 0; k < commentElements.size(); k++) {
 					Comment auxComment = new Comment();
-					if(this.getAccess() != null) {
-						auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
-					}else {
-						auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getText());
+					
+					// Usuario id
+					if (this.getAccess() != null) {
+						String ini = "id=";
+						String fin = "&";
+						String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
+						auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
+					}
+					// Usuario name
+					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
+					
+					// Extraer likes.
+					if (this.getAccess() != null) {
+						auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
 					}
 					auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
 									
@@ -434,7 +350,11 @@ public class FacebookGroupScrap extends Scrap {
 		
 	}
 		
-	
+	/**
+	 * Extraigo la información general de la publicación.
+	 * @return
+	 * @throws Exception
+	 */
 	public GroupPublication publicationHeaderDataExtraction() throws Exception{
 		GroupPublication aux = new GroupPublication();
 		String likes = "0";
@@ -648,5 +568,53 @@ public class FacebookGroupScrap extends Scrap {
 			}
 		}
 	}
+	
+	//***********SIN USO... PERO SE PODRÍA HACER QUE SCROLLEE 2 VECES, BUSCANDO DE ESTAS PUBLICACIONES...
+		//1) Scroll 2 veces 2) filtro rango fechas 3) scroll 4) si se sumaron nuevas, entonces sigo... hasta que 
+		//no se incremente más la cantidad......
+		public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
+			long aux = System.currentTimeMillis();
+			aux = System.currentTimeMillis();
+			System.out.println("obtainGroupPublicationsHTML");
+				
+			if (debug)
+				System.out.println("[INFO] BUSCANDO LAS PUBLICACIONES ENTRE LAS FECHAS: "+uTimeIni+" Y "+uTimeFin+".");
+			
+			List<WebElement> auxList = new ArrayList<WebElement>();
+			auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(facebookGroup, uTimeIni, uTimeFin)));
+			
+			
+			int tot=0;
+			if (auxList.size() > 0) {
+				tot = auxList.size();
+				//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+				/*
+				while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER)).size()>= cantidadPublicacionesInicial)) {	
+					this.scrollDown();
+					auxList = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
+					
+					//Control de corte por no haber más publicaciones...
+					try {
+						this.waitUntilGroupPubsLoad(tot);
+						tot = auxList.size();
+					}catch(Exception e) {
+						break;
+					}
+					
+				}*/
+			} else {
+				if (debug) {
+					System.err.println("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
+					this.saveScreenShot("GRUPO_SIN_PUBS");
+				}
+				throw new Exception("[INFO] EL GRUPO NO TIENE NUNGUNA PUBLICACION");
+			}	
+			
+			//retorno hasta las primeras cantidad de publicaciones indicadas.
+			//return auxList.size()>=cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
+			return null;
+			
+				
+		}
 
 }
