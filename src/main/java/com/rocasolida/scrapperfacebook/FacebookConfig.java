@@ -202,6 +202,16 @@ public final class FacebookConfig {
 	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
 	// }
 	// div[contains(@class,' UFIReplyList')]
+	
+	/**
+	 * group Posts
+	 */
+	//Condicion para que continue recorriendo comentarios.
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_FROM = XPATH_COMMENTS + ".//abbr[@data-utime>=";
+	
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(Long utimeINI) {
+		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + "]";
+	}
 
 	public FacebookConfig() {
 
