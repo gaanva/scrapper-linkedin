@@ -4,15 +4,14 @@ public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
 	public static String URL_GROUP = "groups/";
-	
-	
-	
+	public static String URL_LIKES = "/likes_all";
+	public static String XP_HAS_LIKES_CONTENT = "//div[contains(@class,'_5h60 _30f')]";
+	public static String XP_USER_LIKES = "//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]";
+	public static String XP_LIKES_LOADING = "//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]";
+
 	//// title[@lang='en']
 	public static Integer CANT_PUBLICATIONS_TO_BE_LOAD = 10;
 
-	
-	
-	
 	/** FORM_LOGIN **/
 	public static String XPATH_FORM_LOGIN = "//form[contains(@id,'login_form')]";
 	public static String XPATH_INPUT_MAIL_LOGIN = ".//input[contains(@id,'email')]";
@@ -31,17 +30,16 @@ public final class FacebookConfig {
 	public static String XPATH_CLOSE_BUTTON = "//a[@class='_xlt _418x']";
 
 	public static String XP_MORE_PUBS_GROUP = "//div[@id='pagelet_group_pager']";
-	
-	
+
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
-	
+
 	/**
 	 * La búsqueda para grupos la tengo que hacer en dos secciones...
 	 */
-	public static String XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER = "//div[@role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+XP_GROUP_PUBLICATIONS_CONTAINER;
-	public static String XP_GROUP_PUBLICATIONS_OLD_CONTAINER = "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+XP_GROUP_PUBLICATIONS_CONTAINER;
-	
+	public static String XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER = "//div[@role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']" + XP_GROUP_PUBLICATIONS_CONTAINER;
+	public static String XP_GROUP_PUBLICATIONS_OLD_CONTAINER = "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']" + XP_GROUP_PUBLICATIONS_CONTAINER;
+
 	public static String XPATH_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER = "//div[contains(@class,'uiScrollableAreaBody')]";
 
@@ -68,7 +66,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
-	
+
 	/**
 	 * Group publications condition
 	 */
@@ -79,7 +77,7 @@ public final class FacebookConfig {
 	public static String XP_GROUPPUBLICATION_TIMESTAMP_CONDITION(String facebookGroup, Long utimeINI, Long utimeFIN) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
-	
+
 	/**
 	 * Group Last news publications condition
 	 */
@@ -107,7 +105,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
-	
+
 	/**
 	 * group Posts
 	 */
@@ -117,8 +115,7 @@ public final class FacebookConfig {
 	public static String XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
-	
-	
+
 	/**
 	 * group last news publicactions
 	 */
@@ -128,40 +125,38 @@ public final class FacebookConfig {
 	public static String XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookGroup, Long utimeINI) {
 		return XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XP_LASTNEWSPUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
-	
+
 	/**
 	 * Spinner load More Group Comments
 	 */
-	public static String XP_SPINNERLOAD_COMMENTS ="//div[contains(@class,'UFICommentsLoadingSpinnerContainer ')]";
-	
+	public static String XP_SPINNERLOAD_COMMENTS = "//div[contains(@class,'UFICommentsLoadingSpinnerContainer ')]";
+
 	/**
 	 * open Group Publication
 	 */
 	public static String XP_PUBLICATION_OVERLAY = "//div[@class='_3ixn']/..";
 	public static String XP_PUBLICATION_LIKES = "//span[@class='_4arz']/span";
-	public static String XP_PUBLICATION_LIKES_NL ="//div[@class='UFILikeSentenceText']/span";
+	public static String XP_PUBLICATION_LIKES_NL = "//div[@class='UFILikeSentenceText']/span";
 	public static String XP_PUBLICATION_CANTCOMMENTS = "//div[@class='_36_q']/a";
 	public static String XP_PUBLICATION_COMPARTIDOS = "//div[@class='_36_q']/a[contains(@href,'shares')]";
 	public static String XP_PUBLICATION_SALEPRICE = "//div[@class='_l56']/div";
-	public static String XP_PUBLICATION_TITLE ="//div[@class='_l53']/span[last()]";
+	public static String XP_PUBLICATION_TITLE = "//div[@class='_l53']/span[last()]";
 	public static String XP_PUBLICATION_LOCATION = "//div[@class='_l56']/div[last()]";
 	/****/
-	
+
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
 	public static String XPATH_PUBLICATION_DATE_TIME = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("title")
 	public static String XPATH_PUBLICATION_TITLE = ".//div[contains(@class,'_5pbx userContent')]";
 	public static String XPATH_PUBLICATION_TITLE_VER_MAS = ".//div[contains(@class,'_5pbx userContent')]//a[contains(@class,'see_more_link')]";
 
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
-	
-	
+
 	public static String XPATH_PUBLICATION_CANT_SHARE = ".//a[contains(@class,'UFIShareLink')]";
 	public static String XP_GROUPPUBLICATION_CANT_SHARE = ".//div[@class='_3399 _1f6t _4_dr _20h5']/descendant::div[@class='_ipo']/descendant::a[contains(@data-tooltip-uri,'share')]";
-	
+
 	public static String XPATH_PUBLICATION_CANT_LIKE = ".//div[contains(@class,'UFILikeSentence')]//a[contains(@class,'_3emk _401_')]";
 	public static String XP_GROUPPUBLICATION_CANT_LIKES = ".//div[@class='UFILikeSentenceText']/span";
-	
-	
+
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
 	public static String XP_GROUPPUBLICATION_VER_MAS_MSJS = "//a[contains(@class,'UFIPagerLink')]";
 
@@ -192,7 +187,7 @@ public final class FacebookConfig {
 	/// following-sibling::div[@class=' UFIReplyList'][1]
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
 	// CONTAINER.
-	
+
 	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 
