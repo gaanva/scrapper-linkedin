@@ -13,7 +13,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -553,25 +555,48 @@ public class FacebookGroupScrap extends Scrap {
 						if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
 							this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
 							//Poner un wait after click. (sumar al de extracción de comments...)
+							try{
+								this.waitUntilMoreCommentsClickLoad();
+							}catch(Exception e) {
+								if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+									System.out.println("[INFO] desapareció spinner de load comments OK.");
+								}else {
+									throw e;
+								}
+							}
 						}
 						if(filterApplied) {
 							//Los comentarios que estaré procesando serán los que sean mayores y menores al rango ingresado...
-							commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+							commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME)));
 						}else {
 							commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 						}
 						
 					//Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-	
 						//Entonces siempre van a haber comments elements... por lo que este puiede ser un AND!!!!!!!!!
-					}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0 || commentElements.size()>0);
+					//}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0 || commentElements.size()>0);
+					}while(commentElements.size()>0);
 					if(debug)
 						System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
 				}else {
 					if(debug)
 						System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
-				}
-				
+				}				
 				return auxListaComments;
+	}
+	
+	private boolean waitUntilMoreCommentsClickLoad() {
+		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size()>0) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(loadMore);
 	}
 	
 	/**

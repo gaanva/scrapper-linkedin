@@ -208,11 +208,15 @@ public final class FacebookConfig {
 	 */
 	//Condicion para que continue recorriendo comentarios.
 	public static String GROUPPUB_COMMENTS_TIMESTAMP_FROM = XPATH_COMMENTS + ".//abbr[@data-utime>=";
-	
 	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(Long utimeINI) {
 		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + "]";
 	}
-
+	
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_TO = "@data-utime>=";
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(Long utimeINI, Long utimeFIN) {
+		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + GROUPPUB_COMMENTS_TIMESTAMP_TO + String.valueOf(utimeFIN) +"]";
+	}
+	
 	public FacebookConfig() {
 
 	}
