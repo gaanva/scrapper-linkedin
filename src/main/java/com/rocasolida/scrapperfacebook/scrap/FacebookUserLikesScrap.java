@@ -100,6 +100,7 @@ public class FacebookUserLikesScrap extends Scrap{
 			//Me fijo que no aparezca un overlay...
 			if(this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size()>0) {
 				this.getActions().sendKeys(Keys.ESCAPE).perform();
+				this.getActions().sendKeys(Keys.ESCAPE).perform();
 			}
 			
 			List<WebElement> aux = this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES));
