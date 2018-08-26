@@ -82,13 +82,16 @@ public class TestSinLogin {
 	public void groupPublicationsByQuantity() throws Exception {
 		System.out.println("-----> groupPublicationsByQuantity");
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		String GROUP = "cristinapresidenta";
+		
 		Page page = null;
-		int CANTPUBS = 14;
+		int CANTPUBS = 40;
 		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
 			//CAFE RACER ARGENTINA
 			//Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
-			aux = fg.obtainGroupPubsWithoutComments("2279543105434261", CANTPUBS);
+			
+			aux = fg.obtainGroupPubsWithoutComments(GROUP, CANTPUBS);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -146,7 +149,8 @@ public class TestSinLogin {
 		GroupPublication gp = new GroupPublication();
 		try {
 			//SE llama al proceso que extrae los datos de una publicación en base a la URL de la misma.
-			gp = fg.obtainFullPubInformation("https://www.facebook.com/groups/caferacerar/permalink/3327979500590611/?sale_post_id=3327979500590611");
+			//gp = fg.obtainFullPubInformation("https://www.facebook.com/cristinapresidenta/posts/483043521740444");
+			gp = fg.obtainFullPubInformation("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

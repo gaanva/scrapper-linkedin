@@ -249,6 +249,11 @@ public class FacebookGroupScrap extends Scrap {
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)).size()>0) {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)));
 		}
+		
+		//Puede cargar otro overlay de login, dependiendo la publicacion.
+		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_LOGIN_OVERLAY)).size()>0) {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_LOGIN_OVERLAY)));
+		}
 		if(this.getAccess()==null) {
 			if(this.getDriver().findElements(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).size()>0) {
 				this.getDriver().findElement(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).click();
@@ -320,7 +325,15 @@ public class FacebookGroupScrap extends Scrap {
 					auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
 									
 					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
-					String commentId = href.split("&")[1].split("=")[1];
+					String[] auxId = href.split("&");
+					String commentId = "";
+					for(int i=0; i < auxId.length; i++){
+						if(auxId[i].contains("comment_id=")) {
+							commentId = auxId[i].split("=")[1];
+							break;
+						}
+					}
+					
 					auxComment.setId(commentId);
 					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
 					
@@ -335,6 +348,15 @@ public class FacebookGroupScrap extends Scrap {
 				}
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
 					this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
+					try{
+						this.waitUntilMoreCommentsClickLoad();
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+							System.out.println("[INFO] desapareció spinner de load comments OK.");
+						}else {
+							throw e;
+						}
+					}
 				}
 				commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 			//Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-	
@@ -533,7 +555,14 @@ public class FacebookGroupScrap extends Scrap {
 								auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
 												
 								String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
-								String commentId = href.split("&")[1].split("=")[1];
+								String[] auxId = href.split("&");
+								String commentId = "";
+								for(int i=0; i < auxId.length; i++){
+									if(auxId[i].contains("comment_id=")) {
+										commentId = auxId[i].split("=")[1];
+										break;
+									}
+								}
 								auxComment.setId(commentId);
 								auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
 								
@@ -652,6 +681,7 @@ public class FacebookGroupScrap extends Scrap {
 	public String regexGroupPostID(String link) {
 		//https://www.facebook.com/groups/caferacerar/permalink/3327979500590611/?sale_post_id=3327979500590611
 		String[] stringArray = link.split("/");
+		System.out.println("LINK:" + link);
 		return stringArray[6];
 	}
 	
