@@ -25,6 +25,7 @@ import org.openqa.selenium.support.ui.Wait;
 import com.rocasolida.scrapperfacebook.FacebookConfig;
 import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.Credential;
+import com.rocasolida.scrapperfacebook.entities.Group;
 import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 
@@ -234,8 +235,6 @@ public class FacebookGroupScrap extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(loadMorePublications);
 	}
-	
-	
 	/**
 	 * Extracción de los datos de cabecera y comentarios de una publicación
 	 * @param groupPubURL
@@ -492,20 +491,6 @@ public class FacebookGroupScrap extends Scrap {
 		}
 		
 		/**
-		 * shares
-		 */
-		/*
-		String shares = "0";
-		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).size()>0) {
-			shares = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_COMPARTIDOS)).getText();
-			System.out.println("TIENE COMPARTIDOS: " + shares);
-			aux.setCantShare(Integer.valueOf(shares));
-		}else {
-			System.out.println("NO TIENE COMPARTIDOS.");
-		}
-		*/
-		
-		/**
 		 * valor
 		 */
 		String price = "0";
@@ -655,21 +640,44 @@ public class FacebookGroupScrap extends Scrap {
 	}
 	
 	/**
-	 * Actualizar la información del grupo. (Cantidad de seguidores, comentarios generados, descripción, etc.)
+	 * Extraer la información del grupo. (Cantidad de seguidores, comentarios generados, descripción, etc.)
 	 */
-	public void UpdateGroupInfo() {
+	public Group ExtractGroupInfo(String groupName) throws Exception{
+		Group aux = new Group();
+		
+		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+groupName+"/about");
+		//Si accedió a la página de Login...
+		if(this.getDriver().getCurrentUrl().contains("/login/")) {
+			throw new Exception("[INFO] SE NECESITA ESTAR LOGUEADO PARA VER LA INFO DEL GRUPO: " + groupName);
+		}
+		
 		//se puede extraer:
 		// Descripcion
+		if(this.getDriver().findElements(By.xpath("//div[@class='_j1y']//descendant::div[@role='heading']/p/span")).size()>0) {
+			aux.setDescription(this.getDriver().findElement(By.xpath("//div[@class='_j1y']//descendant::div[@role='heading']/p/span")).getText());
+		}
 		//div[@class='_j1y']//descendant::div[@role='heading']/p/span
 		//miembros
 		//div[@class='_4bl7']/div/div (CAntidad)
+		if(this.getDriver().findElements(By.xpath("//div[@class='_4bl7']/div/div")).size()>0) {
+			aux.setCantMembers(Integer.parseInt(this.getDriver().findElement(By.xpath("//div[@class='_4bl7']/div/div")).getText()));
+		}
 		//ACtividad (publicaciones nuevas hoy y en los ultimos dias)
 		//div[@class='_4bl7']/div/div/following-sibling::div//following-sibling::div
 		//Hace cuanto fue creado.(FEcha de creación. UTIME)
 		//div[@class='_ifv']//descendant::abbr (getAttribute data-utime)
+		if(this.getDriver().findElements(By.xpath("//div[@class='_ifv']//descendant::abbr")).size()>0) {
+			aux.setDateCreationUTime(Long.valueOf(this.getDriver().findElement(By.xpath("//div[@class='_ifv']//descendant::abbr")).getAttribute("data-utime")));
+		}
 		//Es cerrado o abierto por el candadito
 		//i[@class='_3ph1 img sp_wgvnRQRltZf sx_9d1f94']
+		if(this.getDriver().findElements(By.xpath("//i[@class='_3ph1 img sp_wgvnRQRltZf sx_9d1f94']")).size()>0) {
+			aux.setLock(true);
+		}else {
+			aux.setLock(false);
+		}
 		
+		return aux;
 	}
 	
 	private void navigateTo(String URL) throws Exception{
