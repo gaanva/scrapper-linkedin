@@ -182,7 +182,7 @@ public final class FacebookConfig {
 
 	// public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
 	// public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
-	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
+	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[contains(@class,' UFIReplyList')]) and not(contains(@style,'hidden'))]";
 	public static String XPATH_COMMENTS_AND_RESPONSES = ".//div[contains(@class,'UFICommentContentBlock')]";
 	public static String XPATH_RESPONSES_LINK = ".//span[contains(@class,'UFIReplySocialSentenceLinkText')]";
 	// span[contains(@class,'UFIReplySocialSentenceLinkText')]
@@ -194,7 +194,7 @@ public final class FacebookConfig {
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 
 	//public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
-	public static String XPATH_USER_COMMENT = "/descendant::span[contains(@class,'UFICommentBody')]/node()";
+	public static String XPATH_USER_COMMENT = "./descendant::span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
 	public static String XPATH_COMMENT_ID = ".//a[contains(@class,'uiLinkSubtle')]";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")

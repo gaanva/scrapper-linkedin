@@ -85,12 +85,12 @@ public class TestSinLogin {
 		String GROUP = "cristinapresidenta";
 		
 		Page page = null;
-		int CANTPUBS = 40;
+		//Si no, se extrae la cantidad máxima que se encuentra en el grupo.
+		int CANTPUBS = 29;
 		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
-			//CAFE RACER ARGENTINA
 			//Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
-			
+			//ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
 			aux = fg.obtainGroupPubsWithoutComments(GROUP, CANTPUBS);
 		} catch (Exception e) {
 			e.printStackTrace();

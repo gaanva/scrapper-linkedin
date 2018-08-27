@@ -322,8 +322,12 @@ public class FacebookGroupScrap extends Scrap {
 					if (this.getAccess() != null) {
 						auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
 					}
-					auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
-									
+					if(commentElements.get(k).findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size()>0) {
+						auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+					}else {
+						auxComment.setMensaje("");
+					}
+														
 					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
 					String[] auxId = href.split("&");
 					String commentId = "";
