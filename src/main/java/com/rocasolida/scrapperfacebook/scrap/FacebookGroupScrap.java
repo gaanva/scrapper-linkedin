@@ -8,14 +8,13 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
-import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -387,7 +386,30 @@ public class FacebookGroupScrap extends Scrap {
 		if(this.getAccess() == null) {
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).size()>0) {
 				likes = this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES_NL)).getText();
-				//System.out.println("TIENE LIKES: " + likes);
+				String regexp = "\\d+";
+				String cadena = likes;
+				Pattern pattern = Pattern.compile(regexp);
+				Matcher matcher = pattern.matcher(cadena);
+				matcher.find(); //Encuentra la primera coincidencia del patron
+				
+				int totLikes =0;
+				try {
+					//A Marta Sajnin, Monica Olivera, Jorge Diaz y 8 personas más les gusta esto.
+					totLikes = Integer.parseInt(matcher.group()) + (likes.split(",")).length;
+				}catch(Exception e) {
+					if(e.getClass().getSimpleName().equalsIgnoreCase("IllegalStateException")) {
+						if(likes.contains(",")) {
+							totLikes = likes.split(",").length + 2;
+						}else if(likes.contains("and") || likes.contains("y")){
+							totLikes = 2;
+						}else {
+							totLikes = 1;
+						}
+					}
+				}
+				
+				aux.setCantLikes(totLikes);
+				
 			}
 		}else {
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIKES)).size()>0) {
