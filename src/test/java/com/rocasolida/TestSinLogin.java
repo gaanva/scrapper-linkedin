@@ -1,13 +1,12 @@
 package com.rocasolida;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
+import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap;
@@ -183,7 +182,27 @@ public class TestSinLogin {
 	}
 	
 	
-	
+	@Test
+	public void updateGroupPublicationByUtimes() throws Exception {
+		System.out.println("-----> updateGroupPublicationByUtimes()");
+		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		Long FROM_uTIME = 1535024890L; // 23/08/2018 @ 08:48:00  //FECHA MÁS VIEJA.
+		Long TO_uTIME = 1535113696L; // 24/08/2018 @ 09:28:00    //FECHA MÁS NUEVA.
+		
+		List<Comment> comentarios_nuevos =  new ArrayList<Comment>();
+		try {
+			//SE llama al proceso que extrae los datos de una publicación en base a la URL de la misma.
+			//gp = fg.obtainFullPubInformation("https://www.facebook.com/cristinapresidenta/posts/483043521740444");
+			//fg.obtainFullPubInformation("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/");
+			comentarios_nuevos = fg.updateGroupPublicationComments("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/", FROM_uTIME, TO_uTIME);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		fg.quit();
+		System.out.println("CANTIDAD COMENTARIOS: " + comentarios_nuevos.size());
+	}
 
 //	@Test
 //	public void mauriciomacriConFiltroComments1Mes() throws MalformedURLException {

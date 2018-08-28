@@ -525,6 +525,36 @@ public class FacebookGroupScrap extends Scrap {
 		
 		return aux;
 	}
+	
+	/**
+	 * Le pasas la URL de la publicación, un rango de fechas y te 
+	 * devuelve la lista de comentarios enconetrados entre esos rangos.
+	 * @param groupPublicationURL
+	 * @param FROM_UTIME
+	 * @param TO_UTIME
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Comment> updateGroupPublicationComments(String groupPublicationURL, Long FROM_UTIME, Long TO_UTIME) throws Exception{
+		this.navigateTo(groupPublicationURL);
+		if(this.getAccess()==null) {
+			if(this.getDriver().findElements(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).size()>0) {
+				this.getDriver().findElement(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).click();
+				try {
+					this.waitUntilCommentsLoaded();
+				}catch(Exception e) {
+					if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
+						System.err.println("[TIMEOUTEXCEPTION] ESPERA CARGA COMENTARIO SUPERADA.");
+						throw e;
+					}else {
+						throw e;
+					}
+				}
+			}
+		}
+		return this.publicationCommentsDataUpdate(FROM_UTIME, TO_UTIME);		
+	}
+	
 
 	
 	/**
@@ -535,7 +565,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Comment> publicationCommentsDataUpdate(Long FROM_UTIME, Long TO_UTIME) throws Exception{
+	private List<Comment> publicationCommentsDataUpdate(Long FROM_UTIME, Long TO_UTIME) throws Exception{
 		//capturo comentarios
 		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 		List<Comment> auxListaComments = new ArrayList<Comment>();
@@ -544,14 +574,13 @@ public class FacebookGroupScrap extends Scrap {
 		//Puedo cortar por 2 condiciones: que no hayan comentarios entre las fechas (Entonces tengo que Sí o Sí recorrer 
 		//todos los comentarios.
 		// O porque ya consumí todos los que estaban en el rango... 
-		
+		commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 		if(commentElements.size()>0) {
 			do {
 				//Si hay comments con fecha mayor igual al corte de inicio...
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(FROM_UTIME))).size()>0) {
 					if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))).size()>0) {
 						commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME)));
-						
 						for (int k = 0; k < commentElements.size(); k++) {
 							Comment auxComment = new Comment();
 							
@@ -569,8 +598,12 @@ public class FacebookGroupScrap extends Scrap {
 							if (this.getAccess() != null) {
 								auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
 							}
-							auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
-											
+							
+							if(commentElements.get(k).findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size()>0) {
+								auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+							}else {
+								auxComment.setMensaje("");
+							}
 							String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
 							String[] auxId = href.split("&");
 							String commentId = "";
@@ -595,8 +628,9 @@ public class FacebookGroupScrap extends Scrap {
 						break;
 					}
 				}else {
-					//Poner marca de control... para que si encontró mayores.. que luego filtre mensajes que sean > y menores 
-					//a los filtros y el resultado lo guarde en la variable commentsElement.
+					//Se supone que la fecha FROM es la más vieja... y TO la más nueva.
+					//Si no hay publicaciones más nuevas al FROM, entonces corto...
+					break;
 				}
 				
 				System.out.print(auxListaComments.size() + "|");
