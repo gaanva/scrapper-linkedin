@@ -537,92 +537,103 @@ public class FacebookGroupScrap extends Scrap {
 	 */
 	public List<Comment> publicationCommentsDataUpdate(Long FROM_UTIME, Long TO_UTIME) throws Exception{
 		//capturo comentarios
-				List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				List<Comment> auxListaComments = new ArrayList<Comment>();
-				//Este flag indica cuando comienza a encontrar comentarios con fecha mayor al UTIME_INI
-				boolean filterApplied = false;
-				if(commentElements.size()>0) {
-					do {
+		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		List<Comment> auxListaComments = new ArrayList<Comment>();
+		int cantAnterior =0;
+		
+		//Puedo cortar por 2 condiciones: que no hayan comentarios entre las fechas (Entonces tengo que Sí o Sí recorrer 
+		//todos los comentarios.
+		// O porque ya consumí todos los que estaban en el rango... 
+		
+		if(commentElements.size()>0) {
+			do {
+				//Si hay comments con fecha mayor igual al corte de inicio...
+				if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(FROM_UTIME))).size()>0) {
+					if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))).size()>0) {
+						commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME)));
 						
-						//Si hay comments con fecha mayor igual al corte de inicio...
-						if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(FROM_UTIME))).size()>0) {
-							for (int k = 0; k < commentElements.size(); k++) {
-								Comment auxComment = new Comment();
-								
-								// Usuario id
-								if (this.getAccess() != null) {
-									String ini = "id=";
-									String fin = "&";
-									String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
-									auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
-								}
-								// Usuario name
-								auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
-								
-								// Extraer likes.
-								if (this.getAccess() != null) {
-									auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
-								}
-								auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
-												
-								String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
-								String[] auxId = href.split("&");
-								String commentId = "";
-								for(int i=0; i < auxId.length; i++){
-									if(auxId[i].contains("comment_id=")) {
-										commentId = auxId[i].split("=")[1];
-										break;
-									}
-								}
-								auxComment.setId(commentId);
-								auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
-								
-								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
-								
-								auxListaComments.add(auxComment);
-								
-								filterApplied = true;
+						for (int k = 0; k < commentElements.size(); k++) {
+							Comment auxComment = new Comment();
+							
+							// Usuario id
+							if (this.getAccess() != null) {
+								String ini = "id=";
+								String fin = "&";
+								String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
+								auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
 							}
-						}else {
-							//Poner marca de control... para que si encontró mayores.. que luego filtre mensajes que sean > y menores 
-							//a los filtros y el resultado lo guarde en la variable commentsElement.
-						}
-						
-						System.out.print(auxListaComments.size() + "|");
-						for (int j = 0; j < commentElements.size(); j++) {
-							((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
-						}
-						if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
-							this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
-							//Poner un wait after click. (sumar al de extracción de comments...)
-							try{
-								this.waitUntilMoreCommentsClickLoad();
-							}catch(Exception e) {
-								if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
-									System.out.println("[INFO] desapareció spinner de load comments OK.");
-								}else {
-									throw e;
+							// Usuario name
+							auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
+							
+							// Extraer likes.
+							if (this.getAccess() != null) {
+								auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
+							}
+							auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+											
+							String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
+							String[] auxId = href.split("&");
+							String commentId = "";
+							for(int i=0; i < auxId.length; i++){
+								if(auxId[i].contains("comment_id=")) {
+									commentId = auxId[i].split("=")[1];
+									break;
 								}
 							}
+							auxComment.setId(commentId);
+							auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
+							
+							((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
+							
+							auxListaComments.add(auxComment);
 						}
-						if(filterApplied) {
-							//Los comentarios que estaré procesando serán los que sean mayores y menores al rango ingresado...
-							commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME)));
-						}else {
-							commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-						}
+						cantAnterior = auxListaComments.size();
 						
-					//Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-	
-						//Entonces siempre van a haber comments elements... por lo que este puiede ser un AND!!!!!!!!!
-					//}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0 || commentElements.size()>0);
-					}while(commentElements.size()>0);
-					if(debug)
-						System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
+					}else{
+						//No hay comentarios entre el rango de fechas... aunque sí hay mayores al from.
+						//Entonces, corto.
+						break;
+					}
 				}else {
-					if(debug)
-						System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
-				}				
-				return auxListaComments;
+					//Poner marca de control... para que si encontró mayores.. que luego filtre mensajes que sean > y menores 
+					//a los filtros y el resultado lo guarde en la variable commentsElement.
+				}
+				
+				System.out.print(auxListaComments.size() + "|");
+				for (int j = 0; j < commentElements.size(); j++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
+				}
+				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
+					this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
+					//Poner un wait after click. (sumar al de extracción de comments...)
+					try{
+						this.waitUntilMoreCommentsClickLoad();
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+							System.out.println("[INFO] desapareció spinner de load comments OK.");
+						}else {
+							throw e;
+						}
+					}
+				}
+				
+				if(cantAnterior > 0) { //Entonces, se obtuvieron comentarios entre el rango...
+					commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))).size()>0?this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))):new ArrayList<WebElement>();
+				}else{
+					commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size()>0?this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)):new ArrayList<WebElement>();
+				}
+			//Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-	
+			//Entonces siempre van a haber comments elements... por lo que este puiede ser un AND!!!!!!!!!
+			//EL VERMAS, no me dejará incluir los últimos comentarios.	
+			}while(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0 || commentElements.size()>0);
+			//}while(commentElements.size()>0);
+			if(debug)
+				System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
+		}else {
+			if(debug)
+				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
+		}				
+		return auxListaComments;
 	}
 	
 	private boolean waitUntilMoreCommentsClickLoad() {
@@ -755,7 +766,7 @@ public class FacebookGroupScrap extends Scrap {
 	//***********SIN USO... PERO SE PODRÍA HACER QUE SCROLLEE 2 VECES, BUSCANDO DE ESTAS PUBLICACIONES...
 		//1) Scroll 2 veces 2) filtro rango fechas 3) scroll 4) si se sumaron nuevas, entonces sigo... hasta que 
 		//no se incremente más la cantidad......
-		public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
+	public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
 			long aux = System.currentTimeMillis();
 			aux = System.currentTimeMillis();
 			System.out.println("obtainGroupPublicationsHTML");
