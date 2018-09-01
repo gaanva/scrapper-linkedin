@@ -1153,7 +1153,9 @@ public class FacebookScrap extends Scrap {
 			try {
 				WebElement showMoreLink;
 				// Obtengo los comentarios según el filtro de fechas...
+				Thread.sleep(1000);
 				List<WebElement> comentarios = container.findElements(By.xpath(commentsFilter));
+				System.out.println(comentarios);
 				do {
 					long a2 = System.currentTimeMillis();
 					Comment comment = null;
@@ -1220,6 +1222,7 @@ public class FacebookScrap extends Scrap {
 						}
 					}
 					// Obtengo los comentarios según el filtro de fechas...
+					Thread.sleep(1000);
 					comentarios = container.findElements(By.xpath(commentsFilter));
 					if (debug)
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
