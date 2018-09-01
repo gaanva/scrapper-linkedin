@@ -135,6 +135,8 @@ public final class FacebookConfig {
 	 * open Group Publication
 	 */
 	public static String XP_PUBLICATION_OVERLAY = "//div[@class='_3ixn']/..";
+	public static String XP_LOGIN_OVERLAY = "//div[@ID='u_0_c']";
+	
 	public static String XP_PUBLICATION_LIKES = "//span[@class='_4arz']/span";
 	public static String XP_PUBLICATION_LIKES_NL = "//div[@class='UFILikeSentenceText']/span";
 	public static String XP_PUBLICATION_CANTCOMMENTS = "//div[@class='_36_q']/a";
@@ -180,7 +182,7 @@ public final class FacebookConfig {
 
 	// public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
 	// public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
-	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
+	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[contains(@class,' UFIReplyList')]) and not(contains(@style,'hidden'))]";
 	public static String XPATH_COMMENTS_AND_RESPONSES = ".//div[contains(@class,'UFICommentContentBlock')]";
 	public static String XPATH_RESPONSES_LINK = ".//span[contains(@class,'UFIReplySocialSentenceLinkText')]";
 	// span[contains(@class,'UFIReplySocialSentenceLinkText')]
@@ -191,7 +193,8 @@ public final class FacebookConfig {
 	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 
-	public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
+	//public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
+	public static String XPATH_USER_COMMENT = "./descendant::span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
 	public static String XPATH_COMMENT_ID = ".//a[contains(@class,'uiLinkSubtle')]";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
@@ -207,14 +210,14 @@ public final class FacebookConfig {
 	 * group Posts
 	 */
 	//Condicion para que continue recorriendo comentarios.
-	public static String GROUPPUB_COMMENTS_TIMESTAMP_FROM = XPATH_COMMENTS + ".//abbr[@data-utime>=";
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_FROM = XPATH_COMMENTS + "//abbr[@data-utime>=";
 	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(Long utimeINI) {
 		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + "]";
 	}
 	
-	public static String GROUPPUB_COMMENTS_TIMESTAMP_TO = "@data-utime>=";
+	public static String GROUPPUB_COMMENTS_TIMESTAMP_TO = "@data-utime<=";
 	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(Long utimeINI, Long utimeFIN) {
-		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + GROUPPUB_COMMENTS_TIMESTAMP_TO + String.valueOf(utimeFIN) +"]";
+		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + " and " +GROUPPUB_COMMENTS_TIMESTAMP_TO + String.valueOf(utimeFIN) +"]//ancestor::div[contains(@class,'UFICommentContentBlock')]";
 	}
 	
 	public FacebookConfig() {
