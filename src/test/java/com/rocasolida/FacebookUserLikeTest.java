@@ -17,7 +17,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
 import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 
-public class ApplicationTestConLogin {
+public class FacebookUserLikeTest {
 
 	private static String OS;
 	private static final boolean DEBUG = false;
