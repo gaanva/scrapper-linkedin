@@ -90,8 +90,7 @@ public class FacebookGroupScrap extends Scrap {
 		long tardo = System.currentTimeMillis();
 		
 		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
-		tardo = System.currentTimeMillis() - tardo;
-		System.out.println("navigateTo ("+FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup+"): " + tardo);
+		
 		try {
 			if(cantPublications > 0) {
 				List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
@@ -108,7 +107,7 @@ public class FacebookGroupScrap extends Scrap {
 				}
 				
 				if(debug)
-					System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES DE LA SECCIÓN OLD PUBLICATIONS");
+					System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES.");
 				
 				if(groupPubsHTML!=null) {
 					for(int i=0; i<groupPubsHTML.size(); i++) {
@@ -124,7 +123,7 @@ public class FacebookGroupScrap extends Scrap {
 			}
 		}finally {
 			tardo = System.currentTimeMillis() - tardo;
-			System.out.println("obtainPageInformation tardo: " + tardo);
+			System.out.println("obtainGroupPubsWithoutComments tardo: " + tardo);
 		}
 		
 	}
@@ -177,41 +176,34 @@ public class FacebookGroupScrap extends Scrap {
 	 * @throws Exception
 	 */
 	public List<WebElement> obtainMainPageGroupPublicationsHTML(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
-		long aux = System.currentTimeMillis();
-		aux = System.currentTimeMillis();
-		System.out.println("obtainGroupPublicationsHTML");
-		try {
-			List<WebElement> auxList = new ArrayList<WebElement>();
-			auxList = this.getDriver().findElements(By.xpath(xpathExpression));
-			
-			
-			int tot=0;
-			if (auxList.size() > 0) {
-				tot = auxList.size();
-				//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
-				while(!(this.getDriver().findElements(By.xpath(xpathExpression)).size()>= cantidadPublicacionesInicial)) {	
-					this.scrollDown();
-					auxList = this.getDriver().findElements(By.xpath(xpathExpression));
-					
-					//Control de corte por no haber más publicaciones...
-					try {
-						//this.waitUntilGroupPubsLoad(tot);
-						this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
-						tot = auxList.size();
-					}catch(Exception e) {
-						break;
-					}
-					
+		
+		List<WebElement> auxList = new ArrayList<WebElement>();
+		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+		
+		int tot=0;
+		if (auxList.size() > 0) {
+			tot = auxList.size();
+			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+			while(!(this.getDriver().findElements(By.xpath(xpathExpression)).size()>= cantidadPublicacionesInicial)) {	
+				this.scrollDown();
+				auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+				
+				//Control de corte por no haber más publicaciones...
+				try {
+					//this.waitUntilGroupPubsLoad(tot);
+					this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
+					tot = auxList.size();
+				}catch(Exception e) {
+					break;
 				}
-			} else {
-				return auxList;
-			}	
-			
-			//retorno hasta las primeras cantidad de publicaciones indicadas.
-			return auxList.size()>cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
-		} finally {
-			System.out.println("obtainGroupPublicationsHTML tardo: " + (System.currentTimeMillis()-aux));
-		}
+				
+			}
+		} else {
+			return auxList;
+		}	
+		
+		//retorno hasta las primeras cantidad de publicaciones indicadas.
+		return auxList.size()>cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
 	}
 	
 	/**
@@ -243,15 +235,35 @@ public class FacebookGroupScrap extends Scrap {
 	 */
 	public GroupPublication obtainFullPubInformation(String groupPubURL) throws Exception{
 		this.navigateTo(groupPubURL);
+		
+		if(debug)
+			System.out.println("[INFO] >>> Checking overlays...");
 		//NO espero a que carge el overlay si existe en DOM, lo pongo invisile
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)).size()>0) {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_PUBLICATION_OVERLAY)));
+			if(debug)
+				System.out.println("[INFO] Hidding publication overlay...");
+		}else {
+			if(debug)
+				System.out.println("[INFO] Overlay Not Found...");
 		}
-		
+	
 		//Puede cargar otro overlay de login, dependiendo la publicacion.
 		if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_LOGIN_OVERLAY)).size()>0) {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath(FacebookConfig.XP_LOGIN_OVERLAY)));
+			if(debug)
+				System.out.println("[INFO] Hidding Login overlay...");
+		}else {
+			if(debug)
+				System.out.println("[INFO] Login Overlay Not Found...");
 		}
+		
+		if(debug)
+			System.out.println("[INFO] <<< FIN Checking overlays.");
+	
+		
+		//Control del primer click sobre la sección de comentarios para que se desplegue
+		//Todos los comentarios, likes y shares de la publicación.
 		if(this.getAccess()==null) {
 			if(this.getDriver().findElements(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).size()>0) {
 				this.getDriver().findElement(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).click();
@@ -259,7 +271,7 @@ public class FacebookGroupScrap extends Scrap {
 					this.waitUntilCommentsLoaded();
 				}catch(Exception e) {
 					if(e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-						System.err.println("[TIMEOUTEXCEPTION] ESPERA CARGA COMENTARIO SUPERADA.");
+						System.err.println("[TIMEOUTEXCEPTION] ESPERA CARGA SECCION COMENTARIOS SUPERADA.");
 						throw e;
 					}else {
 						throw e;
@@ -271,7 +283,6 @@ public class FacebookGroupScrap extends Scrap {
 		GroupPublication publication = new GroupPublication();
 		
 		publication = this.publicationHeaderDataExtraction();
-		
 		publication.setComments(this.publicationCommentsDataExtraction());
 		
 		return publication;
@@ -298,6 +309,8 @@ public class FacebookGroupScrap extends Scrap {
 	 * @throws Exception
 	 */
 	public List<Comment> publicationCommentsDataExtraction() throws Exception{
+		Long tardo = System.currentTimeMillis();
+		
 		//capturo comentarios
 		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 		List<Comment> auxListaComments = new ArrayList<Comment>();
@@ -370,8 +383,11 @@ public class FacebookGroupScrap extends Scrap {
 				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
 		}
 		
-		return auxListaComments;
+		tardo = System.currentTimeMillis() - tardo;
+		if(debug)
+			System.out.println("publicationCommentsDataExtraction tardo: " + tardo);
 		
+		return auxListaComments;
 	}
 		
 	/**
@@ -380,6 +396,8 @@ public class FacebookGroupScrap extends Scrap {
 	 * @throws Exception
 	 */
 	public GroupPublication publicationHeaderDataExtraction() throws Exception{
+		long tardo = System.currentTimeMillis();
+		
 		GroupPublication aux = new GroupPublication();
 		String likes = "0";
 		if(this.getAccess() == null) {
@@ -521,7 +539,8 @@ public class FacebookGroupScrap extends Scrap {
 			aux.setUbication(ubicacion);
 			//System.out.println("TIENE UBICACION: " + ubicacion);
 		}
-		
+		if(debug)
+			System.out.println("publicationHeaderDataExtraction tardo: " + (System.currentTimeMillis()-tardo));
 		
 		return aux;
 	}
@@ -752,7 +771,7 @@ public class FacebookGroupScrap extends Scrap {
 			
 		} finally {
 			aux = System.currentTimeMillis() - aux;
-			System.out.println("navigateTo tardo: " + aux);
+			System.out.println("navigateTo( "+URL+" ) tardo: " + aux);
 		}
 	}
 

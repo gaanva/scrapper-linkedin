@@ -85,7 +85,7 @@ public class TestSinLogin {
 		
 		Page page = null;
 		//Si no, se extrae la cantidad máxima que se encuentra en el grupo.
-		int CANTPUBS = 29;
+		int CANTPUBS = 10;
 		List<GroupPublication> aux = new ArrayList<GroupPublication>();
 		try {
 			//Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
