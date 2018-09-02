@@ -556,6 +556,7 @@ public class FacebookGroupScrap extends Scrap {
 	 */
 	public List<Comment> updateGroupPublicationComments(String groupPublicationURL, Long FROM_UTIME, Long TO_UTIME) throws Exception{
 		this.navigateTo(groupPublicationURL);
+		//Click en la seccion de comentarios...
 		if(this.getAccess()==null) {
 			if(this.getDriver().findElements(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).size()>0) {
 				this.getDriver().findElement(By.xpath("//form[@class='commentable_item collapsed_comments']/descendant::a")).click();
@@ -585,7 +586,10 @@ public class FacebookGroupScrap extends Scrap {
 	 * @throws Exception
 	 */
 	private List<Comment> publicationCommentsDataUpdate(Long FROM_UTIME, Long TO_UTIME) throws Exception{
+		long tardo = System.currentTimeMillis();
 		//capturo comentarios
+		if(debug)
+			System.out.println("[INFO] >>>> PROCESANDO COMENTARIOS (publicationCommentsDataUpdate).");
 		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 		List<Comment> auxListaComments = new ArrayList<Comment>();
 		int cantAnterior =0;
@@ -656,6 +660,7 @@ public class FacebookGroupScrap extends Scrap {
 				for (int j = 0; j < commentElements.size(); j++) {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
 				}
+				
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
 					this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
 					//Poner un wait after click. (sumar al de extracción de comments...)
@@ -685,7 +690,10 @@ public class FacebookGroupScrap extends Scrap {
 		}else {
 			if(debug)
 				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
-		}				
+		}
+		
+		if(debug)
+			System.out.println("publicationCommentsDataUpdate tardo: " + (System.currentTimeMillis() - tardo));
 		return auxListaComments;
 	}
 	
