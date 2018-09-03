@@ -83,7 +83,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * Me pasan el grupo a acceder y la cantidad de publicaciones a extraer...
 	 * @param facebookGroup
 	 * @param cantPublications
-	 * @return Lista de tipo GroupPublication
+	 * @return Group (que contiene la lista de publicaciones.)
 	 * @throws Exception
 	 */
 	public Group obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications) throws Exception {
@@ -96,13 +96,13 @@ public class FacebookGroupScrap extends Scrap {
 				List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
 				//Obtiene la cantidad de publicaciones de la sección de newsfeed.
 				List<WebElement> groupPubsHTML = new ArrayList<WebElement>();
-				groupPubsHTML = this.obtainMainPageGroupPublicationsHTML(cantPublications, FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER);
+				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByQuantity(cantPublications, FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER);
 				
 				int cantPubRestantes = cantPublications - groupPubsHTML.size();
 				if(cantPubRestantes>0) {
 					//Obtiene la cantidad de publicaciones desde la sección de 'old' publications o lo que no está
 					//en la parte de newsFeed.
-					groupPubsHTML.addAll(this.obtainMainPageGroupPublicationsHTML(cantPubRestantes, FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
+					groupPubsHTML.addAll(this.obtainMainPageGroupPublicationsHTMLByQuantity(cantPubRestantes, FacebookConfig.XP_GROUP_PUBLICATIONS_OLD_CONTAINER));
 					
 				}
 				
@@ -177,7 +177,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<WebElement> obtainMainPageGroupPublicationsHTML(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
+	public List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
 		
 		List<WebElement> auxList = new ArrayList<WebElement>();
 		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
@@ -229,6 +229,58 @@ public class FacebookGroupScrap extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(loadMorePublications);
 	}
+
+	
+	
+	public List<WebElement> obtainMainPageGroupPublicationsHTMLByUTime(Long uTimeFROM, Long uTimeTo, String xpathExpression) throws Exception {
+		List<WebElement> auxList = new ArrayList<WebElement>();
+		//trae las publicaciones con utime...
+		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+		
+		int tot=0;
+		if (auxList.size() > 0) {
+			tot = auxList.size();
+			
+			
+			//Si hay comments con fecha mayor igual al corte de inicio...
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(FROM_UTIME))).size()>0) {
+				if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))).size()>0) {
+					
+				}
+			}		
+			
+			
+			
+			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+			while(!(this.getDriver().findElements(By.xpath(xpathExpression)).size()>= cantidadPublicacionesInicial)) {	
+				this.scrollDown();
+				auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+				
+				//Control de corte por no haber más publicaciones...
+				try {
+					this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
+					tot = auxList.size();
+				}catch(Exception e) {
+					break;
+				}
+				
+			}
+		} else {
+			return auxList;
+		}	
+		
+		//retorno hasta las primeras cantidad de publicaciones indicadas.
+		return auxList.size()>cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * Extracción de los datos de cabecera y comentarios de una publicación
 	 * @param groupPubURL
@@ -830,6 +882,14 @@ public class FacebookGroupScrap extends Scrap {
 		//1) Scroll 2 veces 2) filtro rango fechas 3) scroll 4) si se sumaron nuevas, entonces sigo... hasta que 
 		//no se incremente más la cantidad......
 	public List<WebElement> obtainGroupPublicationsHTMLByUTIME(String facebookGroup, Long uTimeIni, Long uTimeFin) throws Exception {
+		long tardo = System.currentTimeMillis();
+		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
+		
+		
+		
+		
+		
+		
 			long aux = System.currentTimeMillis();
 			aux = System.currentTimeMillis();
 			System.out.println("obtainGroupPublicationsHTML");
