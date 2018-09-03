@@ -231,46 +231,49 @@ public class FacebookGroupScrap extends Scrap {
 	}
 
 	
-	
-	public List<WebElement> obtainMainPageGroupPublicationsHTMLByUTime(Long uTimeFROM, Long uTimeTo, String xpathExpression) throws Exception {
-		List<WebElement> auxList = new ArrayList<WebElement>();
+	/**
+	 * Busco todas las publicaciones que cumplen con el filtro utime.
+	 * @param uTimeFROM
+	 * @param uTimeTo
+	 * @return Lista de Post en formato WebElement.
+	 * @throws Exception
+	 */
+	public List<WebElement> obtainMainPageGroupPublicationsHTMLByUTime(Long uTimeFROM, Long uTimeTo) throws Exception {
+		List<WebElement> postsSelected = new ArrayList<WebElement>();
 		//trae las publicaciones con utime...
-		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
 		
-		int tot=0;
-		if (auxList.size() > 0) {
-			tot = auxList.size();
-			
-			
-			//Si hay comments con fecha mayor igual al corte de inicio...
-			if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION(FROM_UTIME))).size()>0) {
-				if(this.getDriver().findElements(By.xpath(FacebookConfig.GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(FROM_UTIME, TO_UTIME))).size()>0) {
-					
+		int cantPosts, cantScrolls = 0;
+		//total de publicaciones...
+		int tot = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_ALL)).size();
+		
+		
+		while(cantScrolls<2) {	
+			//Si hay posts con fecha mayor igual al corte de inicio...
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(uTimeFROM))).size()>0) {
+				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo))).size()>postsSelected.size()) {
+					postsSelected = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo)));
+				}else {
+					//Contador de cantidad de scrolles cuando no hay posts entre lsa fechas buscadas.
+					cantScrolls++;
 				}
-			}		
-			
-			
-			
-			//while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
-			while(!(this.getDriver().findElements(By.xpath(xpathExpression)).size()>= cantidadPublicacionesInicial)) {	
-				this.scrollDown();
-				auxList = this.getDriver().findElements(By.xpath(xpathExpression));
-				
-				//Control de corte por no haber más publicaciones...
-				try {
-					this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
-					tot = auxList.size();
-				}catch(Exception e) {
-					break;
-				}
-				
+			}else {
+				//Contador de cantidad de scrolles cuando no hay posts entre lsa fechas buscadas.
+				cantScrolls++;
 			}
-		} else {
-			return auxList;
-		}	
+			
+			
+			this.scrollDown();
+			try {
+				//this.waitUntilGroupPubsLoad(tot);
+				this.waitUntilMainPageGroupPubsLoad(tot, FacebookConfig.XP_GROUPMAINPUBLICATIONS_ALL);
+			}catch(Exception e) {
+				break;
+			}
+			
+		}
 		
-		//retorno hasta las primeras cantidad de publicaciones indicadas.
-		return auxList.size()>cantidadPublicacionesInicial?auxList.subList(0, cantidadPublicacionesInicial):auxList;
+		
+		return postsSelected;
 	}
 	
 	

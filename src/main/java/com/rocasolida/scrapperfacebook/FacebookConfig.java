@@ -62,9 +62,26 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime>=";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = " and @data-utime<=";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = "]";
-
+	
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION(String facebookPage, Long utimeINI, Long utimeFIN) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
+	}
+	
+	
+	
+	public static String XP_GROUPMAINPUBLICATIONS_ALL = "//div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]";
+	
+	/*
+	 * //div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]//abbr[(contains(@class,'livetimestamp')) and (@data-utime>=0 and @data-utime<99999999999)]
+	 */
+	public static String XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(Long utimeINI, Long utimeFIN) {
+		return "//div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]//abbr[(contains(@class,'livetimestamp')) and (@data-utime>="+utimeINI+" and @data-utime<"+utimeFIN+")]";
+		//return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
+	}
+	
+	public static String XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(Long utimeINI) {
+		return "//div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]//abbr[(contains(@class,'livetimestamp')) and (@data-utime>="+utimeINI+")]";
+		//return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
 
 	/**
