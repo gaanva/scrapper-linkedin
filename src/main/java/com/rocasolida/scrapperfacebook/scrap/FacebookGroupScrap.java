@@ -86,7 +86,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return Lista de tipo GroupPublication
 	 * @throws Exception
 	 */
-	public List<GroupPublication> obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications) throws Exception {
+	public Group obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications) throws Exception {
 		long tardo = System.currentTimeMillis();
 		
 		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
@@ -116,8 +116,10 @@ public class FacebookGroupScrap extends Scrap {
 					}
 				}
 				
-				return groupPubs.size()>0?groupPubs:null;
-							
+				Group grupo = new Group();
+				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
+				return grupo;
+								
 			}else {
 				throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
 			}
@@ -362,8 +364,8 @@ public class FacebookGroupScrap extends Scrap {
 					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
 				}
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
-					this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
 					try{
+						this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
 						this.waitUntilMoreCommentsClickLoad();
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
@@ -662,9 +664,9 @@ public class FacebookGroupScrap extends Scrap {
 				}
 				
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
-					this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
-					//Poner un wait after click. (sumar al de extracción de comments...)
 					try{
+						this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
+						//Poner un wait after click. (sumar al de extracción de comments...)
 						this.waitUntilMoreCommentsClickLoad();
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {

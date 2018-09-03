@@ -1,14 +1,13 @@
 package com.rocasolida;
 
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openqa.selenium.WebElement;
 
 import com.rocasolida.scrapperfacebook.entities.Comment;
+import com.rocasolida.scrapperfacebook.entities.Group;
 import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap;
@@ -58,7 +57,7 @@ public class FacebookGroupTest {
 		Page page = null;
 		// Si no, se extrae la cantidad máxima que se encuentra en el grupo.
 		int CANTPUBS = 10;
-		List<GroupPublication> aux = new ArrayList<GroupPublication>();
+		Group aux = new Group();
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
@@ -69,15 +68,15 @@ public class FacebookGroupTest {
 
 		GroupPublication gp = new GroupPublication();
 
-		for (int i = 0; i < aux.size(); i++) {
+		for (int i = 0; i < aux.getPublications().size(); i++) {
 			System.out.println("*****************************************************************************************");
 
-			System.out.println("URL(" + i + ") " + aux.get(i).getUrl());
-			System.out.println("ID(" + i + ") " + aux.get(i).getId());
-			System.out.println("UTIME: (" + i + ") " + aux.get(i).getUTime());
+			System.out.println("URL(" + i + ") " + aux.getPublications().get(i).getUrl());
+			System.out.println("ID(" + i + ") " + aux.getPublications().get(i).getId());
+			System.out.println("UTIME: (" + i + ") " + aux.getPublications().get(i).getUTime());
 
 			// PAso 2) Proceso cada una de las publications encontradas.
-			gp = fg.obtainFullPubInformation(aux.get(i).getUrl());
+			gp = fg.obtainFullPubInformation(aux.getPublications().get(i).getUrl());
 			System.out.println("ID PUB: " + gp.getId()); // ok
 			System.out.println("OWNER: " + gp.getOwner()); // ok
 			System.out.println("TITULO: " + gp.getTitulo()); // ok
@@ -102,7 +101,7 @@ public class FacebookGroupTest {
 		}
 
 		fg.quit();
-		System.out.println("Cantidad de pubs: " + aux.size());
+		System.out.println("Cantidad de pubs: " + aux.getPublications().size());
 	}
 
 	/**

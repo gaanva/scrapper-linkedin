@@ -13,7 +13,8 @@ public class Group {
 	private Long dateCreationUTime;
 	//Si es privado o abierto
 	private boolean lock;
-	//se puede extraer:
+	private List<GroupPublication> publications;
+	//se puede extraer(lock):
 			// Descripcion
 			//div[@class='_j1y']//descendant::div[@role='heading']/p/span
 			//miembros
