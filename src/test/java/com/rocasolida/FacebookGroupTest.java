@@ -182,8 +182,8 @@ public class FacebookGroupTest {
 		Page page = null;
 		// Si no, se extrae la cantidad máxima que se encuentra en el grupo.
 		int CANTPUBS = 0;
-		Long UTIMEFROM = 1L;
-		Long UTIMETO = 1L;
+		Long UTIMEFROM = 1536004052L;//03092018 12:47
+		Long UTIMETO = 1536025148L;//03092018 18:39 (Conte 11 pubs en este rango)
 		Group aux = new Group();
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
