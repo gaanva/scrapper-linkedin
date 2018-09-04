@@ -170,11 +170,11 @@ public class FacebookPageTest {
 	@Test
 	public void larretaPost() throws Exception {
 		FacebookScrap fs = new FacebookScrap(Driver.from(dt, OS), DEBUG);
-		Publication pub = fs.obtainPostInformation("horaciorodriguezlarreta", "245744979463373", null, null, 1000, CommentsSort.NEW);
+		Publication pub = fs.obtainPostInformation("horaciorodriguezlarreta", "245744979463373", null, null, 100, CommentsSort.NEW);
 		fs.quit();
 
 		System.out.println("Cantidad mensajes: " + pub.getComments().size());
-		assertTrue(pub.getComments().size() > 1000);
+		assertTrue(pub.getComments().size() > 100);
 
 	}
 }
