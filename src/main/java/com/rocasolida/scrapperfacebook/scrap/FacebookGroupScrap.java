@@ -97,6 +97,8 @@ public class FacebookGroupScrap extends Scrap {
 			List<WebElement> groupPubsHTML = new ArrayList<WebElement>();
 			
 			if(cantPublications > 0) {
+				if(debug)
+					System.out.println("EXTRAYENDO PUBLICACIONES POR CANTIDAD: " + cantPublications);
 				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByQuantity(cantPublications, FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER);
 				
 				int cantPubRestantes = cantPublications - groupPubsHTML.size();
@@ -121,9 +123,13 @@ public class FacebookGroupScrap extends Scrap {
 				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
 				return grupo;
 								
-			}else if(uTimeFrom!=null && uTimeTo != null){
-				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByUTime(uTimeFrom, uTimeTo);
+			}else if(uTimeFrom!=null && uTimeTo!= null){
+				if(debug)
+					System.out.println("EXTRAYENDO PUBLICACIONES POR UTIME. From: " +uTimeFrom+ " To: "+uTimeTo);
 				
+				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByUTime(uTimeFrom, uTimeTo);
+				if(debug)
+					System.out.println("SE EXTRAJERON: " + groupPubsHTML.size() + " PUBLICACIONES.");
 				if(groupPubsHTML!=null) {
 					for(int i=0; i<groupPubsHTML.size(); i++) {
 						//Extraigo el ID-URL y UTIME de la publicacion encontrada

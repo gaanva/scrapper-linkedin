@@ -56,7 +56,7 @@ public class FacebookGroupTest {
 
 		Page page = null;
 		// Si no, se extrae la cantidad máxima que se encuentra en el grupo.
-		int CANTPUBS = 10;
+		int CANTPUBS = 12;
 		Group aux = new Group();
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
@@ -151,7 +151,7 @@ public class FacebookGroupTest {
 	}
 
 	@Test
-	public void updateGroupPublicationByUtimes() throws Exception {
+	public void updateGroupPublicationCommentsByUtimes() throws Exception {
 		System.out.println("-----> updateGroupPublicationByUtimes()");
 		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		Long FROM_uTIME = 1535024890L; // 23/08/2018 @ 08:48:00 //FECHA MÁS VIEJA.
