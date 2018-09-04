@@ -1,7 +1,9 @@
 package com.rocasolida.scrapperfacebook.scrap;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Paths;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -96,10 +98,18 @@ public class Scrap {
       System.setProperty(FirefoxDriver.SystemProperty.DRIVER_USE_MARIONETTE, "true");
       System.setProperty(FirefoxDriver.SystemProperty.BROWSER_LOGFILE, "logs/logs.txt");
 
-      FirefoxBinary firefoxBinary = new FirefoxBinary();
+      FirefoxBinary firefoxBinary = null;
+
+      if (System.getenv("CI") != null) {
+        firefoxBinary = new FirefoxBinary(new File("firefox/firefox"));
+      } else {
+        firefoxBinary = new FirefoxBinary();
+      }
+
       if (driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
         firefoxBinary.addCommandLineOptions("--headless");
       }
+
       FirefoxOptions firefoxOptions = new FirefoxOptions();
       firefoxOptions.setBinary(firefoxBinary);
       FirefoxProfile firefoxProfile = new FirefoxProfile();
