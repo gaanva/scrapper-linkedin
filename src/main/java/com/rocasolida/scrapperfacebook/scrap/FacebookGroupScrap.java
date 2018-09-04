@@ -86,16 +86,17 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return Group (que contiene la lista de publicaciones.)
 	 * @throws Exception
 	 */
-	public Group obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications) throws Exception {
+	public Group obtainGroupPubsWithoutComments(String facebookGroup, int cantPublications, Long uTimeFrom, Long uTimeTo) throws Exception {
 		long tardo = System.currentTimeMillis();
 		
 		this.navigateTo(FacebookConfig.URL+FacebookConfig.URL_GROUP+facebookGroup);
 		
 		try {
+			List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
+			//Obtiene la cantidad de publicaciones de la sección de newsfeed.
+			List<WebElement> groupPubsHTML = new ArrayList<WebElement>();
+			
 			if(cantPublications > 0) {
-				List<GroupPublication> groupPubs = new ArrayList<GroupPublication>();
-				//Obtiene la cantidad de publicaciones de la sección de newsfeed.
-				List<WebElement> groupPubsHTML = new ArrayList<WebElement>();
 				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByQuantity(cantPublications, FacebookConfig.XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER);
 				
 				int cantPubRestantes = cantPublications - groupPubsHTML.size();
@@ -120,8 +121,22 @@ public class FacebookGroupScrap extends Scrap {
 				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
 				return grupo;
 								
+			}else if(uTimeFrom!=null && uTimeTo != null){
+				groupPubsHTML = this.obtainMainPageGroupPublicationsHTMLByUTime(uTimeFrom, uTimeTo);
+				
+				if(groupPubsHTML!=null) {
+					for(int i=0; i<groupPubsHTML.size(); i++) {
+						//Extraigo el ID-URL y UTIME de la publicacion encontrada
+						groupPubs.add(this.extractMainPagePublicationID(groupPubsHTML.get(i)));
+					}
+				}
+				
+				Group grupo = new Group();
+				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
+				return grupo;
+				
 			}else {
-				throw new Exception("[ERROR] SE requiere la cantidad de publicaciones a buscar.");
+				throw new Exception("[ERROR] SE requiere la cantidad de publicaciones o el rango de fechas a buscar.");
 			}
 		}finally {
 			tardo = System.currentTimeMillis() - tardo;
@@ -242,14 +257,15 @@ public class FacebookGroupScrap extends Scrap {
 		List<WebElement> postsSelected = new ArrayList<WebElement>();
 		//trae las publicaciones con utime...
 		
-		int cantPosts, cantScrolls = 0;
+		int cantScrolls = 0;
 		//total de publicaciones...
 		int tot = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_ALL)).size();
 		
 		
 		while(cantScrolls<2) {	
-			//Si hay posts con fecha mayor igual al corte de inicio...
+			//Si hay posts con fecha mayor o igual al corte de inicio...
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(uTimeFROM))).size()>0) {
+				//Si la cantidad de publicaciones entre el rango de fechas ha aumentado...
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo))).size()>postsSelected.size()) {
 					postsSelected = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo)));
 				}else {
@@ -261,10 +277,9 @@ public class FacebookGroupScrap extends Scrap {
 				cantScrolls++;
 			}
 			
-			
 			this.scrollDown();
 			try {
-				//this.waitUntilGroupPubsLoad(tot);
+				//Espero a que la cantidad total de 
 				this.waitUntilMainPageGroupPubsLoad(tot, FacebookConfig.XP_GROUPMAINPUBLICATIONS_ALL);
 			}catch(Exception e) {
 				break;

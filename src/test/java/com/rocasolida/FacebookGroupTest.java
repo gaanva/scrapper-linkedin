@@ -61,7 +61,7 @@ public class FacebookGroupTest {
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
-			aux = fg.obtainGroupPubsWithoutComments(GROUP, CANTPUBS);
+			aux = fg.obtainGroupPubsWithoutComments(GROUP, CANTPUBS, null, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -170,6 +170,65 @@ public class FacebookGroupTest {
 
 		fg.quit();
 		System.out.println("CANTIDAD COMENTARIOS: " + comentarios_nuevos.size());
+	}
+	
+	
+	@Test
+	public void groupPublicationsByUTime() throws Exception {
+		System.out.println("-----> groupPublicationsByUTime");
+		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		String GROUP = "cristinapresidenta";
+
+		Page page = null;
+		// Si no, se extrae la cantidad máxima que se encuentra en el grupo.
+		int CANTPUBS = 0;
+		Long UTIMEFROM = 1L;
+		Long UTIMETO = 1L;
+		Group aux = new Group();
+		try {
+			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
+			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
+			aux = fg.obtainGroupPubsWithoutComments(GROUP, CANTPUBS, UTIMEFROM, UTIMETO);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		GroupPublication gp = new GroupPublication();
+
+		for (int i = 0; i < aux.getPublications().size(); i++) {
+			System.out.println("*****************************************************************************************");
+
+			System.out.println("URL(" + i + ") " + aux.getPublications().get(i).getUrl());
+			System.out.println("ID(" + i + ") " + aux.getPublications().get(i).getId());
+			System.out.println("UTIME: (" + i + ") " + aux.getPublications().get(i).getUTime());
+
+			// PAso 2) Proceso cada una de las publications encontradas.
+			gp = fg.obtainFullPubInformation(aux.getPublications().get(i).getUrl());
+			System.out.println("ID PUB: " + gp.getId()); // ok
+			System.out.println("OWNER: " + gp.getOwner()); // ok
+			System.out.println("TITULO: " + gp.getTitulo()); // ok
+			System.out.println("UBICACION: " + gp.getUbication()); // ok
+			System.out.println("URL: " + gp.getUrl());// ok
+			System.out.println("VALOR: " + gp.getValue());// ok
+			System.out.println("LIKES: " + gp.getCantLikes()); //
+			System.out.println("REPRODUCCIONES: " + gp.getCantReproducciones());
+			System.out.println("SHARES: " + gp.getCantShare());
+			System.out.println("UTIME: " + gp.getUTime());
+			System.out.println("VENDIBLE: " + gp.isSalePost());
+
+			for (int j = 0; j < gp.getComments().size(); j++) {
+				System.out.println("ID(" + j + ") " + gp.getComments().get(j).getId());
+				System.out.println("MENSAJE(" + j + ") " + gp.getComments().get(j).getMensaje());
+				System.out.println("UTIME: (" + j + ") " + gp.getComments().get(j).getUTime());
+				System.out.println("USER NAME: (" + j + ") " + gp.getComments().get(j).getUserName());
+			}
+
+			System.out.println("*****************************************************************************************");
+
+		}
+
+		fg.quit();
+		System.out.println("Cantidad de pubs: " + aux.getPublications().size());
 	}
 
 }
