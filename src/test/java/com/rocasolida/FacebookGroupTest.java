@@ -162,7 +162,30 @@ public class FacebookGroupTest {
 			// SE llama al proceso que extrae los datos de una publicación en base a la URL de la misma.
 			// gp = fg.obtainFullPubInformation("https://www.facebook.com/cristinapresidenta/posts/483043521740444");
 			// fg.obtainFullPubInformation("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/");
-			comentarios_nuevos = fg.updateGroupPublicationComments("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/", FROM_uTIME, TO_uTIME);
+			comentarios_nuevos = fg.updateGroupPublicationComments("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/", FROM_uTIME, TO_uTIME, 0);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		fg.quit();
+		System.out.println("CANTIDAD COMENTARIOS: " + comentarios_nuevos.size());
+	}
+	
+	@Test
+	public void updateGroupPublicationCommentsByQuantity() throws Exception {
+		System.out.println("-----> updateGroupPublicationByQuantity()");
+		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		int CANTCOMMENTS = 1;
+		Long FROM_uTIME = null; // 23/08/2018 @ 08:48:00 //FECHA MÁS VIEJA.
+		Long TO_uTIME = null; // 24/08/2018 @ 09:28:00 //FECHA MÁS NUEVA.
+
+		List<Comment> comentarios_nuevos = new ArrayList<Comment>();
+		try {
+			// SE llama al proceso que extrae los datos de una publicación en base a la URL de la misma.
+			// gp = fg.obtainFullPubInformation("https://www.facebook.com/cristinapresidenta/posts/483043521740444");
+			// fg.obtainFullPubInformation("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/");
+			comentarios_nuevos = fg.updateGroupPublicationComments("https://www.facebook.com/groups/cristinapresidenta/permalink/10156612898533850/", FROM_uTIME, TO_uTIME, CANTCOMMENTS);
 
 		} catch (Exception e) {
 			e.printStackTrace();

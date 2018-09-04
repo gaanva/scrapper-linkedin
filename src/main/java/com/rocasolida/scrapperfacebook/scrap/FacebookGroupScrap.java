@@ -198,7 +198,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
+	private List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
 		
 		List<WebElement> auxList = new ArrayList<WebElement>();
 		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
@@ -259,7 +259,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return Lista de Post en formato WebElement.
 	 * @throws Exception
 	 */
-	public List<WebElement> obtainMainPageGroupPublicationsHTMLByUTime(Long uTimeFROM, Long uTimeTo) throws Exception {
+	private List<WebElement> obtainMainPageGroupPublicationsHTMLByUTime(Long uTimeFROM, Long uTimeTo) throws Exception {
 		List<WebElement> postsSelected = new ArrayList<WebElement>();
 		//trae las publicaciones con utime...
 		
@@ -296,13 +296,6 @@ public class FacebookGroupScrap extends Scrap {
 		
 		return postsSelected;
 	}
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	/**
@@ -632,7 +625,7 @@ public class FacebookGroupScrap extends Scrap {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Comment> updateGroupPublicationComments(String groupPublicationURL, Long FROM_UTIME, Long TO_UTIME) throws Exception{
+	public List<Comment> updateGroupPublicationComments(String groupPublicationURL, Long FROM_UTIME, Long TO_UTIME, int cantidad) throws Exception{
 		this.navigateTo(groupPublicationURL);
 		//Click en la seccion de comentarios...
 		if(this.getAccess()==null) {
@@ -650,7 +643,12 @@ public class FacebookGroupScrap extends Scrap {
 				}
 			}
 		}
-		return this.publicationCommentsDataUpdate(FROM_UTIME, TO_UTIME);		
+		if(cantidad>0) {
+			return this.publicationCommentsDataUpdateByQuantity(cantidad);
+		}else {
+			return this.publicationCommentsDataUpdate(FROM_UTIME, TO_UTIME);
+		}
+				
 	}
 	
 
@@ -774,6 +772,113 @@ public class FacebookGroupScrap extends Scrap {
 			System.out.println("publicationCommentsDataUpdate tardo: " + (System.currentTimeMillis() - tardo));
 		return auxListaComments;
 	}
+	
+	
+	
+	/**
+	 * 
+	 * @param cantidad
+	 * @return una lista de comentarios con la cantidad indicada
+	 * @throws Exception
+	 */
+	private List<Comment> publicationCommentsDataUpdateByQuantity(int cantidad) throws Exception{
+		long tardo = System.currentTimeMillis();
+		//capturo comentarios
+		if(debug)
+			System.out.println("[INFO] >>>> PROCESANDO COMENTARIOS (publicationCommentsDataUpdateByQuantity).");
+		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		List<Comment> auxListaComments = new ArrayList<Comment>();
+		int cantAnterior =0;
+		
+		//Puedo cortar por 2 condiciones: que no hayan comentarios entre las fechas (Entonces tengo que Sí o Sí recorrer 
+		//todos los comentarios.
+		// O porque ya consumí todos los que estaban en el rango... 
+		
+		if(commentElements.size()>0) {
+			do {
+				for (int k = 0; k < commentElements.size(); k++) {
+					Comment auxComment = new Comment();
+					
+					// Usuario id
+					if (this.getAccess() != null) {
+						String ini = "id=";
+						String fin = "&";
+						String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
+						auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
+					}
+					// Usuario name
+					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
+					
+					// Extraer likes.
+					if (this.getAccess() != null) {
+						auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
+					}
+					
+					if(commentElements.get(k).findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size()>0) {
+						auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+					}else {
+						auxComment.setMensaje("");
+					}
+					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
+					String[] auxId = href.split("&");
+					String commentId = "";
+					for(int i=0; i < auxId.length; i++){
+						if(auxId[i].contains("comment_id=")) {
+							commentId = auxId[i].split("=")[1];
+							break;
+						}
+					}
+					auxComment.setId(commentId);
+					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
+					
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
+					
+					auxListaComments.add(auxComment);
+				}
+				cantAnterior = auxListaComments.size();
+				
+				System.out.print(auxListaComments.size() + "|");
+				for (int j = 0; j < commentElements.size(); j++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
+				}
+				
+				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size()>0) {
+					try{
+						this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
+						//Poner un wait after click. (sumar al de extracción de comments...)
+						this.waitUntilMoreCommentsClickLoad();
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+							System.out.println("[INFO] desapareció spinner de load comments OK.");
+							break;
+						}else {
+							throw e;
+						}
+					}
+				}
+				
+				commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+			}while(commentElements.size()>=cantidad);
+			
+			if(debug)
+				System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
+		}else {
+			if(debug)
+				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
+		}
+		
+		if(debug)
+			System.out.println("publicationCommentsDataUpdateByQuantity tardo: " + (System.currentTimeMillis() - tardo));
+		
+		if(auxListaComments.size()>=cantidad) {
+			return auxListaComments.subList(0, cantidad);
+		}else {
+			//Retorno lo que encontré o nada.
+			return auxListaComments;
+		}
+		
+	}
+	
 	
 	private boolean waitUntilMoreCommentsClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
