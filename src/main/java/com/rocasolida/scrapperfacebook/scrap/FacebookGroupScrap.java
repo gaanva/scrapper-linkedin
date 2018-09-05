@@ -300,11 +300,16 @@ public class FacebookGroupScrap extends Scrap {
 	
 	/**
 	 * Extracción de los datos de cabecera y comentarios de una publicación
-	 * @param groupPubURL
+	 * @param groupPubURL o id de la publicación
 	 * @return
 	 * @throws Exception
 	 */
 	public GroupPublication obtainFullPubInformation(String groupPubURL) throws Exception{
+		if(!groupPubURL.contains("/")) {
+			String id = groupPubURL;
+			groupPubURL = FacebookConfig.URL+id;
+		}
+		
 		this.navigateTo(groupPubURL);
 		
 		if(debug)
@@ -626,6 +631,11 @@ public class FacebookGroupScrap extends Scrap {
 	 * @throws Exception
 	 */
 	public List<Comment> updateGroupPublicationComments(String groupPublicationURL, Long FROM_UTIME, Long TO_UTIME, int cantidad) throws Exception{
+		if(!groupPublicationURL.contains("/")) {
+			String id = groupPublicationURL;
+			groupPublicationURL = FacebookConfig.URL+id;
+		}
+		
 		this.navigateTo(groupPublicationURL);
 		//Click en la seccion de comentarios...
 		if(this.getAccess()==null) {
