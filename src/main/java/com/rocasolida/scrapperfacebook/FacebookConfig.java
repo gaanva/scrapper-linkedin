@@ -80,7 +80,7 @@ public final class FacebookConfig {
 	}
 	
 	public static String XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(Long utimeINI) {
-		return "//div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]//abbr[(contains(@class,'livetimestamp')) and (@data-utime>="+utimeINI+")]//ancestor::div[contains(@class,'userContentWrapper')]";
+		return "//div[@class='_5pcb' or @role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']//div[contains(@class,'userContentWrapper')]//abbr[(contains(@class,'livetimestamp')) and (@data-utime<"+utimeINI+")]//ancestor::div[contains(@class,'userContentWrapper')]";
 		//return XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 + utimeINI + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 + utimeFIN + XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3;
 	}
 

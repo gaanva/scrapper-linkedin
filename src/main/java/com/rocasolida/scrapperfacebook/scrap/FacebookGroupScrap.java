@@ -120,6 +120,7 @@ public class FacebookGroupScrap extends Scrap {
 				}
 				
 				Group grupo = new Group();
+				grupo.setName(facebookGroup);
 				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
 				return grupo;
 								
@@ -138,6 +139,7 @@ public class FacebookGroupScrap extends Scrap {
 				}
 				
 				Group grupo = new Group();
+				grupo.setName(facebookGroup);
 				grupo.setPublications(groupPubs.size()>0?groupPubs:null);
 				return grupo;
 				
@@ -266,11 +268,15 @@ public class FacebookGroupScrap extends Scrap {
 		int cantScrolls = 0;
 		//total de publicaciones...
 		int tot = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_ALL)).size();
+		if(debug) {
+			System.out.println("FILTRO1: "+FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(uTimeFROM));
+			System.out.println("FILTRO2: " + FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo));
+		}
 		
-		
-		while(cantScrolls<2) {	
-			//Si hay posts con fecha mayor o igual al corte de inicio...
+		while(cantScrolls<4) {	
+			//Si hay posts con fecha menor o igual al corte de inicio, dentro de los 4 scrolls en la paágina ppal, entonces, capturo todos los posts entre el rango INI-FIN...
 			if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_FROM_CONDITION(uTimeFROM))).size()>0) {
+							
 				//Si la cantidad de publicaciones entre el rango de fechas ha aumentado...
 				if(this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo))).size()>postsSelected.size()) {
 					postsSelected = this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPMAINPUBLICATIONS_TIMESTAMP_CONDITION(uTimeFROM, uTimeTo)));
