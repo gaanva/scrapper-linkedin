@@ -1831,6 +1831,7 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 								if (debug)
 									this.saveScreenShot("opt_TIPOCARGA");
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_5hn6']")));
 								menuOption.click();
 							} catch (Exception e1) {
 								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {

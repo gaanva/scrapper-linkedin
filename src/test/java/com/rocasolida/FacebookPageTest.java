@@ -20,7 +20,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookPageTest {
 	private static String OS = ScrapUtils.getOSName();
 	private static final boolean DEBUG = true;
-	private static DriverType dt = DriverType.FIREFOX;
+	private static DriverType dt = DriverType.FIREFOX_HEADLESS;
 
 	@BeforeClass
 	public static void loadOs() {
@@ -178,14 +178,35 @@ public class FacebookPageTest {
 	//
 	// }
 
+	// @Test
+	// public void larretaPost() throws Exception {
+	// FacebookScrap fs = new FacebookScrap(Driver.from(dt, OS), DEBUG);
+	// Page page = fs.obtainPageInformationWithoutComments("horaciorodriguezlarreta", 1536156518L, 1536275772L);
+	// fs.quit();
+	//
+	// System.out.println("Cpage: " + page);
+	// assertTrue(true);
+	//
+	// }
+
+	// @Test
+	// public void larretaPost() throws Exception {
+	// FacebookScrap fs = new FacebookScrap(Driver.from(dt, OS), DEBUG);
+	// Publication pub = fs.obtainPostInformation("horaciorodriguezlarreta", "312245116021051", null, null, 1000, CommentsSort.NEW);
+	// fs.quit();
+	//
+	// System.out.println("Cantidad mensajes: " + pub.getComments().size());
+	// assertTrue(pub.getComments().size() > 50);
+	//
+	// }
 	@Test
 	public void larretaPost() throws Exception {
 		FacebookScrap fs = new FacebookScrap(Driver.from(dt, OS), DEBUG);
-		Page page = fs.obtainPageInformationWithoutComments("horaciorodriguezlarreta", 1536156518L, 1536275772L);
+		Publication pub = fs.obtainPostInformation("clarincom", "2136741736360921", 1536431726L, 1536436824L, 1000, CommentsSort.NEW);
 		fs.quit();
 
-		System.out.println("Cpage: " + page);
-		assertTrue(true);
+		System.out.println("Cantidad mensajes: " + pub.getComments().size());
+		assertTrue(pub.getComments().size() == 0);
 
 	}
 }
