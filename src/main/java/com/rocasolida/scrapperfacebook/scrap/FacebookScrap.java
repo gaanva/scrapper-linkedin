@@ -199,7 +199,14 @@ public class FacebookScrap extends Scrap {
 				for (int i = 0; i < publicationsElements.size(); i++) {
 					if (this.waitForJStoLoad()) {
 						this.moveTo(publicationsElements.get(i));
-						publicationsImpl.add(this.extractPublicationData(facebookPage, publicationsElements.get(i)));
+						try {
+							Publication pub = this.extractPublicationData(facebookPage, publicationsElements.get(i));
+							if (pub != null) {
+								publicationsImpl.add(pub);
+							}
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
 					} else {
 						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
 						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
@@ -1824,6 +1831,7 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 								if (debug)
 									this.saveScreenShot("opt_TIPOCARGA");
+								((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_5hn6']")));
 								menuOption.click();
 							} catch (Exception e1) {
 								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -1923,6 +1931,7 @@ public class FacebookScrap extends Scrap {
 		// www.facebook.com/teamisurus/posts/2143052825719776
 		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826
 		// https://www.facebook.com/154152138076469/videos/972094692948872/
+		// https://www.facebook.com/horaciorodriguezlarreta/posts/10156882613511019?__xts__%5B0%5D=68.ARBj2C-5qrcHODKpyJCUTm1TDe10fEsZMrPUhkrbkT41H42Jt2optgAlDRvZeJ2mbmyviQ-wIt3KnfMbpRG6u18nufB-fo42wL06yCvYdmyFl33YI_hi849HNgVKw3Ez6W2-kXeaeR3IRoXu7SXIzLroVH1Tawc1wyHFSTzSp-SqYAQWl2h8pR0&__tn__=-R
 		String lastMatched = "";
 		if (link.contains("permalink")) {
 			String[] a = link.split("\\?")[1].split("&");
@@ -1933,7 +1942,9 @@ public class FacebookScrap extends Scrap {
 				}
 			}
 		} else {
-
+			if (link.contains("?")) {
+				link = link.split("\\?")[0];
+			}
 			String[] stringArray = link.split("/");
 			Pattern pat = Pattern.compile("[0-9]{15,18}");
 			for (int i = 0; i < stringArray.length; i++) {

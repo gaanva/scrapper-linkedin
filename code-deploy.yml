@@ -1,0 +1,15 @@
+version: 0.2
+
+
+phases:
+  install:
+    commands:
+      - apt-get update
+      - apt-get -y upgrade
+      - apt-get install xvfb -y
+      - tar -xvjf firefox-60.0.tar.bz2
+      - export DISPLAY=:20
+      - Xvfb :20 -screen 0 1366x768x16 &
+  build:
+    commands:
+        - CI=TRUE mvn -Dtest=FacebookPageTest test
