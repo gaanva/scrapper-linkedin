@@ -1,34 +1,11 @@
 package com.rocasolida.scrapperfacebook.entities;
 
+import lombok.Data;
 
-public class GroupPublication extends Publication{
-	boolean salePost;
-	String value;
-	String ubication;
+@Data
+public class GroupPublication extends Publication {
+	private boolean salePost;
+	private String value;
+	private String ubication;
 
-	public boolean isSalePost() {
-		return salePost;
-	}
-
-	public void setSalePost(boolean salePost) {
-		this.salePost = salePost;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getUbication() {
-		return ubication;
-	}
-
-	public void setUbication(String ubication) {
-		this.ubication = ubication;
-	}
-	
-	
 }
