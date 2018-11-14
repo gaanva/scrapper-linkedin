@@ -245,11 +245,7 @@ public class FacebookScrap extends Scrap {
 				System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
 				throw e;
 			}
-			try {
-				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_67m7']")));
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
+			ocultarBannerLogin();
 			String currentURL = this.getDriver().getCurrentUrl();
 			FacebookPostType fpt = getPostType(currentURL);
 			System.out.println("currentURL: " + currentURL + ". fpt: " + fpt);
@@ -868,7 +864,11 @@ public class FacebookScrap extends Scrap {
 			if (debug)
 				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
 			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size() > 0) {
-				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0)) {
+				int lastPostSize = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size();
+				int prevPostSize = 0;
+				int retriesMax = 3;
+				int retriesCount = 0;
+				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax) {
 					this.saveScreenShot("a1-" + System.currentTimeMillis());
 					try {
 						this.waitUntilShowMorePubsAppears(this);
@@ -885,8 +885,10 @@ public class FacebookScrap extends Scrap {
 						this.scrollMainPublicationsPage();
 						this.checkAndClosePopupLogin();
 						try {
-							if (debug)
+							if (debug) {
 								System.out.println("[INFO] SPINNER ACTIVE?...");
+								this.saveScreenShot("SPINNER ACTIVE");
+							}
 							this.waitUntilNotSpinnerLoading();
 						} catch (Exception e1) {
 							if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -903,6 +905,12 @@ public class FacebookScrap extends Scrap {
 					}
 					if (debug)
 						System.out.print("...|");
+					prevPostSize = lastPostSize;
+					lastPostSize = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size();
+					System.out.println("last post size: " + lastPostSize);
+					if (lastPostSize == prevPostSize) {
+						retriesCount++;
+					}
 				}
 				if (debug)
 					System.out.println("|FIN|");
@@ -1080,15 +1088,11 @@ public class FacebookScrap extends Scrap {
 
 	private void scrollMainPublicationsPage() {
 		((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
-		// this.waitForJStoLoad();
-		// try {
-		// Thread.sleep(1000);
-		// } catch (InterruptedException e) {
-		// TODO Auto-generated catch block
-		// e.printStackTrace();
-		// System.out.println("[ERROR] NO SE PUDO HACER LA ESPERA THREAD.SLEEP");
-		// }
-		// this.saveScreenShot("Scroll_MainPAge");
+		// Varilla agrego este delay para que Facebook no lo bloquee por concurrencia
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+		}
 	}
 
 	/**
@@ -1411,24 +1415,28 @@ public class FacebookScrap extends Scrap {
 	}
 
 	public void checkAndClosePopupLogin() {
-		if ((this.existElement(null, "//a[@id='expanding_cta_close_button']") && this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).isDisplayed())) {
-			try {
-				this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-				if (debug)
-					System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
-			} catch (Exception e) {
-				if (e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-					this.scrollDown();
-					this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
-					if (debug)
-						System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
-				} else {
-					if (debug)
-						this.saveScreenShot("ERRCLOSEPOPUPLGIN");
-					e.printStackTrace();
-				}
-			}
-		}
+		//////////////////////////////////////////////////////////////////////////////////
+		// NOTA: Varilla el dia 14/11 comento esta logica y puso la del hide a ver que tul
+		//////////////////////////////////////////////////////////////////////////////////
+		// if ((this.existElement(null, "//a[@id='expanding_cta_close_button']") && this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).isDisplayed())) {
+		// try {
+		// this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+		// if (debug)
+		// System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
+		// } catch (Exception e) {
+		// if (e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+		// this.scrollDown();
+		// this.getDriver().findElement(By.xpath("//a[@id='expanding_cta_close_button']")).click();
+		// if (debug)
+		// System.out.println("[INFO] SE CERRÓ POPUP LOGIN.");
+		// } else {
+		// if (debug)
+		// this.saveScreenShot("ERRCLOSEPOPUPLGIN");
+		// e.printStackTrace();
+		// }
+		// }
+		// }
+		ocultarBannerLogin();
 	}
 
 	public Publication extractPublicationData(String pageName, WebElement publication) {
@@ -1749,6 +1757,7 @@ public class FacebookScrap extends Scrap {
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
 	private boolean tipoCargaComentarios(WebElement post, int option) throws Exception {
 		try {
+			ocultarBannerLogin();
 			/*
 			 * if(this.getAccess() == null) { this.scrollDown(); }
 			 */
@@ -1762,14 +1771,15 @@ public class FacebookScrap extends Scrap {
 			/*
 			 * if (this.getAccess() == null) { this.checkAndClosePopupLogin(); }
 			 */
-
 			try {
 				try {
 					this.waitUntilMenuOptionAppears(this, post);
 				} catch (Exception e) {
 					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) { // Si la publicación no tiene ningun tipo de actividad...
-						if (debug)
+						if (debug) {
 							System.out.println("[WARN] TIEMPO DE ESPERA A QUE APAREZCA LINK TIPO CARGA AGOTADO");
+							this.saveScreenShot("waitUntilMenuOptionAppears");
+						}
 						return false;
 					} else {
 						throw e;
@@ -1837,11 +1847,7 @@ public class FacebookScrap extends Scrap {
 								this.scrollDown();
 								if (debug)
 									this.saveScreenShot("opt_TIPOCARGA");
-								try {
-									((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_67m7']")));
-								} catch (Exception ex) {
-									ex.printStackTrace();
-								}
+								ocultarBannerLogin();
 								menuOption.click();
 							} catch (Exception e1) {
 								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -1883,6 +1889,21 @@ public class FacebookScrap extends Scrap {
 			throw e;
 		}
 
+	}
+
+	private void ocultarBannerLogin() {
+		try {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_67m7']")));
+		} catch (Exception ex) {
+		}
+		try {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_62uh']")));
+		} catch (Exception ex) {
+		}
+		try {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_5hn6']")));
+		} catch (Exception ex) {
+		}
 	}
 
 	public void scrollDown() {
