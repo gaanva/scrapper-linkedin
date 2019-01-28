@@ -25,6 +25,7 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
 import com.rocasolida.scrapperfacebook.FacebookConfig;
+import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.Credential;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.entities.Publication;
@@ -40,6 +41,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	final Pattern pattern = Pattern.compile(countRegex);
 	
 	private static Integer WAIT_UNTIL_SPINNER = 10;
+	private static Integer WAIT_UNTIL_SECONDS = 5;
 	//Cada cuanto el waiter chequea la condicion.
 	private static Integer CHECK_DELAY_MS = 10;
 	public FacebookNewUsersExtract(Driver driver, boolean debug) throws MalformedURLException {
@@ -111,12 +113,14 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Cargo las publicaciones
 			this.LoadPublications(facebookPage, page);
 			//A este punto ya me cargo las publicaciones...
+			//Extraigo las publicaciones a recorrer
+			
+			//SEleccionar que se VEAN TODOS LOS COMENTARIOS
 			//Revisar el metodo processPagePosts, donde busca posts en un rango de fechas...
 		    //Deberia solo extraer las que estan en un array.
 			//Recorrer los posts y extraer comments users.
 			//si no cumpli la cantidad de usrs con la primer extraccion [repetir proceso]
-			
-			
+					
 			
 			if (publicationsElements != null) {
 				List<Publication> publicationsImpl = new ArrayList<Publication>();
@@ -200,7 +204,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
-	public Publication obtainPostInformation(String pageName, String postId, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
+	public Publication obtainPostInformation(String pageName, String postId) throws Exception {
 		// Voy a la pagina de la publicacion
 		try {
 			Publication pub = new Publication();
@@ -244,70 +248,170 @@ public class FacebookNewUsersExtract extends Scrap {
 			throw e;
 		}
 	}	
-	public List<UserLike> obtainProfileLikes(String profile) throws Exception {
-		
-		
-		// this.validateProfileLink(profile);
-		List<UserLike> listaLikes = new ArrayList<UserLike>();
-		// voy a los likes derecho viejo, de una a lo guapo.
-		// ir al link con el /likes_all
-		this.navigateTo(FacebookConfig.URL + profile + "/likes_all");
-		if (this.getDriver().findElements(By.xpath(FacebookConfig.XP_HAS_LIKES_CONTENT)).size() > 0) {
-			System.out.println("Entro a " + FacebookConfig.URL + profile + "/likes_all");
-
-			// Me fijo que no aparezca un overlay...
-			if (this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
-				this.getActions().sendKeys(Keys.ESCAPE).perform();
-				this.getActions().sendKeys(Keys.ESCAPE).perform();
-			}
-
-			List<WebElement> aux = this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES));
-			if (aux.size() == 0) {
-				System.out.println("No likes.");
-				return listaLikes;
-			}
-			do {
-
-				for (int i = 0; i < aux.size(); i++) {
-					try {
-						UserLike aux1 = new UserLike();
-						aux1.setUrl(aux.get(i).findElement(By.xpath("./div[@class='_3owb']//div[@class='fsl fwb fcb']/a")).getAttribute("href"));
-						aux1.setTitle(aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsl fwb fcb']/a")).getText());
-						aux1.setCategory(aux.get(i).findElement(By.xpath(".//div[@class='_42ef']//div[@class='fsm fwn fcg']")).getText());
-						listaLikes.add(aux1);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
+	
+	private boolean waitUntilCommentsLoaded() {
+		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0) {
+					return false;
+				} else {
+					return true;
 				}
-
-				for (int i = 0; i < aux.size(); i++) {
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", aux.get(i));
-				}
-				System.out.println("Obtengo likes current_cant: " + listaLikes.size());
-				this.scrollDown();
-				Thread.sleep(500);
-				aux = this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES));
-				// aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]/div/div/a"));
-				// mientras haya spinner loader...
-			} while (this.getDriver().findElements(By.xpath(FacebookConfig.XP_LIKES_LOADING)).size() > 0 || this.getDriver().findElements(By.xpath(FacebookConfig.XP_USER_LIKES)).size() > 0);
-
-			aux = this.getDriver().findElements(By.xpath("//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]"));
-
-		} else {
-			System.out.println("NO entro a " + FacebookConfig.URL + profile + "/likes_all");
-			if (this.getDriver().getCurrentUrl().equalsIgnoreCase(FacebookConfig.URL + profile)) {
-				throw new Exception("SIN_PERMISOS_VER_LIKES");
-			} else {
-				this.saveScreenShot("PROFILE_ErrorNotHandled");
-				throw new Exception("[ERROR] UNHANDLED ERROR! check log snapshot: 'PROFILE_ErrorNotHandled'");
 			}
-		}
-		System.out.println("Termino bien y con likes: " + listaLikes.size());
-		return listaLikes;
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(commentSection);
 	}
 
+	/**
+	 * Extraigo los comentarios de una publicación
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Comment> publicationCommentsDataExtraction() throws Exception {
+		Long tardo = System.currentTimeMillis();
 
+		// capturo comentarios
+		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+		List<Comment> auxListaComments = new ArrayList<Comment>();
+		if (commentElements.size() > 0) {
+			do {
+				for (int k = 0; k < commentElements.size(); k++) {
+					Comment auxComment = new Comment();
 
+					// Usuario id
+					if (this.getAccess() != null) {
+						String ini = "id=";
+						String fin = "&";
+						String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
+						auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
+					}
+					// Usuario name
+					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
+
+					// Extraer likes.
+					if (this.getAccess() != null) {
+						auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
+					}
+					if (commentElements.get(k).findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size() > 0) {
+						auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
+					} else {
+						auxComment.setMensaje("");
+					}
+
+					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
+					String[] auxId = href.split("&");
+					String commentId = "";
+					for (int i = 0; i < auxId.length; i++) {
+						if (auxId[i].contains("comment_id=")) {
+							commentId = auxId[i].split("=")[1];
+							break;
+						}
+					}
+
+					auxComment.setId(commentId);
+					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
+
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
+
+					auxListaComments.add(auxComment);
+				}
+
+				System.out.print(auxListaComments.size() + "|");
+				for (int j = 0; j < commentElements.size(); j++) {
+					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
+				}
+				if (this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size() > 0) {
+					try {
+						this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
+						this.waitUntilMoreCommentsClickLoad();
+					} catch (Exception e) {
+						if (e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
+							System.out.println("[INFO] desapareció spinner de load comments OK.");
+						} else {
+							throw e;
+						}
+					}
+				}
+				commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				// Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-
+			} while (this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size() > 0 || commentElements.size() > 0);
+			if (debug)
+				System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
+		} else {
+			if (debug)
+				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
+		}
+
+		tardo = System.currentTimeMillis() - tardo;
+		if (debug)
+			System.out.println("publicationCommentsDataExtraction tardo: " + tardo);
+
+		return auxListaComments;
+	}
+	
+	private boolean waitUntilMoreCommentsClickLoad() {
+		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(loadMore);
+	}
+	
+	private List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
+
+		List<WebElement> auxList = new ArrayList<WebElement>();
+		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+
+		int tot = 0;
+		if (auxList.size() > 0) {
+			tot = auxList.size();
+			// while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
+			while (!(this.getDriver().findElements(By.xpath(xpathExpression)).size() >= cantidadPublicacionesInicial)) {
+				this.scrollDown();
+				auxList = this.getDriver().findElements(By.xpath(xpathExpression));
+
+				// Control de corte por no haber más publicaciones...
+				try {
+					// this.waitUntilGroupPubsLoad(tot);
+					this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
+					tot = auxList.size();
+				} catch (Exception e) {
+					break;
+				}
+
+			}
+		} else {
+			return auxList;
+		}
+
+		// retorno hasta las primeras cantidad de publicaciones indicadas.
+		return auxList.size() > cantidadPublicacionesInicial ? auxList.subList(0, cantidadPublicacionesInicial) : auxList;
+	}
+	
+	private boolean waitUntilMainPagePubsLoad(final int cantAnterior, final String xpathExpression) {
+		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(xpathExpression)).size() > cantAnterior) {
+
+					return true;
+				} else {
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(loadMorePublications);
+	}
+	
+	
 	private void scrollMainPublicationsPage() {
 		((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
 	}
