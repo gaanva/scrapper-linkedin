@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -30,8 +29,6 @@ import com.rocasolida.scrapperfacebook.entities.Credential;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.entities.User;
-import com.rocasolida.scrapperfacebook.entities.UserLike;
-import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.FacebookLinkType;
 import com.rocasolida.scrapperfacebook.scrap.util.FacebookPostType;
@@ -106,6 +103,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 
 	public List<User> obtainUsersCommentInformation(String facebookPage, int cantUsuarios) throws Exception {
+		List<User> users = new ArrayList<User>();
 		long tardo = System.currentTimeMillis();
 		try {
 			Page page = new Page();
@@ -113,9 +111,53 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Cargo las publicaciones
 			this.LoadPublications(facebookPage, page);
 			//A este punto ya me cargo las publicaciones...
-			//Extraigo las publicaciones a recorrer
+			//Extraigo los links de las publicaciones a recorrer - Capturar publicaciones
+			if(this.existElement(null, FacebookConfig.XPATH_PUBLICATION_LINK)) {
+				List<WebElement> pubsLinkElement = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_LINK));
+				if(debug)
+					System.out.println("[INFO] SE PROCESARAN "+pubsLinkElement.size()+" PUBLICACIONES");
+				List<String> pubsUrls = new ArrayList<String>();
+				for(int i=0; i<pubsLinkElement.size(); i++) {
+					pubsUrls.add(pubsLinkElement.get(i).getAttribute("href"));
+					this.navigateTo(pubsUrls.get(i));
+					try {
+						this.waitUntilNotSpinnerLoading();
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+							if (debug)
+								System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
+						}else {
+							throw e;
+						}
+					}
+					//Acá ya me abrió el post...
+					//Extraer los comentarios...
+					if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
+						List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+						for(int j=0; j<pubComments.size(); j++) {
+							User auxUser = this.extractCommentData(pubComments.get(j));
+							if(!users.contains(auxUser)) {
+								users.add(auxUser);
+							}
+							
+							//AGregar condición de que si llego al total de usuarios a buscar, que corte.
+							
+						}
+					}else {
+						if(this.existElement(null,FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)) {
+							
+						}else {
+							//La publicacion no tiene comentarios.
+						}
+					}
+					
+					
+				}
+				
+				
+			}
 			
-			//SEleccionar que se VEAN TODOS LOS COMENTARIOS
+			
 			//Revisar el metodo processPagePosts, donde busca posts en un rango de fechas...
 		    //Deberia solo extraer las que estan en un array.
 			//Recorrer los posts y extraer comments users.
@@ -400,7 +442,6 @@ public class FacebookNewUsersExtract extends Scrap {
 		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath(xpathExpression)).size() > cantAnterior) {
-
 					return true;
 				} else {
 					return false;
@@ -481,6 +522,18 @@ public class FacebookNewUsersExtract extends Scrap {
 			System.out.println("navigateTo tardo: " + aux);
 		}
 	}
+	
+	public User extractCommentData(WebElement comentario) throws Exception {
+		User auxUser = new User();
+		// Usuario Profile Url
+		if (this.getAccess() != null) {
+			String userProfileUrl = comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+			auxUser.setUrlPerfil(userProfileUrl);
+		}		
+		return auxUser;
+	}
+
+	
 
 	public void scrollDown() {
 		JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();

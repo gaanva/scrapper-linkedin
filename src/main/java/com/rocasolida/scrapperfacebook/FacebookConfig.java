@@ -45,6 +45,8 @@ public final class FacebookConfig {
 
 	public static String XPATH_PUBLICATION_ID = ".//a[contains(@ajaxify,'ft_id')]";// getAttribute("ajaxify")
 	public static String XPATH_PUBLICATION_ID_1 = ".//span[contains(@class,'fsm fwn fcg')]//a";
+	//Levanta los links de las publicaciones que estén listadas en pantalla.
+	public static String XPATH_PUBLICATION_LINK = "//div[contains(@class,'userContentWrapper')]//div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//span[contains(@class,'fsm fwn fcg')]//a";
 
 	public static String XPATH_PUBLICATION_OWNER = ".//span[contains(@class,'fwn fcg')]//span[contains(@class,'fwb')]"; // getAttribute("aria-label")
 	public static String XPATH_PUBLICATION_PHOTO_OWNER = ".//div[contains(@class,'fbPhotoContributorName')]//a"; // getAttribute("aria-label")
@@ -209,7 +211,7 @@ public final class FacebookConfig {
 
 	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
-
+	public static String XPATH_USER_URL_PROFILE = "//a[contains(@class,' UFICommentActorName')]";
 	//public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_USER_COMMENT = "./descendant::span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
