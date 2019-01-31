@@ -41,6 +41,8 @@ public class FacebookNewUsersExtract extends Scrap {
 	private static Integer WAIT_UNTIL_SECONDS = 5;
 	//Cada cuanto el waiter chequea la condicion.
 	private static Integer CHECK_DELAY_MS = 10;
+	private boolean encontroCantUsers = false;
+	
 	public FacebookNewUsersExtract(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
 	}
@@ -106,87 +108,36 @@ public class FacebookNewUsersExtract extends Scrap {
 		List<User> users = new ArrayList<User>();
 		//contador del total de usuarios...
 		int totalUsers = 0;
-		boolean encontroCantUsers = false;
 		long tardo = System.currentTimeMillis();
 		try {
 			Page page = new Page();
 			page.setName(facebookPage);
-			//Cargo las publicaciones
-			this.LoadPublications(facebookPage, page);
-			//A este punto ya me cargo las publicaciones...
-			//Extraigo los links de las publicaciones a recorrer - Capturar publicaciones
-			if(this.existElement(null, FacebookConfig.XPATH_PUBLICATION_LINK)) {
-				List<WebElement> pubsLinkElement = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_LINK));
-				if(debug)
-					System.out.println("[INFO] SE PROCESARAN "+pubsLinkElement.size()+" PUBLICACIONES");
-				List<String> pubsUrls = new ArrayList<String>();
-				for(int i=0; i<pubsLinkElement.size(); i++) {
-					pubsUrls.add(pubsLinkElement.get(i).getAttribute("href"));
-					this.navigateTo(pubsUrls.get(i));
-					try {
-						//Espero a que cargue la pagina de la publicacion.
-						this.waitUntilNotSpinnerLoading();
-					}catch(Exception e) {
-						if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-							if (debug)
-								System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
-						}else {
-							throw e;
-						}
-					}
-					//ya me abrio el post...
-					//Extraer los comentarios...
-					if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
-						List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-						for(int j=0; j<pubComments.size(); j++) {
-							User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
-							if(!users.contains(auxUser)) {
-								users.add(auxUser);
-								totalUsers ++;
-							}
-							//Agregar condición de que si llego al total de usuarios a buscar, que corte.
-							if(totalUsers == cantUsuarios) {
-								encontroCantUsers = true;
-								break;
-							}
-						}
-					}
-					
-					if(encontroCantUsers) {
+			
+			do{
+				//Cargo las publicaciones
+				this.LoadPublications(facebookPage, page);
+				//Obtengo las publicaciones con sus URL
+				List<Publication> publicaciones = this.extractPublicationsInfo(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER);
+				for(int i=0; i<publicaciones.size();i++) {
+					this.navigateTo(publicaciones.get(i).getUrl());
+					users = this.processVisibleComments(users, cantUsuarios);
+					if(this.encontroCantUsers){
 						break;
 					}
-					
-					//Si no levanto mensajes, busco el boton de mas comentarios...
-					if(this.existElement(null,FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)) {
-						//se abre la publicacion en un container...
-						WebElement showMoreLink = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
-						try {
-							showMoreLink.click();
-							this.waitUntilMoreCommentsClickLoad();
-						} catch (Exception e) {
-							throw e;
-						}
-					}else {
-						//La publicacion no tiene comentarios.
-						System.out.println("[WARN] La publicacion no tiene comentarios. (" + pubsLinkElement.get(i).getAttribute("href") + ")");
-					}
 				}
-				
-				//Controlo si encontró la cantidad de users pedida
-				if(encontroCantUsers){
-					return users;
-				}else {
-					//Buscar en más publicaciones...
-				}
-			}
-			
+			}while(!encontroCantUsers);
+			return users;
+		}catch(Exception e) {
+			return null;
+		}
+		
 			
 			//Revisar el metodo processPagePosts, donde busca posts en un rango de fechas...
 		    //Deberia solo extraer las que estan en un array.
 			//Recorrer los posts y extraer comments users.
 			//si no cumpli la cantidad de usrs con la primer extraccion [repetir proceso]
 					
-			
+		/*
 			if (publicationsElements != null) {
 				List<Publication> publicationsImpl = new ArrayList<Publication>();
 				for (int i = 0; i < publicationsElements.size(); i++) {
@@ -211,12 +162,31 @@ public class FacebookNewUsersExtract extends Scrap {
 				if (debug)
 					System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
 				return null;
-			}
-		} finally {
-			tardo = System.currentTimeMillis() - tardo;
-			System.out.println("obtainPageInformation tardo: " + tardo);
-		}
+			}*/
+//		} finally {
+//			tardo = System.currentTimeMillis() - tardo;
+//			System.out.println("obtainPageInformation tardo: " + tardo);
+//		}
 	}
+	
+	public List<Publication> extractPublicationsInfo(String expression) {
+		List<Publication> pubs = new ArrayList<Publication>();
+		if(this.existElement(null, expression)) {//Si existen containers de publicaciones..
+			List<WebElement> pubsElements = this.getDriver().findElements(By.xpath(expression));
+			if(debug)
+				System.out.println("[INFO] SE PROCESARAN "+pubsElements.size()+" PUBLICACIONES");
+			
+			for(int i=0; i<pubsElements.size(); i++) {
+				Publication aux = new Publication();
+				aux.setUrl(pubsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_LINK)).getAttribute("href"));
+				aux.setUTime(Long.parseLong(pubsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
+				pubs.add(aux);
+			}
+		}
+		return pubs;
+	}
+	
+	
 	
 	public boolean waitUntilNotSpinnerLoading() {
 		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
@@ -269,6 +239,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
+	/*
 	public Publication obtainPostInformation(String pageName, String postId) throws Exception {
 		// Voy a la pagina de la publicacion
 		try {
@@ -327,94 +298,8 @@ public class FacebookNewUsersExtract extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(commentSection);
 	}
-
-	/**
-	 * Extraigo los comentarios de una publicación
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	public List<Comment> publicationCommentsDataExtraction() throws Exception {
-		Long tardo = System.currentTimeMillis();
-
-		// capturo comentarios
-		List<WebElement> commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-		List<Comment> auxListaComments = new ArrayList<Comment>();
-		if (commentElements.size() > 0) {
-			do {
-				for (int k = 0; k < commentElements.size(); k++) {
-					Comment auxComment = new Comment();
-
-					// Usuario id
-					if (this.getAccess() != null) {
-						String ini = "id=";
-						String fin = "&";
-						String pathUserID = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT)).getAttribute("data-hovercard");
-						auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
-					}
-					// Usuario name
-					auxComment.setUserName(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
-
-					// Extraer likes.
-					if (this.getAccess() != null) {
-						auxComment.setCantLikes(Integer.valueOf(commentElements.get(k).findElement(By.xpath(".//span[contains(@class,'UFICommentLikeButton')]")).getText()));
-					}
-					if (commentElements.get(k).findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size() > 0) {
-						auxComment.setMensaje(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).getText());
-					} else {
-						auxComment.setMensaje("");
-					}
-
-					String href = commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
-					String[] auxId = href.split("&");
-					String commentId = "";
-					for (int i = 0; i < auxId.length; i++) {
-						if (auxId[i].contains("comment_id=")) {
-							commentId = auxId[i].split("=")[1];
-							break;
-						}
-					}
-
-					auxComment.setId(commentId);
-					auxComment.setUTime(Long.parseLong(commentElements.get(k).findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
-
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(k));
-
-					auxListaComments.add(auxComment);
-				}
-
-				System.out.print(auxListaComments.size() + "|");
-				for (int j = 0; j < commentElements.size(); j++) {
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", commentElements.get(j));
-				}
-				if (this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size() > 0) {
-					try {
-						this.getDriver().findElement(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).click();
-						this.waitUntilMoreCommentsClickLoad();
-					} catch (Exception e) {
-						if (e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
-							System.out.println("[INFO] desapareció spinner de load comments OK.");
-						} else {
-							throw e;
-						}
-					}
-				}
-				commentElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				// Cuando desaparezca el link de ver más mensajes y haya procesado todos los mensajes, sale del loop.-
-			} while (this.getDriver().findElements(By.xpath(FacebookConfig.XP_GROUPPUBLICATION_VER_MAS_MSJS)).size() > 0 || commentElements.size() > 0);
-			if (debug)
-				System.out.println("TOTAL COMENTARIOS ENCONTRADOS: " + auxListaComments.size());
-		} else {
-			if (debug)
-				System.out.println("LA PUBLICACION NO TIENE COMENTARIOS.");
-		}
-
-		tardo = System.currentTimeMillis() - tardo;
-		if (debug)
-			System.out.println("publicationCommentsDataExtraction tardo: " + tardo);
-
-		return auxListaComments;
-	}
+*/
+	
 	
 	private boolean waitUntilMoreCommentsClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
@@ -430,6 +315,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(loadMore);
 	}
 	
+	/*
 	private List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
 
 		List<WebElement> auxList = new ArrayList<WebElement>();
@@ -460,7 +346,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		// retorno hasta las primeras cantidad de publicaciones indicadas.
 		return auxList.size() > cantidadPublicacionesInicial ? auxList.subList(0, cantidadPublicacionesInicial) : auxList;
 	}
-	
+	*/
 	private boolean waitUntilMainPagePubsLoad(final int cantAnterior, final String xpathExpression) {
 		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -544,6 +430,30 @@ public class FacebookNewUsersExtract extends Scrap {
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("navigateTo tardo: " + aux);
 		}
+	}
+	
+	
+	public List<User> processVisibleComments(List<User> users, int cantUsers) throws Exception {
+		int totUsersProcessed = users.size();
+		if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
+			List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+			for(int j=0; j<pubComments.size(); j++) {
+				User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
+				if(!users.contains(auxUser)) {
+					users.add(auxUser);
+					totUsersProcessed ++;
+				}
+				//Agregar condición de que si llego al total de usuarios a buscar, que corte.
+				if(totUsersProcessed == cantUsers) {
+					this.encontroCantUsers = true;
+					break;
+				}
+			}
+		}else {
+			throw new Exception("NO HAY COMENTARIOS PARA PROCESAR!");
+		}
+		
+		return users;
 	}
 	
 	public User extractCommentUserProfileLink(WebElement comentario) throws Exception {

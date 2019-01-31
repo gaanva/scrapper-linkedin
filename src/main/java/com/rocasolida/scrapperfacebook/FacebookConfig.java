@@ -46,11 +46,12 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_ID = ".//a[contains(@ajaxify,'ft_id')]";// getAttribute("ajaxify")
 	public static String XPATH_PUBLICATION_ID_1 = ".//span[contains(@class,'fsm fwn fcg')]//a";
 	//Levanta los links de las publicaciones que estén listadas en pantalla.
-	public static String XPATH_PUBLICATION_LINK = "//div[contains(@class,'userContentWrapper')]//div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//span[contains(@class,'fsm fwn fcg')]//a";
+	public static String XPATH_PUBLICATION_LINK = "//div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//span[contains(@class,'fsm fwn fcg')]//a";
 
 	public static String XPATH_PUBLICATION_OWNER = ".//span[contains(@class,'fwn fcg')]//span[contains(@class,'fwb')]"; // getAttribute("aria-label")
 	public static String XPATH_PUBLICATION_PHOTO_OWNER = ".//div[contains(@class,'fbPhotoContributorName')]//a"; // getAttribute("aria-label")
 
+	public static String XPATH_PUBLICATION_HEADER_CONTAINER = "div[@class='_6a _5u5j _6b']";
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
 	public static String XPATH_PUBLICATION_TIMESTAMP_1 = ".//abbr//span[contains(@class,'timestamp')]//parent::abbr"; // getAttribute("data-utime")
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
