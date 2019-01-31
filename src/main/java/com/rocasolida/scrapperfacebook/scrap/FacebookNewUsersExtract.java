@@ -104,6 +104,9 @@ public class FacebookNewUsersExtract extends Scrap {
 
 	public List<User> obtainUsersCommentInformation(String facebookPage, int cantUsuarios) throws Exception {
 		List<User> users = new ArrayList<User>();
+		//contador del total de usuarios...
+		int totalUsers = 0;
+		boolean encontroCantUsers = false;
 		long tardo = System.currentTimeMillis();
 		try {
 			Page page = new Page();
@@ -121,6 +124,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					pubsUrls.add(pubsLinkElement.get(i).getAttribute("href"));
 					this.navigateTo(pubsUrls.get(i));
 					try {
+						//Espero a que cargue la pagina de la publicacion.
 						this.waitUntilNotSpinnerLoading();
 					}catch(Exception e) {
 						if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -130,31 +134,50 @@ public class FacebookNewUsersExtract extends Scrap {
 							throw e;
 						}
 					}
-					//Acá ya me abrió el post...
+					//ya me abrio el post...
 					//Extraer los comentarios...
 					if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
 						List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 						for(int j=0; j<pubComments.size(); j++) {
-							User auxUser = this.extractCommentData(pubComments.get(j));
+							User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
 							if(!users.contains(auxUser)) {
 								users.add(auxUser);
+								totalUsers ++;
 							}
-							
-							//AGregar condición de que si llego al total de usuarios a buscar, que corte.
-							
-						}
-					}else {
-						if(this.existElement(null,FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)) {
-							
-						}else {
-							//La publicacion no tiene comentarios.
+							//Agregar condición de que si llego al total de usuarios a buscar, que corte.
+							if(totalUsers == cantUsuarios) {
+								encontroCantUsers = true;
+								break;
+							}
 						}
 					}
 					
+					if(encontroCantUsers) {
+						break;
+					}
 					
+					//Si no levanto mensajes, busco el boton de mas comentarios...
+					if(this.existElement(null,FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)) {
+						//se abre la publicacion en un container...
+						WebElement showMoreLink = this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+						try {
+							showMoreLink.click();
+							this.waitUntilMoreCommentsClickLoad();
+						} catch (Exception e) {
+							throw e;
+						}
+					}else {
+						//La publicacion no tiene comentarios.
+						System.out.println("[WARN] La publicacion no tiene comentarios. (" + pubsLinkElement.get(i).getAttribute("href") + ")");
+					}
 				}
 				
-				
+				//Controlo si encontró la cantidad de users pedida
+				if(encontroCantUsers){
+					return users;
+				}else {
+					//Buscar en más publicaciones...
+				}
 			}
 			
 			
@@ -523,7 +546,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
-	public User extractCommentData(WebElement comentario) throws Exception {
+	public User extractCommentUserProfileLink(WebElement comentario) throws Exception {
 		User auxUser = new User();
 		// Usuario Profile Url
 		if (this.getAccess() != null) {
