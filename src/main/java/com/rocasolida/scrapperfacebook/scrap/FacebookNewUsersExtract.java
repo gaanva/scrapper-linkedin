@@ -41,7 +41,11 @@ public class FacebookNewUsersExtract extends Scrap {
 	private static Integer WAIT_UNTIL_SECONDS = 5;
 	//Cada cuanto el waiter chequea la condicion.
 	private static Integer CHECK_DELAY_MS = 10;
+	
+	//Encontro la cantidad de comentarios objetivos
 	private boolean encontroCantUsers = false;
+	//hay mas publicaciones para extraer comentarios
+	private boolean hayMasPubs = true;
 	
 	public FacebookNewUsersExtract(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -106,26 +110,29 @@ public class FacebookNewUsersExtract extends Scrap {
 
 	public List<User> obtainUsersCommentInformation(String facebookPage, int cantUsuarios) throws Exception {
 		List<User> users = new ArrayList<User>();
+		List<Publication> publicaciones = new ArrayList<Publication>();
+		//Por las dudas me guardo todas las pubs procesadas...
+		List<Publication> auxPubs = new ArrayList<Publication>();
 		//contador del total de usuarios...
 		int totalUsers = 0;
-		long tardo = System.currentTimeMillis();
+		
 		try {
-			Page page = new Page();
-			page.setName(facebookPage);
-			
+			//Verifico que sea link de pagina
+			this.verifyPage(facebookPage);
 			do{
-				//Cargo las publicaciones
-				this.LoadPublications(facebookPage, page);
-				//Obtengo las publicaciones con sus URL
-				List<Publication> publicaciones = this.extractPublicationsInfo(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER);
-				for(int i=0; i<publicaciones.size();i++) {
-					this.navigateTo(publicaciones.get(i).getUrl());
+				//Obtengo las publicaciones a procesar la primera vez..
+				auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
+				for(int i=0; i<auxPubs.size();i++) {
+					this.navigateTo(auxPubs.get(i).getUrl());
 					users = this.processVisibleComments(users, cantUsuarios);
 					if(this.encontroCantUsers){
 						break;
 					}
 				}
-			}while(!encontroCantUsers);
+				//Esto como auditoria de control, no haria falta pero para los primeros tests no va a venir mal...
+				publicaciones.addAll(auxPubs);
+			
+			}while(!encontroCantUsers || hayMasPubs);
 			return users;
 		}catch(Exception e) {
 			return null;
@@ -169,20 +176,18 @@ public class FacebookNewUsersExtract extends Scrap {
 //		}
 	}
 	
-	public List<Publication> extractPublicationsInfo(String expression) {
+	public List<Publication> extractPublicationsInfo(List<WebElement> pubsHtml) {
 		List<Publication> pubs = new ArrayList<Publication>();
-		if(this.existElement(null, expression)) {//Si existen containers de publicaciones..
-			List<WebElement> pubsElements = this.getDriver().findElements(By.xpath(expression));
-			if(debug)
-				System.out.println("[INFO] SE PROCESARAN "+pubsElements.size()+" PUBLICACIONES");
-			
-			for(int i=0; i<pubsElements.size(); i++) {
-				Publication aux = new Publication();
-				aux.setUrl(pubsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_LINK)).getAttribute("href"));
-				aux.setUTime(Long.parseLong(pubsElements.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
-				pubs.add(aux);
-			}
+		if(debug)
+			System.out.println("[INFO] SE PROCESARAN "+pubsHtml.size()+" PUBLICACIONES");
+		
+		for(int i=0; i<pubsHtml.size(); i++) {
+			Publication aux = new Publication();
+			aux.setUrl(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_LINK)).getAttribute("href"));
+			aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
+			pubs.add(aux);
 		}
+		
 		return pubs;
 	}
 	
@@ -203,8 +208,8 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(morePubsLink);
 	}
 	
-	//Va al pagina de posts de la page y carga las publicaciones...
-	public void LoadPublications(String facebookPage, Page page) throws Exception {
+	//controla que sea una pagina...
+	public void verifyPage(String facebookPage) throws Exception {
 		long aux = System.currentTimeMillis();
 		try {
 			this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST); // SI NO TIRA ERROR DE CONEXIÓN O DE PAGINA INEXISTENTE...
@@ -217,19 +222,8 @@ public class FacebookNewUsersExtract extends Scrap {
 			case PROFILE:
 				throw new Exception("[INFO] Es un Perfil.");
 			case PAGE:
-				if (debug)
-					System.out.println("[INFO] Es una Página.");
+				System.out.println("[INFO] OK: el link provisto es de una pagina.");
 				//Por ahí antes se podria cargar la espera del container de publications...
-				try {
-					if (debug)
-						System.out.println("[INFO] SPINNER ACTIVE?...");
-					this.waitUntilNotSpinnerLoading();
-				} catch (Exception e1) {
-					if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-						if (debug)
-							System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEDIDO.");
-					}
-				}
 			default:
 				throw new Exception("[WARNING] No se reconoce el tipo de página para hacer SCRAP. En LoadPublications().");
 			}
@@ -237,6 +231,98 @@ public class FacebookNewUsersExtract extends Scrap {
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("LoadPublications con wait, tardo: " + aux);
 		}
+	}
+	
+	//Carga las publicaciones a ser procesadas.
+	public List<Publication> loadPublicationsToBeProcessed(Publication lastPubProcessed) throws Exception{
+		List<WebElement> pubs = new ArrayList<WebElement>();
+		if(lastPubProcessed == null) {
+			//Entonces cargo las publiciones que me trae la pagina
+			try {
+				if (debug)
+					System.out.println("[INFO] espera a la carga de las publicaciones de la pagina...");
+				this.waitUntilNotSpinnerLoading();
+			} catch (Exception e1) {
+				if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					if (debug)
+						System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEDIDO.");
+					if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0)) {
+						throw new Exception("[WARN] NO SE CARGARON PUBLICACIONES.");
+					}else {
+						pubs = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
+						System.out.println("[INFO] SE CARGARON:"+ pubs.size() +" PUBLICACIONES.");
+											}
+				}else {
+					System.out.println("[ERROR] al cargar la pagina.");
+					throw e1;
+				}
+			}
+		}else {
+			int intentosCargaPubs=0;
+			//Tengo que cargar a partir de la ultima procesada...
+			while(!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime()))).size()) > 0)
+					&& intentosCargaPubs<3) {
+				try {
+					this.waitUntilShowMorePubsAppears(this);
+				} catch (Exception e) {
+					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+						if (debug)
+							System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
+					} else {
+						System.out.println("[ERROR] error al esperar el boton de show more en la pagina ppal de la page.");
+						
+					}
+					intentosCargaPubs++;
+				}
+				if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
+					this.scrollMainPublicationsPage();
+					try {
+						System.out.println("[INFO] SPINNER ACTIVE? esperando a que carguen mas publicaciones...");
+						if (debug)							
+							this.saveScreenShot("SPINNER ACTIVE");
+						this.waitUntilNotSpinnerLoading();
+					} catch (Exception e1) {
+						if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+							if (debug)
+								System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+						}else {
+							System.out.println("[ERROR] wait until not spinner loading.");
+							//throw e1;
+						}
+						intentosCargaPubs++;
+					}
+				} else {
+					if (debug) {
+						this.saveScreenShot("posts");
+						System.out.println("[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
+					}
+					this.hayMasPubs=false;
+					break;
+				}
+				
+			}
+			
+			pubs=this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime())));
+		}
+		
+		return this.extractPublicationsInfo(pubs);
+		
+	}
+	
+	public boolean waitUntilShowMorePubsAppears(final FacebookNewUsersExtract fs) {
+		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
+					// System.out.println("true");
+					return true;
+				} else {
+					fs.scrollMainPublicationsPage();
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
+		return wait.until(morePubsLink);
 	}
 	
 	/*
@@ -433,21 +519,25 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
+	//Hacer iteracion para que lea todos los comentarios.
 	public List<User> processVisibleComments(List<User> users, int cantUsers) throws Exception {
 		int totUsersProcessed = users.size();
 		if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
 			List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 			for(int j=0; j<pubComments.size(); j++) {
 				User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
+				//Ya procese el comentario, entonces lo pongo en hidden.
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
+				
 				if(!users.contains(auxUser)) {
 					users.add(auxUser);
 					totUsersProcessed ++;
 				}
-				//Agregar condición de que si llego al total de usuarios a buscar, que corte.
 				if(totUsersProcessed == cantUsers) {
 					this.encontroCantUsers = true;
 					break;
 				}
+				
 			}
 		}else {
 			throw new Exception("NO HAY COMENTARIOS PARA PROCESAR!");
@@ -462,7 +552,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		if (this.getAccess() != null) {
 			String userProfileUrl = comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
 			auxUser.setUrlPerfil(userProfileUrl);
-		}		
+		}
 		return auxUser;
 	}
 
