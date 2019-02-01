@@ -125,6 +125,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
 					users = this.processVisibleComments(users, cantUsuarios);
+					
 					if(this.encontroCantUsers){
 						break;
 					}
@@ -522,6 +523,9 @@ public class FacebookNewUsersExtract extends Scrap {
 	//Hacer iteracion para que lea todos los comentarios.
 	public List<User> processVisibleComments(List<User> users, int cantUsers) throws Exception {
 		int totUsersProcessed = users.size();
+		do {
+			
+		}while("showMoreComments links appears. o cantidad de usuaruis.");
 		if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
 			List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 			for(int j=0; j<pubComments.size(); j++) {
