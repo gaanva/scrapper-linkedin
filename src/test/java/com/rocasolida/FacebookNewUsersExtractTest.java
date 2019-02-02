@@ -1,7 +1,6 @@
 package com.rocasolida;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
@@ -11,8 +10,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.rocasolida.scrapperfacebook.entities.Credential;
-import com.rocasolida.scrapperfacebook.entities.UserLike;
-import com.rocasolida.scrapperfacebook.scrap.FacebookUserLikesScrap;
+import com.rocasolida.scrapperfacebook.entities.User;
+import com.rocasolida.scrapperfacebook.scrap.FacebookNewUsersExtract;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
 import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
@@ -29,33 +28,35 @@ public class FacebookNewUsersExtractTest {
 
 	@Test
 	/**
-	 * Caso de prueba para buscar hasta una cantidad menor a la que me pasan por parámetro.
+	 * Caso de prueba para buscar y devolver el total de usuarios pedido.
 	 * 
 	 * @throws Exception
 	 */
-	public void Page_sin_cantUsuarios_objetivo() throws MalformedURLException {
+	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
+		//Cantidad de usuarios a extraer...
+		int CANT_USERS = 10;
+		//pagina donde buscar usuarios.
+		String page = "marcelotinelli";
+		
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
-		FacebookUserLikesScrap fu = new FacebookUserLikesScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		List<UserLike> likesPages = null;
-
-		String perfil = "liliana.novello.9";
-		System.out.println("PERFIL: " + perfil);
+		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		
+		List<User> users = null;
+		System.out.println("PAGE: " + page);
 		try {
 			fu.login(access);
-			likesPages = fu.obtainProfileLikes(perfil);
-			for (int i = 0; i < likesPages.size(); i++) {
-				System.out.println("TITLE " + (i + 1) + ":" + likesPages.get(i).getTitle());
-				System.out.println("URL " + (i + 1) + ":" + likesPages.get(i).getUrl());
-				System.out.println("CATEGORY " + (i + 1) + ":" + likesPages.get(i).getCategory());
+			users = fu.obtainUsersCommentInformation(page,CANT_USERS);
+			for (int i = 0; i < users.size(); i++) {
+				System.out.println("PROFILE USER LINK: " + (i + 1) + ":" + users.get(i).getUrlPerfil());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		fu.quit();
 
-		assertNotNull(likesPages);
-		assertTrue(likesPages.size() >= 27);
+		assertNotNull(users);
+		assertTrue(users.size() == CANT_USERS);
 
 	}
 
@@ -65,7 +66,8 @@ public class FacebookNewUsersExtractTest {
 	 * 
 	 * @throws Exception
 	 */
-	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
+/*
+	public void Page__con_cantUsuarios_objetivo() throws MalformedURLException {
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
 		FacebookUserLikesScrap fu = new FacebookUserLikesScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
@@ -90,12 +92,13 @@ public class FacebookNewUsersExtractTest {
 		assertTrue(likesPages.size() >= 27);
 
 	}
-	
+*/	
 	/**
 	 * Caso de prueba para buscar en una página sin POSts / comentarios.
 	 * 
 	 * @throws Exception
 	 */
+/*	
 	public void Page_sin_posts_o_comentarios() throws MalformedURLException {
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
@@ -121,6 +124,7 @@ public class FacebookNewUsersExtractTest {
 		assertTrue(likesPages.size() >= 27);
 
 	}
+*/
 	// @Test
 	// /**
 	// * si no tenemos acceso a los likes del perfil, porque no tenemos permisos, Entonces se devuelve una Excepción. (Porque no se sabe si es que tiene o no likes.) Se podría devolver NULL... no se el brunoli crwaler nasa como lo quiere procesar.[LINEA #134 del scrapper.]
