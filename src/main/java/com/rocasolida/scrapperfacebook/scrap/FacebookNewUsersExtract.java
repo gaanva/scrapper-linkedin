@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -113,19 +114,18 @@ public class FacebookNewUsersExtract extends Scrap {
 		List<Publication> publicaciones = new ArrayList<Publication>();
 		//Por las dudas me guardo todas las pubs procesadas...
 		List<Publication> auxPubs = new ArrayList<Publication>();
-		//contador del total de usuarios...
-		int totalUsers = 0;
 		
 		try {
 			//Verifico que sea link de pagina
 			this.verifyPage(facebookPage);
 			do{
-				//Obtengo las publicaciones a procesar la primera vez..
+				//Obtengo las publicaciones a procesar...
+				//La segunda vez, toma como referencia el ultimo utime, para procesar a partir de esa publicacion 
+				//a las de mas abajo.
 				auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
-					users = this.processVisibleComments(users, cantUsuarios);
-					
+					users = this.processPublicationComments(users, cantUsuarios);
 					if(this.encontroCantUsers){
 						break;
 					}
@@ -136,45 +136,9 @@ public class FacebookNewUsersExtract extends Scrap {
 			}while(!encontroCantUsers || hayMasPubs);
 			return users;
 		}catch(Exception e) {
-			return null;
+			throw e;
 		}
 		
-			
-			//Revisar el metodo processPagePosts, donde busca posts en un rango de fechas...
-		    //Deberia solo extraer las que estan en un array.
-			//Recorrer los posts y extraer comments users.
-			//si no cumpli la cantidad de usrs con la primer extraccion [repetir proceso]
-					
-		/*
-			if (publicationsElements != null) {
-				List<Publication> publicationsImpl = new ArrayList<Publication>();
-				for (int i = 0; i < publicationsElements.size(); i++) {
-					if (this.waitForJStoLoad()) {
-						this.moveTo(publicationsElements.get(i));
-						publicationsImpl.add(this.extractPublicationData(facebookPage, publicationsElements.get(i)));
-					} else {
-						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
-						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
-					}
-
-				}
-				// Recorro publicaciones encontradas
-				Publication result = null;
-				for (int i = 0; i < publicationsImpl.size(); i++) {
-					result = obtainPostInformation(facebookPage, publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null);
-					merge(publicationsImpl.get(i), result);
-				}
-				page.setPublications(publicationsImpl);
-				return page;
-			} else {
-				if (debug)
-					System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
-				return null;
-			}*/
-//		} finally {
-//			tardo = System.currentTimeMillis() - tardo;
-//			System.out.println("obtainPageInformation tardo: " + tardo);
-//		}
 	}
 	
 	public List<Publication> extractPublicationsInfo(List<WebElement> pubsHtml) {
@@ -326,68 +290,6 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(morePubsLink);
 	}
 	
-	/*
-	public Publication obtainPostInformation(String pageName, String postId) throws Exception {
-		// Voy a la pagina de la publicacion
-		try {
-			Publication pub = new Publication();
-			pub.setId(postId);
-			try {
-				this.navigateTo(FacebookConfig.URL + postId);
-			} catch (Exception e) {
-				System.err.println("[ERROR] NO SE PUDO ACCEDER AL LINK DEL POST");
-				this.saveScreenShot("ERR_ACCESO_POST");
-				throw e;
-			}
-			try {
-				this.ctrlLoadPost();
-				if (debug)
-					this.saveScreenShot("PostLoaded");
-			} catch (Exception e) {
-				System.err.println("[ERROR] NO SE PUDO ACCEDER AL POST");
-				throw e;
-			}
-			ocultarBannerLogin();
-			String currentURL = this.getDriver().getCurrentUrl();
-			FacebookPostType fpt = getPostType(currentURL);
-			System.out.println("currentURL: " + currentURL + ". fpt: " + fpt);
-			if (fpt != null && fpt.equals(FacebookPostType.PHOTO)) {
-				try {
-					waitUntilOverlayPhotoAppears();
-					return obtainPostTypePhotoInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
-				} catch (org.openqa.selenium.TimeoutException ex) {
-					// Si tira timemout es porque no tiene overlay entonces proceso como la otra
-					// forma
-					return obtainPostTypeOtherInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
-				}
-			} else {
-				return obtainPostTypeOtherInformation(pageName, postId, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub);
-			}
-		} catch (Exception e) {
-			if (debug) {
-				System.out.println("[ERROR] AL ACCEDER AL POST.");
-				this.saveScreenShot("ERR_ACCESO_POST");
-			}
-			throw e;
-		}
-	}	
-	
-	private boolean waitUntilCommentsLoaded() {
-		ExpectedCondition<Boolean> commentSection = new ExpectedCondition<Boolean>() {
-			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0) {
-					return false;
-				} else {
-					return true;
-				}
-			}
-		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
-		return wait.until(commentSection);
-	}
-*/
-	
-	
 	private boolean waitUntilMoreCommentsClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -398,42 +300,10 @@ public class FacebookNewUsersExtract extends Scrap {
 				}
 			}
 		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(200)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
 		return wait.until(loadMore);
 	}
 	
-	/*
-	private List<WebElement> obtainMainPageGroupPublicationsHTMLByQuantity(int cantidadPublicacionesInicial, String xpathExpression) throws Exception {
-
-		List<WebElement> auxList = new ArrayList<WebElement>();
-		auxList = this.getDriver().findElements(By.xpath(xpathExpression));
-
-		int tot = 0;
-		if (auxList.size() > 0) {
-			tot = auxList.size();
-			// while(!(this.getDriver().findElements(By.xpath("//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']"+FacebookConfig.XP_GROUP_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookGroup, uTIME_INI))).size() > 0)){
-			while (!(this.getDriver().findElements(By.xpath(xpathExpression)).size() >= cantidadPublicacionesInicial)) {
-				this.scrollDown();
-				auxList = this.getDriver().findElements(By.xpath(xpathExpression));
-
-				// Control de corte por no haber más publicaciones...
-				try {
-					// this.waitUntilGroupPubsLoad(tot);
-					this.waitUntilMainPageGroupPubsLoad(tot, xpathExpression);
-					tot = auxList.size();
-				} catch (Exception e) {
-					break;
-				}
-
-			}
-		} else {
-			return auxList;
-		}
-
-		// retorno hasta las primeras cantidad de publicaciones indicadas.
-		return auxList.size() > cantidadPublicacionesInicial ? auxList.subList(0, cantidadPublicacionesInicial) : auxList;
-	}
-	*/
 	private boolean waitUntilMainPagePubsLoad(final int cantAnterior, final String xpathExpression) {
 		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -521,13 +391,26 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	//Hacer iteracion para que lea todos los comentarios.
-	public List<User> processVisibleComments(List<User> users, int cantUsers) throws Exception {
+	public List<User> processPublicationComments(List<User> users, int cantUsers) throws Exception {
+		WebElement showMoreCommentsLink;
+		List<WebElement> pubComments;
 		int totUsersProcessed = users.size();
+		boolean hayMasComentarios = true;
 		do {
 			
-		}while("showMoreComments links appears. o cantidad de usuaruis.");
-		if(this.existElement(null,FacebookConfig.XPATH_COMMENTS)) {
-			List<WebElement> pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).size() > 0) {
+				try {
+					this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).click();
+					// Poner un wait after click. (sumar al de extracción de comments...)
+					this.waitUntilMoreCommentsClickLoad();
+				} catch (Exception e) {
+					throw e;
+				}
+			}else {
+				hayMasComentarios=false;
+			}
+			//Si no existe botón de whowmore... entonces, va a tomar los comentarios visibles de la publicación...
+			pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
 			for(int j=0; j<pubComments.size(); j++) {
 				User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
 				//Ya procese el comentario, entonces lo pongo en hidden.
@@ -543,11 +426,10 @@ public class FacebookNewUsersExtract extends Scrap {
 				}
 				
 			}
-		}else {
-			throw new Exception("NO HAY COMENTARIOS PARA PROCESAR!");
-		}
+		}while(!this.encontroCantUsers && hayMasComentarios);
 		
 		return users;
+		
 	}
 	
 	public User extractCommentUserProfileLink(WebElement comentario) throws Exception {
