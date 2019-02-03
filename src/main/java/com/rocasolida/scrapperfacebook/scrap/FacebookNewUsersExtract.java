@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.plaf.synth.SynthSeparatorUI;
+
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -124,7 +126,6 @@ public class FacebookNewUsersExtract extends Scrap {
 				auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
-					this.overlayHandler();
 					users = this.processPublicationComments(users, cantUsuarios);
 					if(this.encontroCantUsers){
 						break;
@@ -133,7 +134,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				//Esto como auditoria de control, no haria falta pero para los primeros tests no va a venir mal...
 				publicaciones.addAll(auxPubs);
 			
-			}while(!encontroCantUsers || hayMasPubs);
+			}while(!encontroCantUsers && hayMasPubs);
 			
 			if(!hayMasPubs)
 				System.out.println("[WARN] Se recorrieron todas las publicaciones.");
@@ -146,7 +147,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			return users;
 		}catch(Exception e) {
 			if(users.size()>0) {
-				System.err.println("Se detecto error, pero se encontraron"+ users.size() +"usuarios nuevos...");
+				System.err.println("Se detecto error, pero se encontraron "+ users.size() +" usuarios nuevos...");
 				e.printStackTrace();
 				return users;
 			}else {
@@ -432,6 +433,20 @@ public class FacebookNewUsersExtract extends Scrap {
 		List<WebElement> pubComments;
 		int totUsersProcessed = users.size();
 		boolean hayMasComentarios = true;
+		
+		try {
+			this.overlayHandler();
+		}catch(Exception e) {
+			if(e.getClass().getSimpleName().equals("TimeoutException")) {
+				(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
+			}else {
+				throw e;
+			}
+		}
+		//Click en el link de ver todos los mensajes...
+		//cambia segun como se abre el post...
+		this.clickOnViewAllPublicationComments();
+		
 		do {
 			
 			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).size() > 0) {
@@ -451,11 +466,14 @@ public class FacebookNewUsersExtract extends Scrap {
 				User auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
 				//Ya procese el comentario, entonces lo pongo en hidden.
 				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
+				System.out.println("COMENTARIO " + j + " procesado.");
 				
-				if(!users.contains(auxUser)) {
+				if(!this.existUser(users, auxUser)) {
 					users.add(auxUser);
 					totUsersProcessed ++;
+					System.out.println("Total usuarios encontrados: " + totUsersProcessed);
 				}
+				
 				if(totUsersProcessed == cantUsers) {
 					this.encontroCantUsers = true;
 					break;
@@ -463,19 +481,40 @@ public class FacebookNewUsersExtract extends Scrap {
 				
 			}
 		}while(!this.encontroCantUsers && hayMasComentarios);
-		
+		System.out.println("De la publicacion se procesaron: " + users.size());
 		return users;
 		
 	}
 	
-	public User extractCommentUserProfileLink(WebElement comentario) throws Exception {
-		User auxUser = new User();
-		// Usuario Profile Url
-		if (this.getAccess() != null) {
-			String userProfileUrl = comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
-			auxUser.setUrlPerfil(userProfileUrl);
+	
+	private boolean existUser(List<User> lista, User user) {
+		for(int i=0; i<lista.size();i++) {
+			if(lista.get(i).getUrlPerfil().equalsIgnoreCase(user.getUrlPerfil())){
+				return true;
+			}
 		}
-		return auxUser;
+		
+		return false;
+	}
+	//click "Ver todos los mensajes" de la publicacion...
+	public void clickOnViewAllPublicationComments() {
+		if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).size() > 0) {
+			try {
+				this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).click();
+				// Poner un wait after click. (sumar al de extracción de comments...)
+				this.waitUntilMoreCommentsClickLoad();
+			} catch (Exception e) {
+				if(e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
+					(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
+					this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).click();
+					// Poner un wait after click. (sumar al de extracción de comments...)
+					this.waitUntilMoreCommentsClickLoad();
+				}else {
+					throw e;
+				}
+				
+			}
+		}
 	}
 	
 	public boolean overlayHandler() {
@@ -483,14 +522,27 @@ public class FacebookNewUsersExtract extends Scrap {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
 					(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
+					System.out.println("Hidding overlay...");
 					return false;
 				} else {
 					return true;
 				}
 			}
 		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(5)).pollingEvery(Duration.ofSeconds(1));
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
 		return wait.until(overlayClosed);
+	}
+
+	
+	
+	public User extractCommentUserProfileLink(WebElement comentario) throws Exception {
+		User auxUser = new User();
+		// Usuario Profile Url
+		if (this.getAccess() != null) {
+			String userProfileUrl = comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+			auxUser.setUrlPerfil(userProfileUrl);
+		}
+		return auxUser;
 	}
 	
 	public String regexPostID(String link) {
@@ -519,7 +571,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				if (mat.matches()) {
 					// System.out.println("[INFO] Post ID: " + stringArray[i]);
 					// return stringArray[i];
-					System.out.println("Valor macheado: " + stringArray[i]);
+					//System.out.println("Valor macheado: " + stringArray[i]);
 					lastMatched = stringArray[i];
 				}
 			}

@@ -34,7 +34,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 10;
+		int CANT_USERS = 1500;
 		//pagina donde buscar usuarios.
 		String page = "marcelotinelli";
 		
