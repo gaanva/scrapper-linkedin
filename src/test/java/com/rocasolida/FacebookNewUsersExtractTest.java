@@ -19,7 +19,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookNewUsersExtractTest {
 
 	private static String OS;
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 
 	@BeforeClass
 	public static void loadOs() {

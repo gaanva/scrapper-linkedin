@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -20,19 +21,17 @@ import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 
 import com.rocasolida.scrapperfacebook.FacebookConfig;
-import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.Credential;
-import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.entities.User;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.FacebookLinkType;
-import com.rocasolida.scrapperfacebook.scrap.util.FacebookPostType;
 
 public class FacebookNewUsersExtract extends Scrap {
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
@@ -125,6 +124,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
+					this.overlayHandler();
 					users = this.processPublicationComments(users, cantUsuarios);
 					if(this.encontroCantUsers){
 						break;
@@ -134,9 +134,24 @@ public class FacebookNewUsersExtract extends Scrap {
 				publicaciones.addAll(auxPubs);
 			
 			}while(!encontroCantUsers || hayMasPubs);
+			
+			if(!hayMasPubs)
+				System.out.println("[WARN] Se recorrieron todas las publicaciones.");
+			
+			if(!encontroCantUsers)
+				System.out.println("[WARN] No se encontró la cantidad de usuarios objetivo. ("+cantUsuarios+")");
+			
+			System.out.println("[INFO] Se encontraron: "+ users.size() +" usuarios nuevos.");
+			
 			return users;
 		}catch(Exception e) {
-			throw e;
+			if(users.size()>0) {
+				System.err.println("Se detecto error, pero se encontraron"+ users.size() +"usuarios nuevos...");
+				e.printStackTrace();
+				return users;
+			}else {
+				throw e;
+			}
 		}
 		
 	}
@@ -148,8 +163,20 @@ public class FacebookNewUsersExtract extends Scrap {
 		
 		for(int i=0; i<pubsHtml.size(); i++) {
 			Publication aux = new Publication();
-			aux.setUrl(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_LINK)).getAttribute("href"));
-			aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_HEADER_CONTAINER+FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
+			String postID = this.regexPostID(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+			if (postID == "") {
+				if (debug)
+					System.out.println("[INFO] ERROR AL ENCONTRAR EL ID DEL POST: " + pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href"));
+			} else {
+				aux.setId(postID);
+				aux.setUrl(FacebookConfig.URL + postID);
+			}
+			
+			if (this.existElement(pubsHtml.get(i), FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
+				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)).getAttribute("data-utime")));
+			} else if (this.existElement(pubsHtml.get(i), FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
+				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)).getAttribute("data-utime")));
+			}
 			pubs.add(aux);
 		}
 		
@@ -189,6 +216,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			case PAGE:
 				System.out.println("[INFO] OK: el link provisto es de una pagina.");
 				//Por ahí antes se podria cargar la espera del container de publications...
+				break;
 			default:
 				throw new Exception("[WARNING] No se reconoce el tipo de página para hacer SCRAP. En LoadPublications().");
 			}
@@ -201,73 +229,81 @@ public class FacebookNewUsersExtract extends Scrap {
 	//Carga las publicaciones a ser procesadas.
 	public List<Publication> loadPublicationsToBeProcessed(Publication lastPubProcessed) throws Exception{
 		List<WebElement> pubs = new ArrayList<WebElement>();
+		int intentosCargaPubs=0;
+		int CANT_INTENTOS = 3;
+		
 		if(lastPubProcessed == null) {
-			//Entonces cargo las publiciones que me trae la pagina
-			try {
-				if (debug)
-					System.out.println("[INFO] espera a la carga de las publicaciones de la pagina...");
-				this.waitUntilNotSpinnerLoading();
-			} catch (Exception e1) {
-				if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-					if (debug)
-						System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEDIDO.");
-					if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0)) {
-						throw new Exception("[WARN] NO SE CARGARON PUBLICACIONES.");
-					}else {
-						pubs = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
-						System.out.println("[INFO] SE CARGARON:"+ pubs.size() +" PUBLICACIONES.");
-											}
-				}else {
-					System.out.println("[ERROR] al cargar la pagina.");
-					throw e1;
-				}
-			}
-		}else {
-			int intentosCargaPubs=0;
-			//Tengo que cargar a partir de la ultima procesada...
-			while(!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime()))).size()) > 0)
-					&& intentosCargaPubs<3) {
+			do{
+				//Entonces cargo las publiciones que me trae la pagina
 				try {
-					this.waitUntilShowMorePubsAppears(this);
+					if (debug)
+						System.out.println("[INFO] espera a la carga de las publicaciones de la pagina...");
+					this.waitUntilNotSpinnerLoading();
+					if(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0)) {
+						this.hayMasPubs = false;
+						break;
+					}
+				} catch (Exception e1) {
+					if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+						if (debug)
+							System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEDIDO.");
+						//Si excedio el tiempo de espera, vuelvo a intentar...
+						intentosCargaPubs++;
+					}else {
+						System.out.println("[ERROR] al cargar la pagina.");
+						throw e1;
+					}
+				}
+			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0) && intentosCargaPubs< CANT_INTENTOS);
+			if(intentosCargaPubs == CANT_INTENTOS) {
+				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que cargue las publicaciones de la pagina ppal. Volver a intentar mas tarde!.");
+			}
+			
+			pubs=this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
+		
+		}else {
+			//Tengo que cargar a partir de la ultima procesada...
+			//Se supone que las primeras publicaciones que cargie, no van a aplicar al filtro...
+			while(!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime()))).size()) > 0)
+					&& intentosCargaPubs< CANT_INTENTOS) {
+				try {
+					if(this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
+						this.scrollMainPublicationsPage();
+						//Espera de carga de publicaciones...
+						this.waitUntilNotSpinnerLoading();
+					}else {
+						try {
+							//Puede ser que no haya mas publicaciones o que se esten cargando las publicaciones...
+							this.waitUntilShowMorePubsAppears(this);
+						}catch(Exception e) {
+							if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+								if (debug)
+									System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications Button...");
+								intentosCargaPubs++;
+								if(CANT_INTENTOS == intentosCargaPubs) {
+									//Asumo que no hay mas publicaciones.
+									this.hayMasPubs = false;
+								}
+							}
+						}
+					}
 				} catch (Exception e) {
 					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 						if (debug)
-							System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
-					} else {
-						System.out.println("[ERROR] error al esperar el boton de show more en la pagina ppal de la page.");
-						
-					}
-					intentosCargaPubs++;
-				}
-				if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
-					this.scrollMainPublicationsPage();
-					try {
-						System.out.println("[INFO] SPINNER ACTIVE? esperando a que carguen mas publicaciones...");
-						if (debug)							
-							this.saveScreenShot("SPINNER ACTIVE");
-						this.waitUntilNotSpinnerLoading();
-					} catch (Exception e1) {
-						if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-							if (debug)
-								System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
-						}else {
-							System.out.println("[ERROR] wait until not spinner loading.");
-							//throw e1;
-						}
+							System.out.println("[WARN] TimeoutException. Esperando que aparezca el spinner de carga de publicaciones...");
 						intentosCargaPubs++;
+					} else {
+						System.out.println("[ERROR] error al esperar carga de mas publications de la page.");
+						throw e;
 					}
-				} else {
-					if (debug) {
-						this.saveScreenShot("posts");
-						System.out.println("[INFO] YA SE RECORRIERON TODAS LAS PUBLICACIONES DE LA PÁGINA. NO SE ENCONTRÓ BTN SHOW MORE: " + FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE);
-					}
-					this.hayMasPubs=false;
-					break;
 				}
-				
 			}
 			
+			if(intentosCargaPubs == CANT_INTENTOS && hayMasPubs) {
+				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que carguen nuevas publicaciones de la pagina ppal. Vuelva a intentar mas tarde");
+			}
 			pubs=this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime())));
+			
 		}
 		
 		return this.extractPublicationsInfo(pubs);
@@ -441,7 +477,55 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 		return auxUser;
 	}
+	
+	public boolean overlayHandler() {
+		ExpectedCondition<Boolean> overlayClosed = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+					(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(5)).pollingEvery(Duration.ofSeconds(1));
+		return wait.until(overlayClosed);
+	}
+	
+	public String regexPostID(String link) {
+		// www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
+		// www.facebook.com/teamisurus/posts/2143052825719776
+		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826
+		// https://www.facebook.com/154152138076469/videos/972094692948872/
+		// https://www.facebook.com/horaciorodriguezlarreta/posts/10156882613511019?__xts__%5B0%5D=68.ARBj2C-5qrcHODKpyJCUTm1TDe10fEsZMrPUhkrbkT41H42Jt2optgAlDRvZeJ2mbmyviQ-wIt3KnfMbpRG6u18nufB-fo42wL06yCvYdmyFl33YI_hi849HNgVKw3Ez6W2-kXeaeR3IRoXu7SXIzLroVH1Tawc1wyHFSTzSp-SqYAQWl2h8pR0&__tn__=-R
+		String lastMatched = "";
+		if (link.contains("permalink")) {
+			String[] a = link.split("\\?")[1].split("&");
+			for (String b : a) {
+				if (b.contains("story_fbid=")) {
+					return b.replace("story_fbid=", "");
 
+				}
+			}
+		} else {
+			if (link.contains("?")) {
+				link = link.split("\\?")[0];
+			}
+			String[] stringArray = link.split("/");
+			Pattern pat = Pattern.compile("[0-9]{15,18}");
+			for (int i = 0; i < stringArray.length; i++) {
+				Matcher mat = pat.matcher(stringArray[i]);
+				if (mat.matches()) {
+					// System.out.println("[INFO] Post ID: " + stringArray[i]);
+					// return stringArray[i];
+					System.out.println("Valor macheado: " + stringArray[i]);
+					lastMatched = stringArray[i];
+				}
+			}
+		}
+		return lastMatched;
+	}
 	
 
 	public void scrollDown() {
