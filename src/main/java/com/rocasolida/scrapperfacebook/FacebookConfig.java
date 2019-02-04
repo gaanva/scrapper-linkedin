@@ -54,6 +54,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_HEADER_CONTAINER = "div[@class='_6a _5u5j _6b']";
 	public static String XPATH_PUBLICATION_TIMESTAMP = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("data-utime")
 	public static String XPATH_PUBLICATION_TIMESTAMP_1 = ".//abbr//span[contains(@class,'timestamp')]//parent::abbr"; // getAttribute("data-utime")
+	public static String XPATH_PUBLICATION_TIMESTAMP_2 = ".//div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//span[contains(@class,'fsm fwn fcg')]//abbr//span[contains(@class,'timestamp')]//parent::abbr";
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::a[contains(@href,'";
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART2 = "')]//descendant::abbr[@data-utime>=";
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_PART3 = " and @data-utime<=";
@@ -125,7 +126,7 @@ public final class FacebookConfig {
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 		return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2;
 	}
-
+	
 	/**
 	 * group Posts
 	 */
@@ -150,7 +151,7 @@ public final class FacebookConfig {
 	 * Spinner load More Group Comments
 	 */
 	public static String XP_SPINNERLOAD_COMMENTS = "//div[contains(@class,'UFICommentsLoadingSpinnerContainer ')]";
-
+	public static String XP_SPINNERLOAD_COMMENTS_1 ="//span[@class='_4sxg img _55ym _55yn _55yo']";
 	/**
 	 * open Group Publication
 	 */
@@ -190,9 +191,12 @@ public final class FacebookConfig {
 	 */
 	public static String XPATH_COMMENTS_CONTAINER = ".//div[contains(@class,'UFIContainer')]"; // Esto agrupa a TODOS los comentarios/Replies
 	public static String XPATH_COMMENTS_CONTAINER_NL = ".//a[contains(@href,'comment_tracking')]";
+	
 	//// div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
 	// public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
 
+	//Este contiene los comentarios que se abren en el overlay...
+	public static String XPATH_COMMENTS_CONTAINER_1 = "//ul[@class='_77bp']";
 	//// div[contains(@class,'UFIContainer')]//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]//div[@class='UFICommentContent']
 	public static String XPATH_COMMENT_ROOT_DIV = ".//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]";
 	//// div[contains(@class,'userContentWrapper') and .//span[contains(@class,'fsm fwn fcg')]//a[contains(@href,'1955574351421677')]]//div[@class='UFIList']/node()[last()]/node()/node()
@@ -203,8 +207,11 @@ public final class FacebookConfig {
 	// public static String XPATH_COMMENTS_BLOCK = ".//div[contains(@class,'UFICommentContentBlock')]";
 	// public static String XPATH_COMMENTS = ".//span[contains(@class,' UFICommentActorAndBody') and not(ancestor::div[@class=' UFIReplyList'])]";
 	public static String XPATH_COMMENTS = "//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[contains(@class,' UFIReplyList')]) and not(contains(@style,'hidden'))]";
+	//COmments cuando se abre en overlay
+	public static String XPATH_COMMENTS_1 = "//div[contains(@class,' _6qw3') and not(contains(@style,'hidden'))]";
 	public static String XPATH_COMMENTS_AND_RESPONSES = ".//div[contains(@class,'UFICommentContentBlock')]";
 	public static String XPATH_RESPONSES_LINK = ".//span[contains(@class,'UFIReplySocialSentenceLinkText')]";
+	public static String XPATH_VIEW_ALL_PUB_COMMENTS_LINK ="//a[@class='_2xui']";
 	// span[contains(@class,'UFIReplySocialSentenceLinkText')]
 	/// following-sibling::div[@class=' UFIReplyList'][1]
 	// public static String XPATH_COMMENTS = ".//div//*"; //-->Toma como base el
@@ -213,6 +220,7 @@ public final class FacebookConfig {
 	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_URL_PROFILE = "//a[contains(@class,' UFICommentActorName')]";
+	public static String XPATH_USER_URL_PROFILE_1 = "//a[contains(@class,'_6qw4')]";
 	//public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_USER_COMMENT = "./descendant::span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";

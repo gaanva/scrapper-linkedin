@@ -34,7 +34,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 1500;
+		int CANT_USERS = 100;
 		//pagina donde buscar usuarios.
 		String page = "marcelotinelli";
 		
@@ -42,13 +42,13 @@ public class FacebookNewUsersExtractTest {
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
 		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		
-		List<User> users = null;
+		List<String> users = null;
 		System.out.println("PAGE: " + page);
 		try {
 			fu.login(access);
 			users = fu.obtainUsersCommentInformation(page,CANT_USERS);
 			for (int i = 0; i < users.size(); i++) {
-				System.out.println("PROFILE USER LINK: " + (i + 1) + ":" + users.get(i).getUrlPerfil());
+				System.out.println("PROFILE USER LINK: " + (i + 1) + ":" + users.get(i));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
