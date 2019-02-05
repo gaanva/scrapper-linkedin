@@ -51,7 +51,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	public FacebookNewUsersExtract(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
 	}
-
+	//lo podria llevar al util
 	public void login(Credential access) throws Exception {
 		long tardo = System.currentTimeMillis();
 		try {
@@ -82,33 +82,16 @@ public class FacebookNewUsersExtract extends Scrap {
 			System.out.println("login tardo: " + tardo);
 		}
 	}
-
-	public FacebookLinkType facebookLinkType() throws Exception{
-		// Primero. Determinar si es una PAGINA o un PERFIL.
-		// Por lo visto: Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES
-		// UN PERFIL
-		// XPATH:
-		// //div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a
-		// getAttribute('data-tab-key') == 'timeline' (Biografía)
-		// getAttribute('data-tab-key') == 'friends'
-		// ASUMO QUE SI (Encuentro: INICIO || PUBLICACIONES || COMUNIDAD EN MENU DE LA
-		// IZQ) ES UNA PÁGINA.
-		try {
-			if (this.getDriver().findElements(By.xpath("//div[@id='entity_sidebar']//div//div[@data-key='tab_posts' or @data-key='tab_community' or @data-key='tab_home']//descendant::a")).size() > 0) {
-				return FacebookLinkType.PAGE;
-			}
-			// Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES UN PERFIL
-			if (this.getDriver().findElements(By.xpath("//div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a")).size() > 0) {
-				return FacebookLinkType.PROFILE;
-			}
-		} catch (Exception e) {
-			this.saveScreenShot("ERR_COMPR_LINK");
-			throw new Exception("[ERROR] AL COMPROBAR TIPO DE LINK (PAGINA | PERFIL)");
-		}
-		
-		return null;
-	}
-
+	
+	/**
+	 * toma una pge y la cantidad de usuarios a extraer de los comentarios de todas las publicaciones necesarias. 
+	 * Devuelve la lista de urls de los usuarios que pudo extraer.
+	 * Devuelve SIEMPRE los que encuentra. Por mas que haya un error devuelve lso scrapeados, e informando el error.
+	 * @param facebookPage
+	 * @param cantUsuarios
+	 * @return lista de urls de cada usuario.
+	 * @throws Exception
+	 */
 	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios) throws Exception {
 		List<String> users = new ArrayList<String>();
 		List<Publication> publicaciones = new ArrayList<Publication>();
@@ -159,7 +142,12 @@ public class FacebookNewUsersExtract extends Scrap {
 		
 	}
 	
-	public List<Publication> extractPublicationsInfo(List<WebElement> pubsHtml) {
+	/**
+	 * Extrae de los elementos html de cada publicacion, su URL y uTime. Devuelve una lista de objetos publication.
+	 * @param pubsHtml
+	 * @return
+	 */
+	private List<Publication> extractPublicationsInfo(List<WebElement> pubsHtml) {
 		List<Publication> pubs = new ArrayList<Publication>();
 		String postID="";
 		if(debug)
@@ -191,11 +179,6 @@ public class FacebookNewUsersExtract extends Scrap {
 			} else if (this.existElement(pubsHtml.get(i), FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
 				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)).getAttribute("data-utime")));
 			}
-			/*if (this.existElement(pubsHtml.get(i), FacebookConfig.XPATH_PUBLICATION_LINK)) {
-				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_LINK+"/abbr")).getAttribute("data-utime")));
-			}else if (this.existElement(pubsHtml.get(i), FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_2)) {
-				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_2)).getAttribute("data-utime")));
-			}*/
 			
 			if(debug)
 				System.out.println("UTIME: " + aux.getUTime());
@@ -206,8 +189,8 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	
-	public boolean waitUntilNotSpinnerLoading() {
+	//Este lo podria llevar al 'util'
+	private boolean waitUntilNotSpinnerLoading() {
 		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//span[@role='progressbar']")).size() > 0 && driver.findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
@@ -222,8 +205,26 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(morePubsLink);
 	}
 	
+	//lo podria llevar al util
+	private FacebookLinkType facebookLinkType() throws Exception{
+			try {
+				if (this.getDriver().findElements(By.xpath("//div[@id='entity_sidebar']//div//div[@data-key='tab_posts' or @data-key='tab_community' or @data-key='tab_home']//descendant::a")).size() > 0) {
+					return FacebookLinkType.PAGE;
+				}
+				// Asumo que SI (Encuentro: Biografía || Amigos EN EL TOP MENU) ES UN PERFIL
+				if (this.getDriver().findElements(By.xpath("//div[@id='fbProfileCover']//child::div[contains(@id,'fbTimelineHeadline')]//descendant::li//a")).size() > 0) {
+					return FacebookLinkType.PROFILE;
+				}
+			} catch (Exception e) {
+				this.saveScreenShot("ERR_COMPR_LINK");
+				throw new Exception("[ERROR] AL COMPROBAR TIPO DE LINK (PAGINA | PERFIL)");
+			}
+			
+			return null;
+		}
+	
 	//controla que sea una pagina y la carga......
-	public void loadPage(String facebookPage) throws Exception {
+	private void loadPage(String facebookPage) throws Exception {
 		long aux = System.currentTimeMillis();
 		try {
 			this.navigateTo(FacebookConfig.URL + facebookPage + FacebookConfig.URL_POST); // SI NO TIRA ERROR DE CONEXIÓN O DE PAGINA INEXISTENTE...
@@ -250,7 +251,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	//Carga las publicaciones a ser procesadas.
-	public List<Publication> loadPublicationsToBeProcessed(Publication lastPubProcessed) throws Exception{
+	private List<Publication> loadPublicationsToBeProcessed(Publication lastPubProcessed) throws Exception{
 		List<WebElement> pubs = new ArrayList<WebElement>();
 		int intentosCargaPubs=0;
 		int CANT_INTENTOS = 3;
@@ -340,7 +341,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		
 	}
 	
-	public boolean waitUntilShowMorePubsAppears(final FacebookNewUsersExtract fs) {
+	private boolean waitUntilShowMorePubsAppears(final FacebookNewUsersExtract fs) {
 		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
@@ -355,7 +356,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(morePubsLink);
 	}
-	
+	//Lo podria llevar al util
 	private boolean waitUntilMoreCommentsClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -369,7 +370,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(500)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
 		return wait.until(loadMore);
 	}
-	
+	//lo podria llevar al util
 	private boolean waitUntilMoreCommentsOverlayClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -383,7 +384,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(500)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
 		return wait.until(loadMore);
 	}
-	
+	//lo podria llevar al util
 	private boolean waitUntilMainPagePubsLoad(final int cantAnterior, final String xpathExpression) {
 		ExpectedCondition<Boolean> loadMorePublications = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -398,11 +399,11 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(loadMorePublications);
 	}
 	
-	
+	//lo podria llevar al util
 	private void scrollMainPublicationsPage() {
 		((JavascriptExecutor) this.getDriver()).executeScript("window.scrollTo(0, document.body.scrollHeight)");
 	}
-
+	//lo podria llevar al util
 	private boolean loggedIn() {
 		try {
 			this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_FORM_LOGIN));
@@ -413,7 +414,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			return true;
 		}
 	}
-
+	//lo podria llevar al util
 	private boolean existElement(WebElement element, String xpathExpression) {
 		long aux = System.currentTimeMillis();
 		try {
@@ -426,7 +427,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			// System.out.println("existElement: " + aux);
 		}
 	}
-
+	//lo podria llevar al util
 	private void saveScreenShot(String name) {
 		if (debug) {
 			Path path = Paths.get("", "screenshots", name);
@@ -438,7 +439,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 		}
 	}
-
+	//lo podria llevar al util
 	private void navigateTo(String URL) throws Exception {
 		long aux = System.currentTimeMillis();
 		try {
