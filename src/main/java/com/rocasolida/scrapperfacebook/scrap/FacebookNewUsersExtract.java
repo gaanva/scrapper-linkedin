@@ -83,8 +83,92 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
+	public List<User> obtainUserProfileInformation(List<String> profilesUrl) throws Exception{
+		User auxUser = new User();
+		for(int i=0; i<profilesUrl.size(); i++) {
+			try {
+				
+				//this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
+				this.navigateTo(profilesUrl.get(i)+"/about");
+				//if(debug) System.out.println(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
+				if(debug) System.out.println(profilesUrl.get(i)+"/about");
+				this.overlayHandler();
+				auxUser.setUrlPerfil(profilesUrl.get(i));
+				if(debug)
+					System.out.println("Procesando: "+auxUser.getUrlPerfil());
+				auxUser = this.extractUserBasicInfo(auxUser);
+				
+				this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_EDUCACION);
+				if(debug) System.out.println(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_EDUCACION);
+				this.overlayHandler();
+				auxUser = this.extractUserEducationInfo(auxUser);
+			
+			}catch(Exception e) {
+				
+			}
+		}
+		return null;
+	}
+	
+	private User extractUserBasicInfo(User aux) throws Exception{
+		try {
+			//foto perfil
+			if(this.existElement(null, FacebookConfig.USER_PIC)){
+				aux.setUrlFotoPerfil(this.getDriver().findElement(By.xpath(FacebookConfig.USER_PIC)).getAttribute("src"));
+			}else {
+				if(debug)
+					System.out.println("SIN FOTO DE PERFIL.");				
+			}
+			//sexo
+			if(this.existElement(null,FacebookConfig.USER_GENDER)){
+				aux.setGenero(this.getDriver().findElement(By.xpath(FacebookConfig.USER_GENDER)).getText());
+			}else {
+				if(debug)
+					System.out.println("SIN SEXO.");
+			}
+			//Fecha_nac o edad
+			if(this.existElement(null,FacebookConfig.USER_FECHANAC)){
+				aux.setFechaNac(this.getDriver().findElement(By.xpath(FacebookConfig.USER_FECHANAC)).getText());
+			}else {
+				if(debug)
+					System.out.println("SIN FECHA NAC.");
+			}
+			//ubicacion
+			if(this.existElement(null,FacebookConfig.USER_UBICACION)){
+				aux.setUbicacion(this.getDriver().findElement(By.xpath(FacebookConfig.USER_UBICACION)).getText());
+			}else {
+				if(debug)
+					System.out.println("SIN UBICACION.");
+			}
+			
+		}catch(Exception e){
+			throw e;
+		}
+		return aux;
+	}
+	
+	private User extractUserEducationInfo(User aux) {
+		List<String> est = new ArrayList<String>();
+		try {
+			//ubicacion
+			if(this.existElement(null, FacebookConfig.USER_ESTUDIO_CONTAINER)) {
+				List<WebElement> estudios = this.getDriver().findElements(By.xpath(FacebookConfig.USER_ESTUDIO_CONTAINER));
+				for(int i=0; i< estudios.size();i++) {
+					est.add(estudios.get(i).findElement(By.xpath(FacebookConfig.USER_ESTUDIO_LUGAR)) +" - "+ estudios.get(i).findElement(By.xpath(FacebookConfig.USER_ESTUDIO_DESC))); 
+				}
+			}else {
+				if(debug)
+					System.out.println("SIN ESTUDIOS.");
+			}
+		}catch(Exception e) {
+			throw e;
+		}
+		aux.setEstudios(est);
+		return aux;
+	}
+	
 	/**
-	 * toma una pge y la cantidad de usuarios a extraer de los comentarios de todas las publicaciones necesarias. 
+	 * toma una page y la cantidad de usuarios a extraer de los comentarios de todas las publicaciones necesarias. 
 	 * Devuelve la lista de urls de los usuarios que pudo extraer.
 	 * Devuelve SIEMPRE los que encuentra. Por mas que haya un error devuelve lso scrapeados, e informando el error.
 	 * @param facebookPage
@@ -250,7 +334,13 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	//Carga las publicaciones a ser procesadas.
+	/**
+	 * Carga las publicaciones sobre las cuales se scrapearan sus comentarios.
+	 * Toma como referencia el ultimo uTime procesado, para asegurarse de traer nuevas publicaciones.
+	 * @param lastPubProcessed
+	 * @return
+	 * @throws Exception
+	 */
 	private List<Publication> loadPublicationsToBeProcessed(Publication lastPubProcessed) throws Exception{
 		List<WebElement> pubs = new ArrayList<WebElement>();
 		int intentosCargaPubs=0;

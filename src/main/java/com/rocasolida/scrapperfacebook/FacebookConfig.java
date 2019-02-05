@@ -4,6 +4,8 @@ public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
 	public static String URL_GROUP = "groups/";
+	public static String URL_ABOUT_INFO_BASICA = "/about?section=contact-info";
+	public static String URL_ABOUT_INFO_EDUCACION = "/about?section=education";
 	public static String URL_LIKES = "/likes_all";
 	public static String XP_HAS_LIKES_CONTENT = "//div[contains(@class,'_5h60 _30f')]";
 	public static String XP_USER_LIKES = "//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]";
@@ -247,6 +249,22 @@ public final class FacebookConfig {
 	public static String GROUPPUB_COMMENTS_TIMESTAMP_CONDITION_FROMTO(Long utimeINI, Long utimeFIN) {
 		return GROUPPUB_COMMENTS_TIMESTAMP_FROM + String.valueOf(utimeINI) + " and " +GROUPPUB_COMMENTS_TIMESTAMP_TO + String.valueOf(utimeFIN) +"]//ancestor::div[contains(@class,'UFICommentContentBlock')]";
 	}
+	
+	/**
+	 * Users scarp information
+	 */
+	//Profile Pic
+	public static String USER_PIC = "//a[contains(@class,'profilePicThumb')]/img";
+	//Info basica
+	public static String USER_GENDER = "//li[@class='_3pw9 _2pi4 _2ge8 _3ms8']/div/div[2]";
+	public static String USER_FECHANAC = "//li[@class='_3pw9 _2pi4 _2ge8 _4vs2']/div/div[2]";
+	public static String USER_UBICACION = "//li[@class='_3pw9 _2pi4 _2ge8 _3f8a']/div/div[2]";
+	//Info de la educacion
+	public static String USER_ESTUDIO_CONTAINER = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]";
+	//public static String USER_ESTUDIO_LUGAR = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]/div[1]";
+	public static String USER_ESTUDIO_LUGAR = "/div[1]";
+	//public static String USER_ESTUDIO_DESC = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]/div[2]/div";
+	public static String USER_ESTUDIO_DESC = "/div";
 	
 	public FacebookConfig() {
 
