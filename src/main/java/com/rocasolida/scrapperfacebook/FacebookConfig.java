@@ -5,7 +5,12 @@ public final class FacebookConfig {
 	public static String URL_POST = "/posts/";
 	public static String URL_GROUP = "groups/";
 	public static String URL_ABOUT_INFO_BASICA = "/about?section=contact-info";
+	public static String URL_ABOUT_INFO_BASICA_1 = "&sk=about&section=contact-info";
 	public static String URL_ABOUT_INFO_EDUCACION = "/about?section=education";
+	public static String URL_ABOUT_INFO_EDUCACION_1 = "&sk=about&section=education";
+	//Education and studies se pueden sacar de la overvie tmb	
+	public static String URL_ABOUT_INFO_OVERVIEW = "/about?section=overview";
+	public static String URL_ABOUT_INFO_OVERVIEW_1 = "&sk=about&section=overview";
 	public static String URL_LIKES = "/likes_all";
 	public static String XP_HAS_LIKES_CONTENT = "//div[contains(@class,'_5h60 _30f')]";
 	public static String XP_USER_LIKES = "//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]";
@@ -262,10 +267,14 @@ public final class FacebookConfig {
 	//Info de la educacion
 	public static String USER_ESTUDIO_CONTAINER = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]";
 	//public static String USER_ESTUDIO_LUGAR = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]/div[1]";
-	public static String USER_ESTUDIO_LUGAR = "/div[1]";
+	public static String USER_ESTUDIO_LUGAR = "/div[1]/a";
+	//div[@class='_4qm1' and @id='u_0_23']
 	//public static String USER_ESTUDIO_DESC = "//div[@class='_4qm1']/ul/li/div/div/div/div/div[2]/div[2]/div";
 	public static String USER_ESTUDIO_DESC = "/div";
 	
+	//Ubicacion
+	public static String USER_PLACES = "//div[@data-overviewsection='places']/div//a";
+	public static String USER_EDUCATION = "//div[@data-overviewsection='education']";
 	public FacebookConfig() {
 
 	}

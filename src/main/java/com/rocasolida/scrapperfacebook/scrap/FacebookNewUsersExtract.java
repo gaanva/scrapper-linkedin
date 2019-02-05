@@ -84,30 +84,92 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	public List<User> obtainUserProfileInformation(List<String> profilesUrl) throws Exception{
-		User auxUser = new User();
-		for(int i=0; i<profilesUrl.size(); i++) {
-			try {
-				
-				//this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
-				this.navigateTo(profilesUrl.get(i)+"/about");
-				//if(debug) System.out.println(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
-				if(debug) System.out.println(profilesUrl.get(i)+"/about");
-				this.overlayHandler();
-				auxUser.setUrlPerfil(profilesUrl.get(i));
-				if(debug)
-					System.out.println("Procesando: "+auxUser.getUrlPerfil());
-				auxUser = this.extractUserBasicInfo(auxUser);
-				
-				this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_EDUCACION);
-				if(debug) System.out.println(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_EDUCACION);
-				this.overlayHandler();
-				auxUser = this.extractUserEducationInfo(auxUser);
-			
-			}catch(Exception e) {
-				
+		long tardo = System.currentTimeMillis();
+		try {
+			User auxUser;
+			List<User> lista = new ArrayList<User>();
+			for(int i=0; i<profilesUrl.size(); i++) {
+				try {
+					auxUser = new User();
+					auxUser.setUrlPerfil(profilesUrl.get(i));
+					
+					if(!profilesUrl.get(i).contains("?")) {
+						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_OVERVIEW);
+					}else {
+						//education
+						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_OVERVIEW_1);
+					}
+					
+					if(debug) 
+						System.out.println("Cargando URL: " + this.getDriver().getCurrentUrl());
+					this.overlayHandler();
+					
+					auxUser = this.extractOverviewInfo(auxUser);
+					
+					
+					try {
+						if(this.existElement(null, "//a[contains(@href,'contact-info')]")) {
+							this.getDriver().findElement(By.xpath("//a[contains(@href,'contact-info')]")).click();
+							this.waitUntilNotSpinnerLoading();
+						}else {
+							System.out.println("No existe el elemento de contact info.");
+						}
+						
+					}catch(Exception e) {
+						if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+							System.out.println("[TIMEOUT] Espera para la carga de la seccion de CONTACT-INFO. Se dejará continuar...");
+						}else {
+							throw e;
+						}
+					}
+					/*
+					if(!profilesUrl.get(i).contains("?")) {
+						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
+					}else {
+						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA_1);
+					}
+					*/
+					if(debug) 
+						System.out.println("URL ACTUAL: "+ this.getDriver().getCurrentUrl());
+					//this.overlayHandler();
+					
+					//Extraigo info básica
+					auxUser = this.extractUserBasicInfo(auxUser);
+					lista.add(auxUser);
+				}catch(Exception e) {
+					throw e;
+				}
 			}
+			return lista;
+		}finally{
+			tardo = System.currentTimeMillis() - tardo;
+			System.out.println("obtainUserProfileInformation tardo: " + tardo);
 		}
-		return null;
+	}
+	
+	private User extractOverviewInfo(User aux) {
+		try {
+			//ubicacion
+			if(this.existElement(null, FacebookConfig.USER_PLACES)){
+				aux.setUbicacion(this.getDriver().findElement(By.xpath(FacebookConfig.USER_PLACES)).getText());
+			}
+			//estudios
+			List<String> estudios = new ArrayList<String>();
+			if(this.existElement(null,FacebookConfig.USER_EDUCATION)){
+				List<WebElement> estudiosAux = this.getDriver().findElements(By.xpath(FacebookConfig.USER_EDUCATION)); 
+				if(estudiosAux.size()==1) {
+					estudios.add(estudiosAux.get(0).getText());
+				}else {
+					estudios.add(estudiosAux.get(1).getText());
+					aux.setEmpleo(estudiosAux.get(0).getText());
+				}
+				aux.setEstudios(estudios);
+			}			
+		}catch(Exception e){
+			throw e;
+		}
+		return aux;
+		
 	}
 	
 	private User extractUserBasicInfo(User aux) throws Exception{
@@ -115,55 +177,23 @@ public class FacebookNewUsersExtract extends Scrap {
 			//foto perfil
 			if(this.existElement(null, FacebookConfig.USER_PIC)){
 				aux.setUrlFotoPerfil(this.getDriver().findElement(By.xpath(FacebookConfig.USER_PIC)).getAttribute("src"));
-			}else {
-				if(debug)
-					System.out.println("SIN FOTO DE PERFIL.");				
 			}
 			//sexo
 			if(this.existElement(null,FacebookConfig.USER_GENDER)){
 				aux.setGenero(this.getDriver().findElement(By.xpath(FacebookConfig.USER_GENDER)).getText());
-			}else {
-				if(debug)
-					System.out.println("SIN SEXO.");
 			}
 			//Fecha_nac o edad
 			if(this.existElement(null,FacebookConfig.USER_FECHANAC)){
 				aux.setFechaNac(this.getDriver().findElement(By.xpath(FacebookConfig.USER_FECHANAC)).getText());
-			}else {
-				if(debug)
-					System.out.println("SIN FECHA NAC.");
 			}
 			//ubicacion
 			if(this.existElement(null,FacebookConfig.USER_UBICACION)){
 				aux.setUbicacion(this.getDriver().findElement(By.xpath(FacebookConfig.USER_UBICACION)).getText());
-			}else {
-				if(debug)
-					System.out.println("SIN UBICACION.");
 			}
 			
 		}catch(Exception e){
 			throw e;
 		}
-		return aux;
-	}
-	
-	private User extractUserEducationInfo(User aux) {
-		List<String> est = new ArrayList<String>();
-		try {
-			//ubicacion
-			if(this.existElement(null, FacebookConfig.USER_ESTUDIO_CONTAINER)) {
-				List<WebElement> estudios = this.getDriver().findElements(By.xpath(FacebookConfig.USER_ESTUDIO_CONTAINER));
-				for(int i=0; i< estudios.size();i++) {
-					est.add(estudios.get(i).findElement(By.xpath(FacebookConfig.USER_ESTUDIO_LUGAR)) +" - "+ estudios.get(i).findElement(By.xpath(FacebookConfig.USER_ESTUDIO_DESC))); 
-				}
-			}else {
-				if(debug)
-					System.out.println("SIN ESTUDIOS.");
-			}
-		}catch(Exception e) {
-			throw e;
-		}
-		aux.setEstudios(est);
 		return aux;
 	}
 	
@@ -181,9 +211,8 @@ public class FacebookNewUsersExtract extends Scrap {
 		List<Publication> publicaciones = new ArrayList<Publication>();
 		//Por las dudas me guardo todas las pubs procesadas...
 		List<Publication> auxPubs = new ArrayList<Publication>();
-		
+		long tardo = System.currentTimeMillis();
 		try {
-			
 			do{
 				//Verifico que sea link de pagina, y cargo la pagina..
 				this.loadPage(facebookPage);
@@ -222,6 +251,9 @@ public class FacebookNewUsersExtract extends Scrap {
 			}else {
 				throw e;
 			}
+		}finally {
+			tardo = System.currentTimeMillis() - tardo;
+			System.out.println("obtainUsersCommentInformation tardo: " + tardo);
 		}
 		
 	}
@@ -264,8 +296,6 @@ public class FacebookNewUsersExtract extends Scrap {
 				aux.setUTime(Long.parseLong(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)).getAttribute("data-utime")));
 			}
 			
-			if(debug)
-				System.out.println("UTIME: " + aux.getUTime());
 			pubs.add(aux);
 		}
 		
@@ -562,75 +592,72 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	public List<String> processPublicationComments(List<String> users, int cantUsers) throws Exception {
-	//Hacer iteracion para que lea todos los comentarios.
-		List<WebElement> pubComments = new ArrayList<WebElement>();
-		int totUsersProcessed = users.size();
-		boolean hayMasComentarios = true;
-		
-		this.hiddenOverlay();
-		this.clickOnViewAllPublicationComments();
-		
-		do {
-			if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
-				pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-			}else if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
-				pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
-			}else {
-				pubComments = new ArrayList<WebElement>();
-			}
+		try {
+			List<WebElement> pubComments = new ArrayList<WebElement>();
+			int totUsersProcessed = users.size();
+			boolean hayMasComentarios = true;
 			
-			if(pubComments.size()==0) {
-				if (debug)
-					System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
-				
-				pubComments = this.cargarMasComentarios();
-				if(pubComments == null) {
-					if (debug)
-						System.out.println("NO HAY MAS COMENTARIOS...");
-					hayMasComentarios=false;
+			this.hiddenOverlay();
+			this.clickOnViewAllPublicationComments();
+			
+			do {
+				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
+					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				}else if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
 				}else {
-					if (debug)
-						System.out.println("SE CARGARON "+pubComments.size()+" COMENTARIOS NUEVOS...");
+					pubComments = new ArrayList<WebElement>();
 				}
-			}
-			
-			if(pubComments != null) {
-				for(int j=0; j<pubComments.size(); j++) {
-					String auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
-					//Ya procese el comentario, entonces lo pongo en hidden.
-					((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
-					//System.out.println("COMENTARIO " + j + " procesado.");
+				
+				if(pubComments.size()==0) {
+					if (debug)
+						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
 					
-					if(debug){
-						if(auxUser==null) {
-							System.out.println("EL USUARIO ES NULL. NO SE AGREGARÁ A LA LISTA");
+					pubComments = this.cargarMasComentarios();
+					if(pubComments == null) {
+						if (debug)
+							System.out.println("NO HAY MAS COMENTARIOS...");
+						hayMasComentarios=false;
+					}else {
+						if (debug)
+							System.out.println("SE CARGARON "+pubComments.size()+" COMENTARIOS NUEVOS...");
+					}
+				}
+				
+				if(pubComments != null) {
+					for(int j=0; j<pubComments.size(); j++) {
+						String auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
+						//Ya procese el comentario, entonces lo pongo en hidden.
+						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
+						
+						if(debug){
+							if(auxUser==null) {
+								System.out.println("EL USUARIO ES NULL. NO SE AGREGARÁ A LA LISTA");
+							}
+							
+							if(users.contains(auxUser)) {
+								System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
+							}
 						}
 						
-						if(users.contains(auxUser)) {
-							System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
+						if(auxUser!=null && !users.contains(auxUser)) {
+							users.add(auxUser);
+							totUsersProcessed ++;
+							System.out.println("Se encontro un usaurio nuevo. Total: " + totUsersProcessed);
 						}
+						
+						if(totUsersProcessed == cantUsers) {
+							this.encontroCantUsers = true;
+							break;
+						}
+						
 					}
-					
-					if(auxUser!=null && !users.contains(auxUser)) {
-						users.add(auxUser);
-						totUsersProcessed ++;
-						System.out.println("Se agrego un usuario. Total: " + totUsersProcessed);
-					}
-					
-					if(totUsersProcessed == cantUsers) {
-						this.encontroCantUsers = true;
-						break;
-					}
-					
 				}
-			}
-		}while(!this.encontroCantUsers && hayMasComentarios);
-		
-		if(debug)
-			System.out.println("De la publicacion se procesaron: " + users.size());
-		
-		return users;
-		
+			}while(!this.encontroCantUsers && hayMasComentarios);
+			return users;
+		}finally {
+			
+		}
 	}
 	//Hace click en el link de cargar mas comentarios y espera a que carguen...
 	private List<WebElement> cargarMasComentarios() {
@@ -718,12 +745,11 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	public boolean overlayHandler() {
+	private boolean overlayHandler() {
 		ExpectedCondition<Boolean> overlayClosed = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
 					(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
-					System.out.println("Hidding overlay...");
 					return false;
 				} else {
 					return true;
@@ -736,15 +762,31 @@ public class FacebookNewUsersExtract extends Scrap {
 
 	
 	
-	public String extractCommentUserProfileLink(WebElement comentario) throws Exception {
+	private String extractCommentUserProfileLink(WebElement comentario) throws Exception {
 		// Usuario Profile Url
+		String user = "";
 		if (this.getAccess() != null) {
 			try {
-				return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+				user = comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+				int pos = user.indexOf("fref=ufi&rc=p");
+				if(pos>0) {
+					user = user.substring(0, pos-1);
+				}
+				
+				System.out.println("***USER: " + user);
+				//return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+				return user;
 			}catch(Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
 					try {
-						return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE_1)).getAttribute("href");
+						user = comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE_1)).getAttribute("href");
+						int pos = user.indexOf("fref=ufi&rc=p");
+						if(pos>0) {
+							user = user.substring(0, pos-1);
+						}
+						
+						//return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE_1)).getAttribute("href");
+						return user;
 					}catch(Exception e1) {
 						System.out.println("No se pudo extraer el ID del usuario.");
 						return null;
@@ -756,7 +798,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		return null;
 	}
 	
-	public String regexPostID(String link) {
+	private String regexPostID(String link) {
 		// www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
 		// www.facebook.com/teamisurus/posts/2143052825719776
 		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826

@@ -15,4 +15,12 @@ public class User {
 	private String ubicacion;
 		
 	private List<String> estudios;
+	private String empleo;
+	@Override
+	public String toString() {
+		return "User [urlPerfil=" + urlPerfil + ", urlFotoPerfil=" + urlFotoPerfil + ", genero=" + genero + ", edad="
+				+ edad + ", fechaNac=" + fechaNac + ", ubicacion=" + ubicacion + ", estudios=" + estudios + ", empleo=" + empleo + "]";
+	}
+	
+	
 }

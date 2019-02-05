@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -43,14 +44,15 @@ public class FacebookNewUsersExtractTest {
 		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		
 		List<String> users = null;
+		List<User> usuarios;
 		System.out.println("PAGE: " + page);
 		try {
 			fu.login(access);
 			users = fu.obtainUsersCommentInformation(page,CANT_USERS);
-			fu.obtainUserProfileInformation(users);
-			/*for (int i = 0; i < users.size(); i++) {
-				System.out.println("PROFILE USER LINK: " + (i + 1) + ":" + users.get(i));
-			}*/
+			usuarios = fu.obtainUserProfileInformation(users);
+			for (int i = 0; i < usuarios.size(); i++) {
+				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
