@@ -209,7 +209,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return lista de urls de cada usuario.
 	 * @throws Exception
 	 */
-	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios, List<String> postUrl) throws Exception {
+	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios, String postUrl) throws Exception {
 		List<String> users = new ArrayList<String>();
 		List<Publication> publicaciones = new ArrayList<Publication>();
 		//Por las dudas me guardo todas las pubs procesadas...
@@ -226,11 +226,9 @@ public class FacebookNewUsersExtract extends Scrap {
 					//a las de mas abajo.
 					auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
 				}else {
-					for(int i=0; i<postUrl.size();i++) {
-						Publication aux = new Publication();
-						aux.setUrl(postUrl.get(i));
-						auxPubs.add(aux);
-					}
+					Publication aux = new Publication();
+					aux.setUrl(postUrl);
+					auxPubs.add(aux);
 				}
 				
 				for(int i=0; i<auxPubs.size();i++) {
