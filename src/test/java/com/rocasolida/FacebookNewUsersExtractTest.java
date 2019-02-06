@@ -48,7 +48,7 @@ public class FacebookNewUsersExtractTest {
 		System.out.println("PAGE: " + page);
 		try {
 			fu.login(access);
-			users = fu.obtainUsersCommentInformation(page,CANT_USERS);
+			users = fu.obtainUsersCommentInformation(page,CANT_USERS,null);
 			usuarios = fu.obtainUserProfileInformation(users);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
@@ -63,6 +63,10 @@ public class FacebookNewUsersExtractTest {
 
 	}
 
+	
+	/**
+	 * AGREGAR CASO DE PRUBEA CON LISTA DE POSTS URLS!
+	 */
 	
 	/**
 	 * Caso de prueba para buscar hasta la cantidad que me pasan por parámetro.

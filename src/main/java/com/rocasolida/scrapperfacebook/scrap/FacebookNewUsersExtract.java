@@ -25,7 +25,6 @@ import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.rocasolida.scrapperfacebook.FacebookConfig;
 import com.rocasolida.scrapperfacebook.entities.Credential;
@@ -106,7 +105,9 @@ public class FacebookNewUsersExtract extends Scrap {
 					
 					auxUser = this.extractOverviewInfo(auxUser);
 					
-					
+					/*
+					 * 06/02/2019: el acceso haciendo el click en la opcion de menu, la hace tan rapido, que 
+					 * te bloquean el usuario.
 					try {
 						if(this.existElement(null, "//a[contains(@href,'contact-info')]")) {
 							this.getDriver().findElement(By.xpath("//a[contains(@href,'contact-info')]")).click();
@@ -122,13 +123,15 @@ public class FacebookNewUsersExtract extends Scrap {
 							throw e;
 						}
 					}
-					/*
+					*/
+					Thread.sleep(3000);
 					if(!profilesUrl.get(i).contains("?")) {
 						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
 					}else {
 						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA_1);
 					}
-					*/
+					
+					
 					if(debug) 
 						System.out.println("URL ACTUAL: "+ this.getDriver().getCurrentUrl());
 					//this.overlayHandler();
@@ -206,7 +209,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return lista de urls de cada usuario.
 	 * @throws Exception
 	 */
-	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios) throws Exception {
+	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios, List<String> postUrl) throws Exception {
 		List<String> users = new ArrayList<String>();
 		List<Publication> publicaciones = new ArrayList<Publication>();
 		//Por las dudas me guardo todas las pubs procesadas...
@@ -214,12 +217,22 @@ public class FacebookNewUsersExtract extends Scrap {
 		long tardo = System.currentTimeMillis();
 		try {
 			do{
-				//Verifico que sea link de pagina, y cargo la pagina..
-				this.loadPage(facebookPage);
-				//Obtengo las publicaciones a procesar...
-				//La segunda vez, toma como referencia el ultimo utime, para procesar a partir de esa publicacion 
-				//a las de mas abajo.
-				auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
+				
+				if(postUrl == null) {
+					//Verifico que sea link de pagina, y cargo la pagina..
+					this.loadPage(facebookPage);
+					//Obtengo las publicaciones a procesar...
+					//La segunda vez, toma como referencia el ultimo utime, para procesar a partir de esa publicacion 
+					//a las de mas abajo.
+					auxPubs = this.loadPublicationsToBeProcessed(publicaciones.isEmpty()?null:publicaciones.get(publicaciones.size()-1));
+				}else {
+					for(int i=0; i<postUrl.size();i++) {
+						Publication aux = new Publication();
+						aux.setUrl(postUrl.get(i));
+						auxPubs.add(aux);
+					}
+				}
+				
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
 					this.waitUntilPublicationLoad();
@@ -229,6 +242,12 @@ public class FacebookNewUsersExtract extends Scrap {
 					}
 					
 					System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
+				}
+				
+				//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
+				//Caso contrario, tengo que ir a buscar mas publicaciones...
+				if(postUrl != null) {
+					this.hayMasPubs=false;
 				}
 				publicaciones.addAll(auxPubs);
 			
