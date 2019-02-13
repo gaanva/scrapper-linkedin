@@ -82,6 +82,12 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
+	/**
+	 * Le paso una lista de profilesUrl, las accede y le saca su información.
+	 * @param profilesUrl
+	 * @return
+	 * @throws Exception
+	 */
 	public List<User> obtainUserProfileInformation(List<String> profilesUrl) throws Exception{
 		long tardo = System.currentTimeMillis();
 		try {
@@ -124,7 +130,8 @@ public class FacebookNewUsersExtract extends Scrap {
 						}
 					}
 					*/
-					Thread.sleep(3000);
+					//TimeSleep de 10 segundos.
+					Thread.sleep(10000);
 					if(!profilesUrl.get(i).contains("?")) {
 						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
 					}else {
@@ -203,13 +210,15 @@ public class FacebookNewUsersExtract extends Scrap {
 	/**
 	 * toma una page y la cantidad de usuarios a extraer de los comentarios de todas las publicaciones necesarias. 
 	 * Devuelve la lista de urls de los usuarios que pudo extraer.
+	 * Toma la url de un post, y scrapea solo la cantidad de usuarios de ese post particular.
 	 * Devuelve SIEMPRE los que encuentra. Por mas que haya un error devuelve lso scrapeados, e informando el error.
 	 * @param facebookPage
 	 * @param cantUsuarios
+	 * @param postUrl
 	 * @return lista de urls de cada usuario.
 	 * @throws Exception
 	 */
-	public List<String> obtainUsersCommentInformation(String facebookPage, int cantUsuarios, String postUrl) throws Exception {
+	public List<String> obtainUsersInformationFromComment(String facebookPage, String postUrl, int cantUsuarios) throws Exception {
 		List<String> users = new ArrayList<String>();
 		List<Publication> publicaciones = new ArrayList<Publication>();
 		//Por las dudas me guardo todas las pubs procesadas...
@@ -274,6 +283,67 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 		
 	}
+
+	
+	
+	public List<String> obtainSpecificsUsersInformationFromComments(List<String> userScreenNames, String postUrl) throws Exception{
+		List<String> users = new ArrayList<String>();
+		List<Publication> publicaciones = new ArrayList<Publication>();
+		
+		long tardo = System.currentTimeMillis();
+		try {
+			do{
+				
+				if(postUrl == null || postUrl=="") {
+					throw new Exception("[ERROR] Se debe ingresar el POST de la URL a scrappear.");
+				}
+				if(userScreenNames==null || userScreenNames.size()==0) {
+					throw new Exception("[ERROR] Se debe ingresar la lista de users screen names que se desea encontrar.");
+				}
+				//Abro la publicacion...
+				this.navigateTo(postUrl);
+				this.waitUntilPublicationLoad();
+				
+				users = this.processPublicationComments(users, cantUsuarios);
+					if(this.encontroCantUsers){
+						break;
+					}
+					
+					System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
+				}
+				
+				//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
+				//Caso contrario, tengo que ir a buscar mas publicaciones...
+				if(postUrl != null) {
+					this.hayMasPubs=false;
+				}
+				publicaciones.addAll(auxPubs);
+			
+			}while(!encontroCantUsers && hayMasPubs);
+			
+			if(!hayMasPubs)
+				System.out.println("[WARN] Se recorrieron todas las publicaciones.");
+			
+			if(!encontroCantUsers)
+				System.out.println("[WARN] No se encontró la cantidad de usuarios objetivo. ("+cantUsuarios+")");
+			
+			System.out.println("[INFO] Se encontraron: "+ users.size() +" usuarios nuevos.");
+			
+			return users;
+		}catch(Exception e) {
+			if(users.size()>0) {
+				System.err.println("Se detecto error, pero se encontraron "+ users.size() +" usuarios nuevos...");
+				e.printStackTrace();
+				return users;
+			}else {
+				throw e;
+			}
+		}finally {
+			tardo = System.currentTimeMillis() - tardo;
+			System.out.println("obtainUsersCommentInformation tardo: " + tardo);
+		}
+	}
+	
 	
 	/**
 	 * Extrae de los elementos html de cada publicacion, su URL y uTime. Devuelve una lista de objetos publication.
@@ -295,8 +365,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					postID = this.regexPostID(pubsHtml.get(i).findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_LINK)).getAttribute("href"));
 					
 				}
-			}
-				
+			}				
 			
 			if (postID == "") {
 				if (debug)
@@ -676,6 +745,93 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 		}
 	}
+
+	public List<String> processPublicationUsersComments(List<String> targetUsers) throws Exception {
+		try {
+			
+			
+			
+			
+			
+			
+			
+			//CONTINUARLOS1!!
+			
+			
+			
+			
+			
+			int cantUsersFound =0;
+			List<String> urlUSerFound = new ArrayList<String>();
+			List<WebElement> pubComments = new ArrayList<WebElement>();
+			boolean hayMasComentarios = true;
+			
+			this.hiddenOverlay();
+			this.clickOnViewAllPublicationComments();
+			
+			do {
+				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
+					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				}else if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
+				}else {
+					pubComments = new ArrayList<WebElement>();
+				}
+				
+				if(pubComments.size()==0) {
+					if (debug)
+						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
+					pubComments = this.cargarMasComentarios();
+					if(pubComments == null) {
+						if (debug)
+							System.out.println("NO HAY MAS COMENTARIOS...");
+						hayMasComentarios=false;
+					}else {
+						if (debug)
+							System.out.println("SE CARGARON "+pubComments.size()+" COMENTARIOS NUEVOS...");
+					}
+				}
+				
+				if(pubComments != null) {
+					for(int j=0; j<pubComments.size(); j++) {
+						String screenUserName = this.extractCommentUserScreenName(pubComments.get(j));
+						if(targetUsers.contains(screenUserName)) {
+							
+						}
+						//Ya procese el comentario, entonces lo pongo en hidden.
+						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
+						
+						if(debug){
+							if(auxUser==null) {
+								System.out.println("EL USUARIO ES NULL. NO SE AGREGARÁ A LA LISTA");
+							}
+							
+							if(users.contains(auxUser)) {
+								System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
+							}
+						}
+						
+						if(auxUser!=null && !users.contains(auxUser)) {
+							users.add(auxUser);
+							totUsersProcessed ++;
+							System.out.println("Se encontro un usaurio nuevo. Total: " + totUsersProcessed);
+						}
+						
+						if(totUsersProcessed == cantUsers) {
+							this.encontroCantUsers = true;
+							break;
+						}
+						
+					}
+				}
+			}while(!this.encontroCantUsers && hayMasComentarios);
+			return users;
+		}finally {
+			
+		}
+	}
+	
+	
 	//Hace click en el link de cargar mas comentarios y espera a que carguen...
 	private List<WebElement> cargarMasComentarios() {
 		if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).size() == 1) {
@@ -814,6 +970,37 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 		return null;
 	}
+	
+	//extrae el nombre visual del usuario
+	private String extractCommentUserScreenName(WebElement comentario) throws Exception {
+		// Usuario Profile Url
+		String userScreenName = "";
+		if (this.getAccess() != null) {
+			try {
+				userScreenName = comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getText();
+				
+				System.out.println("***USER: " + userScreenName);
+				//return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
+				return userScreenName;
+			}catch(Exception e) {
+				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
+					try {
+						userScreenName = comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE_1)).getText();
+						//return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE_1)).getAttribute("href");
+						return userScreenName;
+					}catch(Exception e1) {
+						System.out.println("No se pudo extraer el ID del usuario.");
+						return null;
+					}
+				}
+			}
+			
+		}
+		return null;
+	}
+	
+	
+	
 	
 	private String regexPostID(String link) {
 		// www.facebook.com/teamisurus/photos/a.413505532007856.104138.401416556550087/2144570302234695/?type=3
