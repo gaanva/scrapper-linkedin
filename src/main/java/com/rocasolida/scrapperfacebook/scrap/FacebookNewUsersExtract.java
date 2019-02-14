@@ -288,38 +288,37 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	public List<String> obtainSpecificsUsersInformationFromComments(List<String> userScreenNames, String postUrl) throws Exception{
 		List<String> users = new ArrayList<String>();
-		List<Publication> publicaciones = new ArrayList<Publication>();
 		
 		long tardo = System.currentTimeMillis();
 		try {
-			do{
-				
-				if(postUrl == null || postUrl=="") {
-					throw new Exception("[ERROR] Se debe ingresar el POST de la URL a scrappear.");
-				}
-				if(userScreenNames==null || userScreenNames.size()==0) {
-					throw new Exception("[ERROR] Se debe ingresar la lista de users screen names que se desea encontrar.");
-				}
-				//Abro la publicacion...
-				this.navigateTo(postUrl);
-				this.waitUntilPublicationLoad();
-				
-				users = this.processPublicationComments(users, cantUsuarios);
-					if(this.encontroCantUsers){
-						break;
-					}
-					
-					System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
-				}
-				
-				//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
-				//Caso contrario, tengo que ir a buscar mas publicaciones...
-				if(postUrl != null) {
-					this.hayMasPubs=false;
-				}
-				publicaciones.addAll(auxPubs);
 			
-			}while(!encontroCantUsers && hayMasPubs);
+			//Controlo que me pasen bien los parámetros	
+			if(postUrl == null || postUrl=="") {
+				throw new Exception("[ERROR] Se debe ingresar el POST de la URL a scrappear.");
+			}
+			if(userScreenNames==null || userScreenNames.size()==0) {
+				throw new Exception("[ERROR] Se debe ingresar la lista de users screen names que se desea encontrar.");
+			}
+			//Abro la publicacion...
+			this.navigateTo(postUrl);
+			this.waitUntilPublicationLoad();
+			
+			//Empiezo a scrapear los comentarios
+			
+			users = this.processPublicationComments(users, cantUsuarios);
+				if(this.encontroCantUsers){
+					break;
+				}
+				
+				System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
+			
+			
+			//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
+			//Caso contrario, tengo que ir a buscar mas publicaciones...
+			if(postUrl != null) {
+				this.hayMasPubs=false;
+			}
+				
 			
 			if(!hayMasPubs)
 				System.out.println("[WARN] Se recorrieron todas las publicaciones.");
@@ -677,11 +676,23 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	public List<String> processPublicationComments(List<String> users, int cantUsers) throws Exception {
+	/**
+	 * Recibe una lista con los screenNameUsers que se desean rastrear.
+	 * @param targetScreenNameUsers
+	 * @return devuelve la lista de los encontrados.
+	 * @throws Exception
+	 */
+	public List<String> processPublicationComments(List<String> targetScreenNameUsers) throws Exception {
 		try {
+			//Lista de screenNames encontrados
+			List<String> usrScreenNameFound = new ArrayList<String>();
+			List<String> usrUrlProfile = new ArrayList<String>();
+			int totUsersProcessed = 0;
 			List<WebElement> pubComments = new ArrayList<WebElement>();
-			int totUsersProcessed = users.size();
 			boolean hayMasComentarios = true;
+			
+			
+			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
 			this.hiddenOverlay();
 			this.clickOnViewAllPublicationComments();
@@ -712,24 +723,50 @@ public class FacebookNewUsersExtract extends Scrap {
 				
 				if(pubComments != null) {
 					for(int j=0; j<pubComments.size(); j++) {
-						String auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
+						String commentUserScreenName = this.extractCommentUserScreenName(pubComments.get(j));
+						String aux;
+						if(targetScreenNameUsers.contains(commentUserScreenName)) {
+							aux = this.extractCommentUserProfileLink(pubComments.get(j));
+						}
 						//Ya procese el comentario, entonces lo pongo en hidden.
 						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
 						
 						if(debug){
-							if(auxUser==null) {
-								System.out.println("EL USUARIO ES NULL. NO SE AGREGARÁ A LA LISTA");
+							if(commentUserScreenName==null) {
+								System.out.println("EL NOMBRE EXTRAIDO DEL USUARIO ES NULL. NO SE AGREGARÁ A LA LISTA");
 							}
 							
-							if(users.contains(auxUser)) {
+							if(usrScreenNameFound.contains(commentUserScreenName)) {
 								System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
 							}
 						}
-						
-						if(auxUser!=null && !users.contains(auxUser)) {
-							users.add(auxUser);
-							totUsersProcessed ++;
-							System.out.println("Se encontro un usaurio nuevo. Total: " + totUsersProcessed);
+						//encontre un usuario buscado
+						if(commentUserScreenName!=null) {
+							String urlProfile;
+							if(!usrScreenNameFound.contains(commentUserScreenName)) {
+								//Lo sumo a la lista de encontrados
+								usrScreenNameFound.add(commentUserScreenName);
+								urlProfile = this.extractCommentUserProfileLink(pubComments.get(j));
+								if(urlProfile != null) {
+									usrUrlProfile.add(urlProfile);
+									totUsersProcessed++;
+									System.out.println("Se encontro un usuario nuevo. Total: " + totUsersProcessed);
+								}else {
+									if(debug)
+										System.err.println("[ERROR] Revisar por que no se pudo extraer la url de perfil. screen name: " + commentUserScreenName);
+								}
+							}else {
+								//Si ese usr screen name, ya lo encontré, puede ser que sea repetido....
+								//Extraigo el urlProfile
+								urlProfile = this.extractCommentUserProfileLink(pubComments.get(j));
+								//Me fijo si existe en la lista de urls...
+								if(!usrUrlProfile.contains(urlProfile)) {
+									//Hay screen names repetidos...
+									System.out.println("[INFO] Este screen name("+commentUserScreenName+") se repite. [" + urlProfile + "]");
+									System.out.println("[INFO] Se agrega a la lista de urlProfiles.");
+									usrUrlProfile.add(urlProfile);
+ 								}
+							}
 						}
 						
 						if(totUsersProcessed == cantUsers) {
