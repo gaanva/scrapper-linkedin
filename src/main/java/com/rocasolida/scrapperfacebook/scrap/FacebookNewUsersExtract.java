@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -243,7 +244,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
 					this.waitUntilPublicationLoad();
-					users = this.processPublicationComments(users, cantUsuarios);
+					users = this.processPublicationUSerComments(users, cantUsuarios);
 					if(this.encontroCantUsers){
 						break;
 					}
@@ -287,7 +288,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	public List<String> obtainSpecificsUsersInformationFromComments(List<String> userScreenNames, String postUrl) throws Exception{
-		List<String> users = new ArrayList<String>();
+		HashMap<String, String> users = new HashMap<String, String>();
 		
 		long tardo = System.currentTimeMillis();
 		try {
@@ -305,14 +306,12 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 			//Empiezo a scrapear los comentarios
 			
-			users = this.processPublicationComments(users, cantUsuarios);
-				if(this.encontroCantUsers){
-					break;
-				}
+			users = this.processPublicationSpecificUSersComments(userScreenNames);
+			
+			
+			//Recorrer el hashmap y mostrar los null...??? devolver hashmap.	
 				
-				System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
-			
-			
+				
 			//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
 			//Caso contrario, tengo que ir a buscar mas publicaciones...
 			if(postUrl != null) {
@@ -682,12 +681,14 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return devuelve la lista de los encontrados.
 	 * @throws Exception
 	 */
-	public List<String> processPublicationComments(List<String> targetScreenNameUsers) throws Exception {
+	public HashMap<String, String> processPublicationSpecificUSersComments(List<String> targetScreenNameUsers) throws Exception {
 		try {
 			//Lista de screenNames encontrados
+			HashMap<String, String> usrsUrlProfileFound = new HashMap<String, String>();
 			List<String> usrScreenNameFound = new ArrayList<String>();
-			List<String> usrUrlProfile = new ArrayList<String>();
+			
 			int totUsersProcessed = 0;
+			int totAProcesar = targetScreenNameUsers.size();
 			List<WebElement> pubComments = new ArrayList<WebElement>();
 			boolean hayMasComentarios = true;
 			
@@ -748,14 +749,19 @@ public class FacebookNewUsersExtract extends Scrap {
 								usrScreenNameFound.add(commentUserScreenName);
 								urlProfile = this.extractCommentUserProfileLink(pubComments.get(j));
 								if(urlProfile != null) {
-									usrUrlProfile.add(urlProfile);
+									usrsUrlProfileFound.put(commentUserScreenName, urlProfile);
+									//Contabilizo el encontrado...
 									totUsersProcessed++;
+									//Quite de la lista el encontrado..
+									targetScreenNameUsers.remove(commentUserScreenName);
 									System.out.println("Se encontro un usuario nuevo. Total: " + totUsersProcessed);
 								}else {
 									if(debug)
 										System.err.println("[ERROR] Revisar por que no se pudo extraer la url de perfil. screen name: " + commentUserScreenName);
 								}
-							}else {
+							} 
+							//--> esto si quiere encontrar más de 1 repetido, pero habría que recorrer todos los comments.
+							/*else {
 								//Si ese usr screen name, ya lo encontré, puede ser que sea repetido....
 								//Extraigo el urlProfile
 								urlProfile = this.extractCommentUserProfileLink(pubComments.get(j));
@@ -764,12 +770,12 @@ public class FacebookNewUsersExtract extends Scrap {
 									//Hay screen names repetidos...
 									System.out.println("[INFO] Este screen name("+commentUserScreenName+") se repite. [" + urlProfile + "]");
 									System.out.println("[INFO] Se agrega a la lista de urlProfiles.");
-									usrUrlProfile.add(urlProfile);
+									usrsUrlProfileFound.put(commentUserScreenName, urlProfile);
  								}
-							}
+							}*/
 						}
 						
-						if(totUsersProcessed == cantUsers) {
+						if(totUsersProcessed == totAProcesar) {
 							this.encontroCantUsers = true;
 							break;
 						}
@@ -777,30 +783,23 @@ public class FacebookNewUsersExtract extends Scrap {
 					}
 				}
 			}while(!this.encontroCantUsers && hayMasComentarios);
-			return users;
+			
+			if(!this.encontroCantUsers) {
+				for(int i=0; i<targetScreenNameUsers.size(); i++) {
+					usrsUrlProfileFound.put(targetScreenNameUsers.get(i), null);
+				}
+			}
+			
+			return usrsUrlProfileFound;
 		}finally {
 			
 		}
 	}
 
-	public List<String> processPublicationUsersComments(List<String> targetUsers) throws Exception {
+	public List<String> processPublicationUSerComments(List<String> users, int cantUsers) throws Exception {
 		try {
-			
-			
-			
-			
-			
-			
-			
-			//CONTINUARLOS1!!
-			
-			
-			
-			
-			
-			int cantUsersFound =0;
-			List<String> urlUSerFound = new ArrayList<String>();
 			List<WebElement> pubComments = new ArrayList<WebElement>();
+			int totUsersProcessed = users.size();
 			boolean hayMasComentarios = true;
 			
 			this.hiddenOverlay();
@@ -818,6 +817,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				if(pubComments.size()==0) {
 					if (debug)
 						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
+					
 					pubComments = this.cargarMasComentarios();
 					if(pubComments == null) {
 						if (debug)
@@ -831,10 +831,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				
 				if(pubComments != null) {
 					for(int j=0; j<pubComments.size(); j++) {
-						String screenUserName = this.extractCommentUserScreenName(pubComments.get(j));
-						if(targetUsers.contains(screenUserName)) {
-							
-						}
+						String auxUser = this.extractCommentUserProfileLink(pubComments.get(j));
 						//Ya procese el comentario, entonces lo pongo en hidden.
 						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
 						
