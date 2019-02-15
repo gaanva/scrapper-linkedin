@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.BeforeClass;
@@ -103,7 +104,52 @@ public class FacebookNewUsersExtractTest {
 
 	}
 	
-	
+	@Test
+	/**
+	 * info de los usuarios de la lista, si es que interactuaron en la publicación indicada.
+	 * 
+	 * @throws Exception
+	 */
+	public void post_con_EspecificosUsuariosEnPub() throws MalformedURLException {
+		//Cantidad de usuarios a extraer...
+		int CANT_USERS = 5;
+		//pagina donde buscar usuarios.
+		String URL_POST ="https://www.facebook.com/C5N.Noticias/posts/10157697944845839";
+		List<String> USR_SCR_NAMES = new ArrayList<String>();
+		USR_SCR_NAMES.add("");
+		USR_SCR_NAMES.add("");
+		USR_SCR_NAMES.add("");
+		
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
+		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		
+		List<User> usuarios;
+		List<String> users;
+		System.out.println("URL POST: " + URL_POST);
+		
+		try {
+			fu.login(access);
+			users = fu.obtainSpecificsUsersInformationFromComments(USR_SCR_NAMES,URL_POST);
+			usuarios = fu.obtainUserProfileInformation(users);
+			for (int i = 0; i < usuarios.size(); i++) {
+				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
+			}
+			
+			//Recorrer el hashmap y luego pasarlo aca!
+			usuarios = fu.obtainUserProfileInformation(users);
+			for (int i = 0; i < usuarios.size(); i++) {
+				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		fu.quit();
+
+		assertNotNull(users);
+		assertTrue(users.size() == CANT_USERS);
+
+	}
 	
 	
 	/**

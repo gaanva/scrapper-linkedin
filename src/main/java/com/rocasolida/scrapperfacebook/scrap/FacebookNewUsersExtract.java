@@ -8,7 +8,9 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -288,7 +290,8 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	public List<String> obtainSpecificsUsersInformationFromComments(List<String> userScreenNames, String postUrl) throws Exception{
-		HashMap<String, String> users = new HashMap<String, String>();
+		List<String> users = new ArrayList<String>();
+		HashMap<String, String> usersHash = new HashMap<String, String>();
 		
 		long tardo = System.currentTimeMillis();
 		try {
@@ -306,26 +309,32 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 			//Empiezo a scrapear los comentarios
 			
-			users = this.processPublicationSpecificUSersComments(userScreenNames);
+			usersHash = this.processPublicationSpecificUSersComments(userScreenNames);
 			
 			
-			//Recorrer el hashmap y mostrar los null...??? devolver hashmap.	
+			//Recorrer el hashmap y mostrar los null...	
+			Iterator ite = usersHash.entrySet().iterator();
+
+		    while(ite.hasNext()) {
+		        Map.Entry e = (Map.Entry) ite.next();
+		        System.out.println(e.getKey() + " -> "+e.getValue());
+		        if(e.getValue()!=null) {
+		        	//Si lo encontró, devuelve la url del perfil.
+		        	users.add(e.getValue().toString());
+		        }else {
+		        	//Si no lo encontró, devuelvo el nombre del usuario.
+		        	users.add("NO SE ENCONTRO: " + e.getKey().toString());
+		        }
+
+		    }	
 				
-				
-			//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
-			//Caso contrario, tengo que ir a buscar mas publicaciones...
-			if(postUrl != null) {
-				this.hayMasPubs=false;
-			}
-				
 			
-			if(!hayMasPubs)
-				System.out.println("[WARN] Se recorrieron todas las publicaciones.");
+		    if(!encontroCantUsers)
+				System.out.println("[WARN] No se encontró la cantidad de usuarios objetivo.");
 			
-			if(!encontroCantUsers)
-				System.out.println("[WARN] No se encontró la cantidad de usuarios objetivo. ("+cantUsuarios+")");
+			System.out.println("[INFO] Se encontraron: "+ users.size() +" de los pasados en la lista.");
 			
-			System.out.println("[INFO] Se encontraron: "+ users.size() +" usuarios nuevos.");
+			
 			
 			return users;
 		}catch(Exception e) {
