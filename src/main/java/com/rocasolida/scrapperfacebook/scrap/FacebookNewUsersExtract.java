@@ -41,7 +41,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	final Pattern pattern = Pattern.compile(countRegex);
 	
 	private static Integer WAIT_UNTIL_SPINNER = 10;
-	private static Integer WAIT_UNTIL_SECONDS = 5;
+	private static Integer WAIT_UNTIL_SECONDS = 20;
 	//Cada cuanto el waiter chequea la condicion.
 	private static Integer CHECK_DELAY_MS = 10;
 	
@@ -133,7 +133,7 @@ public class FacebookNewUsersExtract extends Scrap {
 						}
 					}
 					*/
-					//TimeSleep de 10 segundos.
+					///////////////////////////////////////////////////////////TimeSleep de 10 segundos./////////////////////////////////////////////////////////////
 					Thread.sleep(10000);
 					if(!profilesUrl.get(i).contains("?")) {
 						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
@@ -246,7 +246,12 @@ public class FacebookNewUsersExtract extends Scrap {
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
 					this.waitUntilPublicationLoad();
-					users = this.processPublicationUSerComments(users, cantUsuarios);
+					
+					
+					//Revisar por qué captura mal la publicacion cuando es 1 sola... o cuando es un video!
+					List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
+					
+					users = this.processPublicationUSerComments(users, cantUsuarios, pubs.get(0));
 					if(this.encontroCantUsers){
 						break;
 					}
@@ -305,16 +310,20 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 			//Abro la publicacion...
 			this.navigateTo(postUrl);
+			//Valida que hayan publicaciones en pantalla
 			this.waitUntilPublicationLoad();
 			
 			//Empiezo a scrapear los comentarios
+			List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
 			
-			usersHash = this.processPublicationSpecificUSersComments(userScreenNames);
+			usersHash = this.processPublicationSpecificUSersComments(userScreenNames, pubs.get(0));
 			
 			
 			//Recorrer el hashmap y mostrar los null...	
 			Iterator ite = usersHash.entrySet().iterator();
 
+			if(debug)
+				System.out.println("[INFO]  SE MUESTRA LA LISTA DE SCREEN NAMES Y SI FUERON ENCONTRADAS: ");
 		    while(ite.hasNext()) {
 		        Map.Entry e = (Map.Entry) ite.next();
 		        System.out.println(e.getKey() + " -> "+e.getValue());
@@ -331,9 +340,6 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 		    if(!encontroCantUsers)
 				System.out.println("[WARN] No se encontró la cantidad de usuarios objetivo.");
-			
-			System.out.println("[INFO] Se encontraron: "+ users.size() +" de los pasados en la lista.");
-			
 			
 			
 			return users;
@@ -690,7 +696,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return devuelve la lista de los encontrados.
 	 * @throws Exception
 	 */
-	public HashMap<String, String> processPublicationSpecificUSersComments(List<String> targetScreenNameUsers) throws Exception {
+	public HashMap<String, String> processPublicationSpecificUSersComments(List<String> targetScreenNameUsers, WebElement pub) throws Exception {
 		try {
 			//Lista de screenNames encontrados
 			HashMap<String, String> usrsUrlProfileFound = new HashMap<String, String>();
@@ -705,13 +711,13 @@ public class FacebookNewUsersExtract extends Scrap {
 			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
 			this.hiddenOverlay();
-			this.clickOnViewAllPublicationComments();
-			
+			//this.clickOnViewAllPublicationComments();
+			this.listAllPubComments(pub);
 			do {
-				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
-					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				}else if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
-					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
+				if (pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
+					pubComments = pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				}else if(pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+					pubComments = pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
 				}else {
 					pubComments = new ArrayList<WebElement>();
 				}
@@ -720,7 +726,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					if (debug)
 						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
 					
-					pubComments = this.cargarMasComentarios();
+					pubComments = this.cargarMasComentarios(pub);
 					if(pubComments == null) {
 						if (debug)
 							System.out.println("NO HAY MAS COMENTARIOS...");
@@ -734,10 +740,10 @@ public class FacebookNewUsersExtract extends Scrap {
 				if(pubComments != null) {
 					for(int j=0; j<pubComments.size(); j++) {
 						String commentUserScreenName = this.extractCommentUserScreenName(pubComments.get(j));
-						String aux;
+						/*String aux;
 						if(targetScreenNameUsers.contains(commentUserScreenName)) {
 							aux = this.extractCommentUserProfileLink(pubComments.get(j));
-						}
+						}*/
 						//Ya procese el comentario, entonces lo pongo en hidden.
 						((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", pubComments.get(j));
 						
@@ -753,7 +759,8 @@ public class FacebookNewUsersExtract extends Scrap {
 						//encontre un usuario buscado
 						if(commentUserScreenName!=null) {
 							String urlProfile;
-							if(!usrScreenNameFound.contains(commentUserScreenName)) {
+							//si está en la lista de target a buscar... LO PROCESO. Acepta que pasen usuarios iguales.
+							if(targetScreenNameUsers.contains(commentUserScreenName)) {
 								//Lo sumo a la lista de encontrados
 								usrScreenNameFound.add(commentUserScreenName);
 								urlProfile = this.extractCommentUserProfileLink(pubComments.get(j));
@@ -761,12 +768,12 @@ public class FacebookNewUsersExtract extends Scrap {
 									usrsUrlProfileFound.put(commentUserScreenName, urlProfile);
 									//Contabilizo el encontrado...
 									totUsersProcessed++;
-									//Quite de la lista el encontrado..
+									//Quito la primer ocurrencia de la lista... puede que me pasen 2 o más iguales.
 									targetScreenNameUsers.remove(commentUserScreenName);
-									System.out.println("Se encontro un usuario nuevo. Total: " + totUsersProcessed);
+									System.out.println("Se encontro el screen name: '"+commentUserScreenName+"' . Total: " + totUsersProcessed);
 								}else {
 									if(debug)
-										System.err.println("[ERROR] Revisar por que no se pudo extraer la url de perfil. screen name: " + commentUserScreenName);
+										System.err.println("[ERROR] Revisar por que no se pudo extraer la url de perfil. screen name: '" + commentUserScreenName+"'");
 								}
 							} 
 							//--> esto si quiere encontrar más de 1 repetido, pero habría que recorrer todos los comments.
@@ -805,7 +812,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 
-	public List<String> processPublicationUSerComments(List<String> users, int cantUsers) throws Exception {
+	public List<String> processPublicationUSerComments(List<String> users, int cantUsers, WebElement publication) throws Exception {
 		try {
 			List<WebElement> pubComments = new ArrayList<WebElement>();
 			int totUsersProcessed = users.size();
@@ -814,11 +821,13 @@ public class FacebookNewUsersExtract extends Scrap {
 			this.hiddenOverlay();
 			this.clickOnViewAllPublicationComments();
 			
+			this.listAllPubComments(publication);
+			
 			do {
-				if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
-					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				}else if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
-					pubComments = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
+				if (publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
+					pubComments = publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				}else if(publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+					pubComments = publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
 				}else {
 					pubComments = new ArrayList<WebElement>();
 				}
@@ -826,8 +835,8 @@ public class FacebookNewUsersExtract extends Scrap {
 				if(pubComments.size()==0) {
 					if (debug)
 						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
+					pubComments = this.cargarMasComentarios(publication);
 					
-					pubComments = this.cargarMasComentarios();
 					if(pubComments == null) {
 						if (debug)
 							System.out.println("NO HAY MAS COMENTARIOS...");
@@ -876,26 +885,29 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	//Hace click en el link de cargar mas comentarios y espera a que carguen...
-	private List<WebElement> cargarMasComentarios() {
-		if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).size() == 1) {
+	private List<WebElement> cargarMasComentarios(WebElement publication) {
+		List<WebElement> verMasMsjsLink = publication.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+		if (verMasMsjsLink.size() >= 1) {
 			try {
-				this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)).click();
+				verMasMsjsLink.get(0).click();
 				this.waitUntilMoreCommentsClickLoad();
 				return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				
 			} catch (Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 					//No hay mas comentarios para cargar...
 					return null;
-				}else{
+				}else {
 					System.out.println("Error al hacer click en VER MAS MENSAJES");
 					throw e;
 				}
 			}
 			
-		}else if(this.getDriver().findElements(By.xpath("//div[@class='_6iiz _77br']//a[@class='_4sxc _42ft']")).size() == 1){
+		}
+		
+		verMasMsjsLink = publication.findElements(By.xpath("//div[@class='_6iiz _77br']//a[@class='_4sxc _42ft']"));
+		if(verMasMsjsLink.size() >= 1){
 			try {
-				this.getDriver().findElement(By.xpath("//div[@class='_6iiz _77br']//a[@class='_4sxc _42ft']")).click();
+				verMasMsjsLink.get(0).click();
 				// Poner un wait after click. (sumar al de extracción de comments...)
 				this.waitUntilMoreCommentsOverlayClickLoad();
 				return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
@@ -988,8 +1000,6 @@ public class FacebookNewUsersExtract extends Scrap {
 				if(pos>0) {
 					user = user.substring(0, pos-1);
 				}
-				
-				System.out.println("***USER: " + user);
 				//return comentario.findElement(By.xpath("."+FacebookConfig.XPATH_USER_URL_PROFILE)).getAttribute("href");
 				return user;
 			}catch(Exception e) {
@@ -1077,6 +1087,34 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 		}
 		return lastMatched;
+	}
+	
+	/**
+	 * Hace click en la opcion de mostrar "todos los comentarios" de la publicacion.
+	 * Si no puede, toma los que se listen...
+	 * @param publication
+	 */
+	private void listAllPubComments(WebElement publication) {
+		if(publication.findElements(By.xpath("."+"//div[contains(@class,'uiPopover _6a _6b openToggler')]/a")).size()==1) {
+			publication.findElement(By.xpath("."+"//div[contains(@class,'uiPopover _6a _6b openToggler')]/a")).click();
+			this.waitAndClickAllCommentOption();
+		}
+	}
+	
+	
+	private boolean waitAndClickAllCommentOption() {
+		ExpectedCondition<Boolean> allCommentsClicked = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath("//ul[@class='_54nf']/li[3]/a")).size() == 1) {
+					driver.findElement(By.xpath("//ul[@class='_54nf']/li[3]/a")).click();
+					return true;
+				} else {
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
+		return wait.until(allCommentsClicked);
 	}
 	
 

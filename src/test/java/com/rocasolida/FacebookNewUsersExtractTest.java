@@ -112,43 +112,53 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void post_con_EspecificosUsuariosEnPub() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 5;
+		int CANT_USERS_FOUND = 4;
 		//pagina donde buscar usuarios.
 		String URL_POST ="https://www.facebook.com/C5N.Noticias/posts/10157697944845839";
 		List<String> USR_SCR_NAMES = new ArrayList<String>();
-		USR_SCR_NAMES.add("");
-		USR_SCR_NAMES.add("");
-		USR_SCR_NAMES.add("");
+		USR_SCR_NAMES.add("Carlos Ariel Morales");
+		USR_SCR_NAMES.add("Daniel Montiel");
+		USR_SCR_NAMES.add("Luis Alberto Sallese Rossi");
+		USR_SCR_NAMES.add("elroquefortdelomas de samora"); //Este es el FAKE.
+		USR_SCR_NAMES.add("Chizzo Lmds"); 
 		
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
 		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		
 		List<User> usuarios;
-		List<String> users;
+		List<String> users = new ArrayList<String>();
+		List<String> usersFound = new ArrayList<String>();
 		System.out.println("URL POST: " + URL_POST);
 		
 		try {
 			fu.login(access);
 			users = fu.obtainSpecificsUsersInformationFromComments(USR_SCR_NAMES,URL_POST);
-			usuarios = fu.obtainUserProfileInformation(users);
+			
+			for(int i=0; i<users.size(); i++) {
+				if(!(users.get(i).contains("NO SE ENCONTRO: "))) {
+					//Si se encontrolo guardo...
+					usersFound.add(users.get(i));
+				}else {
+					//Si no se encontró lo informo...
+					System.out.println(users.get(i));
+				}
+			}
+			//Paso la lista de encontrados para obtener el profile info:
+			usuarios = fu.obtainUserProfileInformation(usersFound);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
 			}
 			
-			//Recorrer el hashmap y luego pasarlo aca!
-			usuarios = fu.obtainUserProfileInformation(users);
-			for (int i = 0; i < usuarios.size(); i++) {
-				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
-			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		fu.quit();
 
-		assertNotNull(users);
-		assertTrue(users.size() == CANT_USERS);
-
+		
+		assertTrue(usersFound.size() == CANT_USERS_FOUND);
+		assertTrue(!usersFound.contains("elroquefortdelomas de samora"));
+		
 	}
 	
 	

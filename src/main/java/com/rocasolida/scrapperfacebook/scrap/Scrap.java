@@ -3,7 +3,6 @@ package com.rocasolida.scrapperfacebook.scrap;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.file.Paths;
 
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Platform;
@@ -107,14 +106,16 @@ public class Scrap {
       }
 
       if (driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
-        firefoxBinary.addCommandLineOptions("--headless");
+        //firefoxBinary.addCommandLineOptions("--headless");
+    	 
       }
 
       FirefoxOptions firefoxOptions = new FirefoxOptions();
       firefoxOptions.setBinary(firefoxBinary);
       FirefoxProfile firefoxProfile = new FirefoxProfile();
       firefoxProfile.setPreference("media.volume_scale", "0.0");
-      firefoxOptions.setProfile(firefoxProfile);
+      firefoxProfile.setPreference("dom.webnotifications.enabled", false);
+      firefoxOptions.setProfile(firefoxProfile);      
       firefoxOptions.setCapability("permissions.default.image", 2);
       this.driver = new FirefoxDriver(firefoxOptions);
       this.configureDriver();
