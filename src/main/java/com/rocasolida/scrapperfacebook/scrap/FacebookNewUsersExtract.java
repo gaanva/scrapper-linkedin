@@ -110,7 +110,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					
 					if(debug) 
 						System.out.println("Cargando URL: " + this.getDriver().getCurrentUrl());
-					this.overlayHandler();
+					//this.overlayHandler();
 					
 					auxUser = this.extractOverviewInfo(auxUser);
 					
@@ -475,7 +475,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		int intentosCargaPubs=0;
 		int CANT_INTENTOS = 3;
 		
-		this.hiddenOverlay();
+		//this.hiddenOverlay();
 		
 		
 		if(lastPubProcessed == null) {
@@ -710,7 +710,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
-			this.hiddenOverlay();
+			//this.hiddenOverlay();
 			//this.clickOnViewAllPublicationComments();
 			this.listAllPubComments(pub);
 			do {
@@ -818,7 +818,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			int totUsersProcessed = users.size();
 			boolean hayMasComentarios = true;
 			
-			this.hiddenOverlay();
+			//this.hiddenOverlay();
 			this.clickOnViewAllPublicationComments();
 			
 			this.listAllPubComments(publication);
@@ -926,13 +926,6 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 	
-	private void hiddenOverlay() {
-		if(this.existElement(null,"//div[@class='_3ixn']")) {
-			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_3ixn']")));
-			System.out.println("Se oculto el overlay");
-		}
-	}
-	
 	//click "Ver todos los mensajes" de la publicacion...
 	public void clickOnViewAllPublicationComments() {
 		if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).size() > 0) {
@@ -941,17 +934,7 @@ public class FacebookNewUsersExtract extends Scrap {
 				// Poner un wait after click. (sumar al de extracción de comments...)
 				this.waitUntilMoreCommentsClickLoad();
 			} catch (Exception e) {
-				if(e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException")) {
-					System.out.println("Error al hacer click en VER TODOS LOS MENSAJES");
-					this.hiddenOverlay();
-					(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
-					this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).click();
-					// Poner un wait after click. (sumar al de extracción de comments...)
-					this.waitUntilMoreCommentsClickLoad();
-				}else {
-					throw e;
-				}
-				
+				throw e;
 			}
 		}
 	}
@@ -973,7 +956,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	private boolean overlayHandler() {
+	/*private boolean overlayHandler() {
 		ExpectedCondition<Boolean> overlayClosed = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
@@ -986,7 +969,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
 		return wait.until(overlayClosed);
-	}
+	}*/
 
 	
 	
@@ -1122,5 +1105,13 @@ public class FacebookNewUsersExtract extends Scrap {
 		JavascriptExecutor jsx = (JavascriptExecutor) this.getDriver();
 		jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
 	}
+	
+	/*private WebElement publicationContainer() {
+		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'_6444 _-pb')]")).size() == 1) {
+			return this.getDriver().findElement(By.xpath("//div[contains(@class,'_6444 _-pb')]"));
+		}else {
+			
+		}
+	}*/
 
 }

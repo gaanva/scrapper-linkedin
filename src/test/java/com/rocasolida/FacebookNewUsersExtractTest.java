@@ -36,7 +36,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 5;
+		int CANT_USERS = 250;
 		//pagina donde buscar usuarios.
 		String page = "marcelotinelli";
 		
@@ -50,10 +50,10 @@ public class FacebookNewUsersExtractTest {
 		try {
 			fu.login(access);
 			users = fu.obtainUsersInformationFromComment(page, null, CANT_USERS);
-			usuarios = fu.obtainUserProfileInformation(users);
+			/*usuarios = fu.obtainUserProfileInformation(users);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
-			}
+			}*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -76,7 +76,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void post_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 5;
+		int CANT_USERS = 250;
 		//pagina donde buscar usuarios.
 		String URL_POST ="https://www.facebook.com/C5N.Noticias/posts/10157697944845839";
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
@@ -90,10 +90,10 @@ public class FacebookNewUsersExtractTest {
 		try {
 			fu.login(access);
 			users = fu.obtainUsersInformationFromComment(null,URL_POST, CANT_USERS);
-			usuarios = fu.obtainUserProfileInformation(users);
+			/*usuarios = fu.obtainUserProfileInformation(users);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
-			}
+			}*/
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -145,10 +145,10 @@ public class FacebookNewUsersExtractTest {
 				}
 			}
 			//Paso la lista de encontrados para obtener el profile info:
-			usuarios = fu.obtainUserProfileInformation(usersFound);
+			/*usuarios = fu.obtainUserProfileInformation(usersFound);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
-			}
+			}*/
 			
 		} catch (Exception e) {
 			e.printStackTrace();
