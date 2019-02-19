@@ -17,14 +17,12 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
@@ -35,6 +33,7 @@ import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.entities.User;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.FacebookLinkType;
+import com.rocasolida.scrapperfacebook.scrap.util.PublicationScrapper;
 
 public class FacebookNewUsersExtract extends Scrap {
 	final String countRegex = "\\d+([\\d,.]?\\d)*(\\.\\d+)?";
@@ -49,6 +48,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	private boolean encontroCantUsers = false;
 	//hay mas publicaciones para extraer comentarios
 	private boolean hayMasPubs = true;
+	
 	
 	public FacebookNewUsersExtract(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -249,9 +249,10 @@ public class FacebookNewUsersExtract extends Scrap {
 					
 					
 					//Revisar por qué captura mal la publicacion cuando es 1 sola... o cuando es un video!
-					List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
+					//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
 					
-					users = this.processPublicationUSerComments(users, cantUsuarios, pubs.get(0));
+					//Le paso un objeto que tiene las queries a ejecutar según el tipo de post...
+					users = this.processPublicationUSerComments(users, cantUsuarios, this.xpathPublicationQueries());
 					if(this.encontroCantUsers){
 						break;
 					}
@@ -314,9 +315,10 @@ public class FacebookNewUsersExtract extends Scrap {
 			this.waitUntilPublicationLoad();
 			
 			//Empiezo a scrapear los comentarios
-			List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
+			//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
 			
-			usersHash = this.processPublicationSpecificUSersComments(userScreenNames, pubs.get(0));
+			//Le paso las queries xpath que tiene que hacer...
+			usersHash = this.processPublicationSpecificUSersComments(userScreenNames, this.xpathPublicationQueries());
 			
 			
 			//Recorrer el hashmap y mostrar los null...	
@@ -696,7 +698,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return devuelve la lista de los encontrados.
 	 * @throws Exception
 	 */
-	public HashMap<String, String> processPublicationSpecificUSersComments(List<String> targetScreenNameUsers, WebElement pub) throws Exception {
+	public HashMap<String, String> processPublicationSpecificUSersComments(List<String> targetScreenNameUsers, PublicationScrapper ps) throws Exception {
 		try {
 			//Lista de screenNames encontrados
 			HashMap<String, String> usrsUrlProfileFound = new HashMap<String, String>();
@@ -707,18 +709,21 @@ public class FacebookNewUsersExtract extends Scrap {
 			List<WebElement> pubComments = new ArrayList<WebElement>();
 			boolean hayMasComentarios = true;
 			
+			WebElement pub = this.getDriver().findElements(By.xpath(ps.getXpath_publication_container())).get(0);
 			
 			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
 			//this.hiddenOverlay();
 			//this.clickOnViewAllPublicationComments();
-			this.listAllPubComments(pub);
+			
+			
+			//this.listAllPubComments(pub);
 			do {
-				if (pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
-					pubComments = pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				}else if(pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+				if (pub.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
+					pubComments = pub.findElements(By.xpath(ps.getXpath_all_comments()));
+				}/*else if(pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
 					pubComments = pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
-				}else {
+				}*/else {
 					pubComments = new ArrayList<WebElement>();
 				}
 				
@@ -726,7 +731,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					if (debug)
 						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
 					
-					pubComments = this.cargarMasComentarios(pub);
+					pubComments = this.cargarMasComentarios(pub, ps);
 					if(pubComments == null) {
 						if (debug)
 							System.out.println("NO HAY MAS COMENTARIOS...");
@@ -812,30 +817,34 @@ public class FacebookNewUsersExtract extends Scrap {
 		}
 	}
 
-	public List<String> processPublicationUSerComments(List<String> users, int cantUsers, WebElement publication) throws Exception {
+	public List<String> processPublicationUSerComments(List<String> users, int cantUsers, PublicationScrapper ps) throws Exception {
 		try {
 			List<WebElement> pubComments = new ArrayList<WebElement>();
 			int totUsersProcessed = users.size();
 			boolean hayMasComentarios = true;
+			//Cuando es un single post, trae más de 1, pero siempre se trabaja sobre el 1ero. El resto de los tipos de posts SIEMPRE trae 1.
+			WebElement publication = this.getDriver().findElements(By.xpath(ps.getXpath_publication_container())).get(0);
 			
-			//this.hiddenOverlay();
-			this.clickOnViewAllPublicationComments();
+			if(ps.getXpath_mostrar_comments()!=null) {
+				this.clickOnViewAllPublicationComments(ps);
+			}
 			
-			this.listAllPubComments(publication);
+			//Retormarlo luego de que el scrapeo general esté ok.
+			//this.listAllPubComments(publication);
 			
 			do {
-				if (publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS)).size() > 0) {
-					pubComments = publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
-				}else if(publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
+				if (publication.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
+					pubComments = publication.findElements(By.xpath(ps.getXpath_all_comments()));
+				}/*else if(publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
 					pubComments = publication.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
-				}else {
+				}*/else {
 					pubComments = new ArrayList<WebElement>();
 				}
 				
 				if(pubComments.size()==0) {
 					if (debug)
 						System.out.println("VER MAS COMENTARIOS DE LA PUBLICACION...");
-					pubComments = this.cargarMasComentarios(publication);
+					pubComments = this.cargarMasComentarios(publication, ps);
 					
 					if(pubComments == null) {
 						if (debug)
@@ -885,13 +894,14 @@ public class FacebookNewUsersExtract extends Scrap {
 	
 	
 	//Hace click en el link de cargar mas comentarios y espera a que carguen...
-	private List<WebElement> cargarMasComentarios(WebElement publication) {
-		List<WebElement> verMasMsjsLink = publication.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+	private List<WebElement> cargarMasComentarios(WebElement publication, PublicationScrapper ps) {
+		List<WebElement> verMasMsjsLink = publication.findElements(By.xpath(ps.getXpath_ver_mas_comments()));
 		if (verMasMsjsLink.size() >= 1) {
 			try {
 				verMasMsjsLink.get(0).click();
 				this.waitUntilMoreCommentsClickLoad();
-				return this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_COMMENTS));
+				//Cargaron los comentarios, y los devuelvo.
+				return this.getDriver().findElements(By.xpath(ps.getXpath_all_comments()));
 			} catch (Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 					//No hay mas comentarios para cargar...
@@ -927,10 +937,10 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	//click "Ver todos los mensajes" de la publicacion...
-	public void clickOnViewAllPublicationComments() {
-		if (this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).size() > 0) {
+	public void clickOnViewAllPublicationComments(PublicationScrapper ps) {
+		if (this.getDriver().findElements(By.xpath(ps.getXpath_mostrar_comments())).size() > 0) {
 			try {
-				this.getDriver().findElement(By.xpath(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK)).click();
+				this.getDriver().findElement(By.xpath(ps.getXpath_mostrar_comments())).click();
 				// Poner un wait after click. (sumar al de extracción de comments...)
 				this.waitUntilMoreCommentsClickLoad();
 			} catch (Exception e) {
@@ -1106,12 +1116,39 @@ public class FacebookNewUsersExtract extends Scrap {
 		jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
 	}
 	
-	/*private WebElement publicationContainer() {
-		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'_6444 _-pb')]")).size() == 1) {
-			return this.getDriver().findElement(By.xpath("//div[contains(@class,'_6444 _-pb')]"));
-		}else {
-			
+	/**
+	 * 
+	 * @return las queries xpath que se deben ejecutar según el tipo de post.
+	 * @throws Exception
+	 */
+	private PublicationScrapper xpathPublicationQueries() throws Exception{
+		PublicationScrapper ps = new PublicationScrapper();
+		//Según el tipo de container, extraigo todos los XPATH a utulizar.
+		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'Popup')]")).size() == 1) {
+			ps.setXpath_publication_container("//div[contains(@class,'Popup')]");
+			ps.setXpath_all_comments("//div[@class='_6iiv _6r_e']//div[@class=' _4eek _6ijk clearfix clearfix'and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments("//div[@class='_4swz _6ijj']/a[@class='_4sxc _42ft']");
+			//Por default ya se muestran comentarios y no es necesario un click inicial en "ver comentarios" para que los muestre.
+			ps.setXpath_mostrar_comments(null);
+			return ps;
+		}else if(this.getDriver().findElements(By.xpath("//div[@class='_wyj _20nr']")).size() == 1){
+			ps.setXpath_publication_container("//div[@class='_wyj _20nr']");
+			ps.setXpath_all_comments("//div[@class='_4eek clearfix _7gq4 clearfix' and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments("//a[contains(@class,'_4sxc _42ft')]");//--> si no aparecen comentarios, hacer click en all comments.
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments("//a[contains(@class,'_3hg- _42ft')]"); //--->Devuelve más de 1, tomar el primero.
+			return ps;
+		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
+			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
+			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
+			return ps;
 		}
-	}*/
+		
+		throw new Exception("No se reconoce el formato del post. URL:" + this.getDriver().getCurrentUrl());
+		
+	}
 
 }
