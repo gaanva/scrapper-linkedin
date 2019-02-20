@@ -581,7 +581,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	private boolean waitUntilMoreCommentsClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0) {
+				if (driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS)).size() > 0 || driver.findElements(By.xpath(FacebookConfig.XP_SPINNERLOAD_COMMENTS_1)).size() > 0) {
 					return false;
 				} else {
 					return true;
@@ -901,7 +901,8 @@ public class FacebookNewUsersExtract extends Scrap {
 				verMasMsjsLink.get(0).click();
 				this.waitUntilMoreCommentsClickLoad();
 				//Cargaron los comentarios, y los devuelvo.
-				return this.getDriver().findElements(By.xpath(ps.getXpath_all_comments()));
+				//return this.getDriver().findElements(By.xpath(ps.getXpath_all_comments()));
+				return publication.findElements(By.xpath(ps.getXpath_all_comments()));
 			} catch (Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 					//No hay mas comentarios para cargar...
@@ -1133,7 +1134,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			return ps;
 		}else if(this.getDriver().findElements(By.xpath("//div[@class='_wyj _20nr']")).size() == 1){
 			ps.setXpath_publication_container("//div[@class='_wyj _20nr']");
-			ps.setXpath_all_comments("//div[@class='_4eek clearfix _7gq4 clearfix' and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_all_comments("//div[@data-testid='UFI2Comment/root_depth_0' and not(contains(@style,'hidden'))]"); // or @class=' _4eek clearfix _7gq4 clearfix' 
 			ps.setXpath_ver_mas_comments("//a[contains(@class,'_4sxc _42ft')]");//--> si no aparecen comentarios, hacer click en all comments.
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments("//a[contains(@class,'_3hg- _42ft')]"); //--->Devuelve más de 1, tomar el primero.

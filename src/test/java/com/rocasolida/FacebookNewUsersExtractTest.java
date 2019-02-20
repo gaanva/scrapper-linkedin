@@ -36,7 +36,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 250;
+		int CANT_USERS = 25;
 		//pagina donde buscar usuarios.
 		String page = "marcelotinelli";
 		
@@ -76,7 +76,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void post_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 250;
+		int CANT_USERS = 25;
 		//pagina donde buscar usuarios.
 		String URL_POST ="https://www.facebook.com/C5N.Noticias/posts/10157697944845839";
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
