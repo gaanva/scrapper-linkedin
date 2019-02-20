@@ -245,12 +245,13 @@ public class FacebookNewUsersExtract extends Scrap {
 				
 				for(int i=0; i<auxPubs.size();i++) {
 					this.navigateTo(auxPubs.get(i).getUrl());
-					this.waitUntilPublicationLoad();
+					//this.waitUntilPublicationLoad();
 					
 					
 					//Revisar por qué captura mal la publicacion cuando es 1 sola... o cuando es un video!
 					//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
 					
+			        
 					//Le paso un objeto que tiene las queries a ejecutar según el tipo de post...
 					users = this.processPublicationUSerComments(users, cantUsuarios, this.xpathPublicationQueries());
 					if(this.encontroCantUsers){
@@ -312,11 +313,10 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Abro la publicacion...
 			this.navigateTo(postUrl);
 			//Valida que hayan publicaciones en pantalla
-			this.waitUntilPublicationLoad();
+			//this.waitUntilPublicationLoad();
 			
 			//Empiezo a scrapear los comentarios
 			//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
-			
 			//Le paso las queries xpath que tiene que hacer...
 			usersHash = this.processPublicationSpecificUSersComments(userScreenNames, this.xpathPublicationQueries());
 			
@@ -713,6 +713,9 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
+			if(ps.getXpath_publication_spinner_loader()!=null) {
+				//this.waitUntilPublicationLoad(ps);
+			}
 			//this.hiddenOverlay();
 			//this.clickOnViewAllPublicationComments();
 			
@@ -824,6 +827,11 @@ public class FacebookNewUsersExtract extends Scrap {
 			boolean hayMasComentarios = true;
 			//Cuando es un single post, trae más de 1, pero siempre se trabaja sobre el 1ero. El resto de los tipos de posts SIEMPRE trae 1.
 			WebElement publication = this.getDriver().findElements(By.xpath(ps.getXpath_publication_container())).get(0);
+			
+			
+			if(ps.getXpath_publication_spinner_loader()!=null) {
+				this.waitUntilPublicationLoad();
+			}
 			
 			if(ps.getXpath_mostrar_comments()!=null) {
 				this.clickOnViewAllPublicationComments(ps);
@@ -955,7 +963,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		ExpectedCondition<Boolean> overlayPubOpen = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//div[contains(@class,'uiContextualLayerParent')]")).size() > 0) {
-					System.out.println("cargo el overlay de la publicacion...");
+					System.out.println("ca vosrgo el overlay de la publicacion...");
 					return true;
 				} else {
 					return false;
@@ -1127,8 +1135,9 @@ public class FacebookNewUsersExtract extends Scrap {
 		//Según el tipo de container, extraigo todos los XPATH a utulizar.
 		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'Popup')]")).size() == 1) {
 			ps.setXpath_publication_container("//div[contains(@class,'Popup')]");
-			ps.setXpath_all_comments("//div[@class='_6iiv _6r_e']//div[@class=' _4eek _6ijk clearfix clearfix'and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_all_comments("//div[@class='_6iiv _6r_e']//div[@class=' _4eek _6ijk clearfix clearfix' and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
 			ps.setXpath_ver_mas_comments("//div[@class='_4swz _6ijj']/a[@class='_4sxc _42ft']");
+			ps.setXpath_publication_spinner_loader("//img[contains(@class,'spotlight')]");
 			//Por default ya se muestran comentarios y no es necesario un click inicial en "ver comentarios" para que los muestre.
 			ps.setXpath_mostrar_comments(null);
 			return ps;
@@ -1138,6 +1147,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			ps.setXpath_ver_mas_comments("//a[contains(@class,'_4sxc _42ft')]");//--> si no aparecen comentarios, hacer click en all comments.
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments("//a[contains(@class,'_3hg- _42ft')]"); //--->Devuelve más de 1, tomar el primero.
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
 			return ps;
 		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
 			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
@@ -1145,11 +1155,35 @@ public class FacebookNewUsersExtract extends Scrap {
 			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
 			return ps;
+		}else if(this.getDriver().findElements(By.xpath("//div[@class='_5-g-']")).size()==1) {
+			ps.setXpath_publication_container("//div[@class='_5-g-']");
+			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			
 		}
 		
 		throw new Exception("No se reconoce el formato del post. URL:" + this.getDriver().getCurrentUrl());
 		
 	}
+	
+	private boolean waitUntilPublicationLoad(final PublicationScrapper ps) {
+		ExpectedCondition<Boolean> pubLoad = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath(ps.getXpath_publication_spinner_loader())).size() >0) {
+					//driver.findElement(By.xpath(ps.getXpath_publication_spinner_loader())).click();
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
+		return wait.until(pubLoad);
+	} 
 
 }
