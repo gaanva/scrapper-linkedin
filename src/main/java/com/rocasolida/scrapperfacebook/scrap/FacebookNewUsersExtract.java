@@ -713,8 +713,8 @@ public class FacebookNewUsersExtract extends Scrap {
 			
 			System.out.println("[INFO] se buscaran "+targetScreenNameUsers.size()+" screen names en los comentarios de la publicacion..");
 			
-			if(ps.getXpath_publication_spinner_loader()!=null) {
-				//this.waitUntilPublicationLoad(ps);
+			if(ps.getXpath_publication_loaded()!=null) {
+				this.waitUntilPublicationLoad(ps);
 			}
 			//this.hiddenOverlay();
 			//this.clickOnViewAllPublicationComments();
@@ -829,8 +829,8 @@ public class FacebookNewUsersExtract extends Scrap {
 			WebElement publication = this.getDriver().findElements(By.xpath(ps.getXpath_publication_container())).get(0);
 			
 			
-			if(ps.getXpath_publication_spinner_loader()!=null) {
-				this.waitUntilPublicationLoad();
+			if(ps.getXpath_publication_loaded()!=null) {
+				this.waitUntilPublicationLoad(ps);
 			}
 			
 			if(ps.getXpath_mostrar_comments()!=null) {
@@ -914,6 +914,10 @@ public class FacebookNewUsersExtract extends Scrap {
 			} catch (Exception e) {
 				if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
 					//No hay mas comentarios para cargar...
+					return null;
+				}else if(publication.findElements(By.xpath("//div[contains(@class,'_6hnh _7gq4')]")).size()>0){
+					if(debug)
+						System.out.println("[INFO]Se llegó al fin de mensajes relevantes.");
 					return null;
 				}else {
 					System.out.println("Error al hacer click en VER MAS MENSAJES");
@@ -1132,6 +1136,15 @@ public class FacebookNewUsersExtract extends Scrap {
 	 */
 	private PublicationScrapper xpathPublicationQueries() throws Exception{
 		PublicationScrapper ps = new PublicationScrapper();
+		try {
+			this.waitUntilContentLoad();
+		}catch(Exception e) {
+			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+				//do nothing
+			}else {
+				throw e;
+			}
+		}
 		//Según el tipo de container, extraigo todos los XPATH a utulizar.
 		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'Popup')]")).size() == 1) {
 			ps.setXpath_publication_container("//div[contains(@class,'Popup')]");
@@ -1140,7 +1153,8 @@ public class FacebookNewUsersExtract extends Scrap {
 			ps.setXpath_publication_spinner_loader("//img[contains(@class,'spotlight')]");
 			//Por default ya se muestran comentarios y no es necesario un click inicial en "ver comentarios" para que los muestre.
 			ps.setXpath_mostrar_comments(null);
-			return ps;
+			//esperar que cargue la seccion con comentarios...
+			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]");
 		}else if(this.getDriver().findElements(By.xpath("//div[@class='_wyj _20nr']")).size() == 1){
 			ps.setXpath_publication_container("//div[@class='_wyj _20nr']");
 			ps.setXpath_all_comments("//div[@data-testid='UFI2Comment/root_depth_0' and not(contains(@style,'hidden'))]"); // or @class=' _4eek clearfix _7gq4 clearfix' 
@@ -1148,15 +1162,6 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments("//a[contains(@class,'_3hg- _42ft')]"); //--->Devuelve más de 1, tomar el primero.
 			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
-			return ps;
-		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
-			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
-			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
-			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
-			//Por lo general hay que pedirle que muestre los comentarios.
-			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
-			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
-			return ps;
 		}else if(this.getDriver().findElements(By.xpath("//div[@class='_5-g-']")).size()==1) {
 			ps.setXpath_publication_container("//div[@class='_5-g-']");
 			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
@@ -1164,26 +1169,69 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
 			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
-			
+		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0 &&
+				this.getDriver().findElements(By.xpath("//div[contains(@class,'_3ixn')]")).size() > 0){
+			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
+			//ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_all_comments("//div[contains(@data-testid, 'UFI2Comment/body') and not(contains(@style,'hidden'))]");
+			//ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			ps.setXpath_ver_mas_comments("//a[@class='_4sxc _42ft']");
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]");
+		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
+			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
+			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			//ps.setXpath_ver_mas_comments("//a[@class='_4sxc _42ft']");
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			ps.setXpath_publication_loaded("//a[contains(@class,'comment_link _5yxe')]");
+		}else {
+			throw new Exception("No se reconoce el formato del post! " + this.getDriver().getCurrentUrl());
 		}
 		
-		throw new Exception("No se reconoce el formato del post. URL:" + this.getDriver().getCurrentUrl());
+		if (debug)
+			System.out.println("** publication container: " + ps.getXpath_publication_container());
 		
+		if(ps.getXpath_publication_loaded()==null) {
+			ps.setXpath_publication_loaded("//a[@class=' _666h  _18vj _18vk _42ft']"); //Espero hasta que aparezca el boton comentar...
+		}
+		
+		return ps;	
 	}
 	
 	private boolean waitUntilPublicationLoad(final PublicationScrapper ps) {
 		ExpectedCondition<Boolean> pubLoad = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath(ps.getXpath_publication_spinner_loader())).size() >0) {
+				if (driver.findElements(By.xpath(ps.getXpath_publication_loaded())).size() >0) {
 					//driver.findElement(By.xpath(ps.getXpath_publication_spinner_loader())).click();
-					return false;
-				} else {
 					return true;
+				} else {
+					return false;
 				}
 			}
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
 		return wait.until(pubLoad);
-	} 
+	}
+	
+	private boolean waitUntilContentLoad() {
+		ExpectedCondition<Boolean> pubLoad = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath("//div[contains(@class,'Popup')]")).size() >0 || driver.findElements(By.xpath("//form[contains(@class,'commentable_item')]")).size() >0 || driver.findElements(By.xpath("//div[@class='_5-g-']")).size() >0) {
+					//driver.findElement(By.xpath(ps.getXpath_publication_spinner_loader())).click();
+					return true;
+				} else {
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
+		return wait.until(pubLoad);
+	}
+	
 
 }
