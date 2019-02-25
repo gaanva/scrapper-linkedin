@@ -245,32 +245,48 @@ public class FacebookNewUsersExtract extends Scrap {
 					aux.setUrl(postUrl);
 					auxPubs.add(aux);
 				}
-				
-				for(int i=0; i<auxPubs.size();i++) {
-					this.navigateTo(auxPubs.get(i).getUrl());
-					//this.waitUntilPublicationLoad();
-					
-					
-					//Revisar por qué captura mal la publicacion cuando es 1 sola... o cuando es un video!
-					//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
-					
-			        
-					//Le paso un objeto que tiene las queries a ejecutar según el tipo de post...
-					users = this.processPublicationUSerComments(users, cantUsuarios, this.xpathPublicationQueries());
-					if(this.encontroCantUsers){
-						break;
+				//Va a ser null si la lsta de publicaciones que saca de un page es null, ya qye no hay más publicaciones...
+				if(auxPubs!=null) {
+					for(int i=0; i<auxPubs.size();i++) {
+						this.navigateTo(auxPubs.get(i).getUrl());
+						//this.waitUntilPublicationLoad();
+						
+						System.out.println("-------------------------------------------------->>>>>   se procesara la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
+						
+						//Revisar por qué captura mal la publicacion cuando es 1 sola... o cuando es un video!
+						//List<WebElement> pubs = this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]"));
+						
+				        
+						//Le paso un objeto que tiene las queries a ejecutar según el tipo de post...
+						PublicationScrapper ps = null;
+						try {
+							ps =this.xpathPublicationQueries();
+						}catch(Exception e) {
+							if(e.getMessage().equalsIgnoreCase("PUB_EVENT")) {
+								if(debug)
+									System.err.println("[INFO] NO SE PROCESÓ LA PUBLICACION, YA QUE ES DE TIPO EVENTO: " + this.getDriver().getCurrentUrl());
+								//Busco la próxima publicación.
+								continue;
+							}else {
+								//Si es un tipo de publicacion no reconocido corta el proceso.
+								throw e;
+							}
+						}
+						users = this.processPublicationUSerComments(users, cantUsuarios, ps);
+						if(this.encontroCantUsers){
+							break;
+						}
+						
+						
 					}
 					
-					System.out.println("se procesó la publicacion: "+(i+1)+": "+auxPubs.get(i).getUrl());
+					//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
+					//Caso contrario, tengo que ir a buscar mas publicaciones...
+					if(postUrl != null) {
+						this.hayMasPubs=false;
+					}
+					publicaciones.addAll(auxPubs);
 				}
-				
-				//Si recorri las publicaciones de la lista que me pasaron a buscar... entonces, me quedo sin publicaciones.
-				//Caso contrario, tengo que ir a buscar mas publicaciones...
-				if(postUrl != null) {
-					this.hayMasPubs=false;
-				}
-				publicaciones.addAll(auxPubs);
-			
 			}while(!encontroCantUsers && hayMasPubs);
 			
 			if(!hayMasPubs)
@@ -480,9 +496,6 @@ public class FacebookNewUsersExtract extends Scrap {
 		int intentosCargaPubs=0;
 		int CANT_INTENTOS = 3;
 		
-		//this.hiddenOverlay();
-		
-		
 		if(lastPubProcessed == null) {
 			do{
 				//Entonces cargo las publiciones que me trae la pagina
@@ -506,8 +519,16 @@ public class FacebookNewUsersExtract extends Scrap {
 					}
 				}
 			}while(!(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0) && intentosCargaPubs< CANT_INTENTOS);
-			if(intentosCargaPubs == CANT_INTENTOS) {
-				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que cargue las publicaciones de la pagina ppal. Volver a intentar mas tarde!.");
+			
+			
+			if(this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>0) {
+				pubs=this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
+			}else if(intentosCargaPubs == CANT_INTENTOS && hayMasPubs) {
+				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que carguen nuevas publicaciones de la pagina ppal. Vuelva a intentar mas tarde");
+			}else if(!hayMasPubs) {
+				if(debug)
+					System.out.println("[INFO] NO HAY MAS PUBLICACIONES");
+				return null;
 			}
 			
 			pubs=this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
@@ -519,8 +540,9 @@ public class FacebookNewUsersExtract extends Scrap {
 				System.out.println("FILTRO pubs aplicado: " +"//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]");
 				//System.out.println("FILTRO pubs aplicado: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime()));
 			
-			while(!((this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]")).size()) > 0)
-					&& intentosCargaPubs< CANT_INTENTOS) {
+			//Busca las próximas 5 o más publicaciones
+			while(!((this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]")).size()) > 5)
+					&& intentosCargaPubs< CANT_INTENTOS && this.hayMasPubs) {
 				try {
 					if(this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
 						this.scrollMainPublicationsPage();
@@ -539,6 +561,14 @@ public class FacebookNewUsersExtract extends Scrap {
 									//Asumo que no hay mas publicaciones.
 									this.hayMasPubs = false;
 								}
+							}else if(e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException") || e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")){
+								//Si no se encuentra el boton de mostrar mas publicaciones, se asume que no hay más publicaciones en la pagina...
+								if(debug)
+									System.out.println("[INFO] NO HAY MÁS PUBLICACIONES EN LA PÁGINA");
+								this.hayMasPubs = false;
+							}else {
+								
+								throw e;
 							}
 						}
 					}
@@ -554,10 +584,17 @@ public class FacebookNewUsersExtract extends Scrap {
 				}
 			}
 			
-			if(intentosCargaPubs == CANT_INTENTOS && hayMasPubs) {
+			if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]")).size()>0) {
+				pubs=this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]"+"//ancestor::div[contains(@class,'userContentWrapper')]"));
+			}else if(intentosCargaPubs == CANT_INTENTOS && hayMasPubs) {
 				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que carguen nuevas publicaciones de la pagina ppal. Vuelva a intentar mas tarde");
+			}else if(!hayMasPubs) {
+				if(debug)
+					System.out.println("[INFO] NO HAY MAS PUBLICACIONES");
+				return null;
 			}
-			pubs=this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]"+"//ancestor::div[contains(@class,'userContentWrapper')]"));
+			
+			
 			
 		}
 		
@@ -778,7 +815,7 @@ public class FacebookNewUsersExtract extends Scrap {
 							}
 							
 							if(usrScreenNameFound.contains(commentUserScreenName)) {
-								System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
+								System.out.println("EL USUARIO YA EXISTE EN LA LISTA " + commentUserScreenName);
 							}
 						}
 						//encontre un usuario buscado
@@ -893,7 +930,7 @@ public class FacebookNewUsersExtract extends Scrap {
 							}
 							
 							if(users.contains(auxUser)) {
-								System.out.println("EL USUARIO YA EXISTE EN LA LISTA");
+								System.out.println("EL USUARIO YA EXISTE EN LA LISTA " + auxUser);
 							}
 						}
 						
@@ -1180,7 +1217,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		PublicationScrapper ps = new PublicationScrapper();
 		try {
 			this.waitForPageLoaded();
-			this.waitUntilContentLoad();
+			//this.waitUntilContentLoad();
 			
 		}catch(Exception e) {
 			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -1190,7 +1227,17 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 		}
 		//Según el tipo de container, extraigo todos los XPATH a utulizar.
-		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'fbPhotoSnowliftContainer snowliftPayloadRoot uiContextualLayerParent')]")).size() > 0 &&
+		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0) { //&&
+			//this.getDriver().findElements(By.xpath("//div[contains(@class,'_3ixn')]")).size() > 0){
+			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
+			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			//ps.setXpath_ver_mas_comments("//a[@class='_4sxc _42ft']");
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(null);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]"); //carga contenedor de comentarios.
+		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'fbPhotoSnowliftContainer snowliftPayloadRoot uiContextualLayerParent')]")).size() > 0 &&
 				this.getDriver().findElements(By.xpath("//div[contains(@class,'_3ixn')]")).size() > 0){
 			ps.setXpath_publication_container("//div[contains(@class,'fbPhotoSnowliftContainer snowliftPayloadRoot uiContextualLayerParent')]");
 			//ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
@@ -1211,6 +1258,10 @@ public class FacebookNewUsersExtract extends Scrap {
 			//esperar que cargue la seccion con comentarios...
 			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]");
 		}else if(this.getDriver().findElements(By.xpath("//div[@class='_wyj _20nr']")).size() == 1){
+			
+			this.hiddenChatTab(); //A veces esto tab tapa el "ver comentarios"
+			
+			
 			ps.setXpath_publication_container("//div[@class='_wyj _20nr']");
 			ps.setXpath_all_comments("//div[@data-testid='UFI2Comment/root_depth_0' and not(contains(@style,'hidden'))]"); // or @class=' _4eek clearfix _7gq4 clearfix' 
 			ps.setXpath_ver_mas_comments("//a[contains(@class,'_4sxc _42ft')]");//--> si no aparecen comentarios, hacer click en all comments.
@@ -1225,18 +1276,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
 			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
-		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0 &&
-				this.getDriver().findElements(By.xpath("//div[contains(@class,'_3ixn')]")).size() > 0){
-			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
-			//ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
-			ps.setXpath_all_comments("//div[contains(@data-testid, 'UFI2Comment/body') and not(contains(@style,'hidden'))]");
-			//ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
-			ps.setXpath_ver_mas_comments("//a[@class='_4sxc _42ft']");
-			//Por lo general hay que pedirle que muestre los comentarios.
-			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
-			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
-			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]");
-		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
+		}/*else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]")).size() > 0){
 			ps.setXpath_publication_container("//div[contains(@class,'userContentWrapper')]");
 			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
 			ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
@@ -1245,8 +1285,13 @@ public class FacebookNewUsersExtract extends Scrap {
 			ps.setXpath_mostrar_comments(FacebookConfig.XPATH_VIEW_ALL_PUB_COMMENTS_LINK);
 			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
 			ps.setXpath_publication_loaded("//a[contains(@class,'comment_link _5yxe')]");
-		}else {
-			throw new Exception("No se reconoce el formato del post! " + this.getDriver().getCurrentUrl());
+		}*/else {
+				if(this.getDriver().getCurrentUrl().contains("/events/")) {
+					throw new Exception("PUB_EVENT");
+				}else {
+					throw new Exception("[ERROR] FORMATO DE PUBLICACION NO RECONOCIDO: " + this.getDriver().getCurrentUrl());
+				}
+			
 		}
 		
 		if (debug)
@@ -1289,5 +1334,12 @@ public class FacebookNewUsersExtract extends Scrap {
 		return wait.until(pubLoad);
 	}
 	
+	private void hiddenChatTab() {
+		//En algunos casos bloquea el click a "Mostrar mensajes"
+		//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@id='BuddylistPagelet']")));
+		//((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='clearfix nubContainer rNubContainer']")));
+		((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_48gf fbDockWrapper fbDockWrapperRight']")));
+		//_48gf fbDockWrapper fbDockWrapperRight
+	}
 
 }

@@ -34,7 +34,44 @@ public class FacebookNewUsersExtractTest {
 	 * 
 	 * @throws Exception
 	 */
-	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
+	public void PageTinelli_con_cantUsuarios_objetivo() throws MalformedURLException {
+		//Cantidad de usuarios a extraer...
+		int CANT_USERS = 800;
+		//pagina donde buscar usuarios.
+		String page = "marcelotinelli";
+		//String page = "DUKISSJ";
+		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
+		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
+		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		
+		List<String> users = null;
+		List<User> usuarios;
+		System.out.println("PAGE: " + page);
+		try {
+			fu.login(access);
+			users = fu.obtainUsersInformationFromComment(page, null, CANT_USERS);
+			/*usuarios = fu.obtainUserProfileInformation(users);
+			for (int i = 0; i < usuarios.size(); i++) {
+				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
+			}*/
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		fu.quit();
+
+		assertNotNull(users);
+		assertTrue(users.size() == CANT_USERS);
+
+	}
+
+	
+	@Test
+	/**
+	 * Caso de prueba para buscar y devolver el total de usuarios pedido.
+	 * 
+	 * @throws Exception
+	 */
+	public void PageDuki_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
 		int CANT_USERS = 800;
 		//pagina donde buscar usuarios.
@@ -63,7 +100,7 @@ public class FacebookNewUsersExtractTest {
 		assertTrue(users.size() == CANT_USERS);
 
 	}
-
+	
 	
 	/**
 	 * CASO DE PRUBEA CON LISTA DE POSTS URLS!
