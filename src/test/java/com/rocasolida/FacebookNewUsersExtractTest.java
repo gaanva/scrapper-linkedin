@@ -36,10 +36,10 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void Page_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 250;
+		int CANT_USERS = 800;
 		//pagina donde buscar usuarios.
-		String page = "marcelotinelli";
-		
+		//String page = "marcelotinelli";
+		String page = "DUKISSJ";
 		Credential access = new Credential("estelaquilmes2018@gmail.com", "qsocialnow2018", 0L, "");
 		// Credential access = new Credential("nahuelmontoya2018@gmail.com", "qsocialnow2018", 0L, "");
 		FacebookNewUsersExtract fu = new FacebookNewUsersExtract(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
@@ -76,7 +76,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void post_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 100;
+		int CANT_USERS = 69;
 		//pagina donde buscar usuarios.
 		//String URL_POST ="https://www.facebook.com/C5N.Noticias/posts/10157697944845839";
 		String URL_POST ="https://www.facebook.com/1529007917242834";

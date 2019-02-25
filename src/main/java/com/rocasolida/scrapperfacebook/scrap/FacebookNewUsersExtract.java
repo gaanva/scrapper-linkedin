@@ -17,15 +17,18 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 import com.rocasolida.scrapperfacebook.FacebookConfig;
 import com.rocasolida.scrapperfacebook.entities.Credential;
@@ -513,10 +516,10 @@ public class FacebookNewUsersExtract extends Scrap {
 			//Tengo que cargar a partir de la ultima procesada...
 			//Se supone que las primeras publicaciones que cargie, no van a aplicar al filtro...
 			if(debug)
-				System.out.println("FILTRO pubs aplicado: " +"//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]");
+				System.out.println("FILTRO pubs aplicado: " +"//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]");
 				//System.out.println("FILTRO pubs aplicado: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(null, lastPubProcessed.getUTime()));
 			
-			while(!((this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]")).size()) > 0)
+			while(!((this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]")).size()) > 0)
 					&& intentosCargaPubs< CANT_INTENTOS) {
 				try {
 					if(this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
@@ -554,7 +557,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			if(intentosCargaPubs == CANT_INTENTOS && hayMasPubs) {
 				throw new Exception("[WARN] se espero " + CANT_INTENTOS + "veces ("+(WAIT_UNTIL_SPINNER*CANT_INTENTOS)+" seg.) a que carguen nuevas publicaciones de la pagina ppal. Vuelva a intentar mas tarde");
 			}
-			pubs=this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@class,'f_1jzqrr12pf j_1jzqrqwrre')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]"+"//ancestor::div[contains(@class,'userContentWrapper')]"));
+			pubs=this.getDriver().findElements(By.xpath("//div[contains(@class,'userContentWrapper')]//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+lastPubProcessed.getUTime()+"]"+"//ancestor::div[contains(@class,'userContentWrapper')]"));
 			
 		}
 		
@@ -591,6 +594,21 @@ public class FacebookNewUsersExtract extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS * 2)).pollingEvery(Duration.ofMillis(500)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
 		return wait.until(loadMore);
 	}
+	
+	private boolean waitUntilShowPublicationsCommentsClickLoad(final WebElement pub, final PublicationScrapper ps) {
+		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (pub.findElements(By.xpath(ps.getXpath_publication_spinner_loader())).size() > 0) {
+					return false;
+				} else {
+					return true;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(5)).pollingEvery(Duration.ofMillis(500)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);
+		return wait.until(loadMore);
+	}
+	
 	//lo podria llevar al util
 	private boolean waitUntilMoreCommentsOverlayClickLoad() {
 		ExpectedCondition<Boolean> loadMore = new ExpectedCondition<Boolean>() {
@@ -717,16 +735,15 @@ public class FacebookNewUsersExtract extends Scrap {
 				this.waitUntilPublicationLoad(ps);
 			}
 			//this.hiddenOverlay();
-			//this.clickOnViewAllPublicationComments();
-			
+			if(ps.getXpath_mostrar_comments()!=null) {
+				this.clickOnViewAllPublicationComments(pub, ps);
+			}
 			
 			//this.listAllPubComments(pub);
 			do {
 				if (pub.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
 					pubComments = pub.findElements(By.xpath(ps.getXpath_all_comments()));
-				}/*else if(pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1)).size() > 0){
-					pubComments = pub.findElements(By.xpath(FacebookConfig.XPATH_COMMENTS_1));
-				}*/else {
+				}else {
 					pubComments = new ArrayList<WebElement>();
 				}
 				
@@ -834,7 +851,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 			
 			if(ps.getXpath_mostrar_comments()!=null) {
-				this.clickOnViewAllPublicationComments(ps);
+				this.clickOnViewAllPublicationComments(publication, ps);
 			}
 			
 			//Retormarlo luego de que el scrapeo general esté ok.
@@ -906,6 +923,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		List<WebElement> verMasMsjsLink = publication.findElements(By.xpath(ps.getXpath_ver_mas_comments()));
 		if (verMasMsjsLink.size() >= 1) {
 			try {
+				this.overlayHandler();
 				verMasMsjsLink.get(0).click();
 				this.waitUntilMoreCommentsClickLoad();
 				//Cargaron los comentarios, y los devuelvo.
@@ -919,7 +937,7 @@ public class FacebookNewUsersExtract extends Scrap {
 					if(debug)
 						System.out.println("[INFO]Se llegó al fin de mensajes relevantes.");
 					return null;
-				}else {
+				}else{
 					System.out.println("Error al hacer click en VER MAS MENSAJES");
 					throw e;
 				}
@@ -950,14 +968,19 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	//click "Ver todos los mensajes" de la publicacion...
-	public void clickOnViewAllPublicationComments(PublicationScrapper ps) {
+	public void clickOnViewAllPublicationComments(WebElement pub, PublicationScrapper ps) {
 		if (this.getDriver().findElements(By.xpath(ps.getXpath_mostrar_comments())).size() > 0) {
 			try {
-				this.getDriver().findElement(By.xpath(ps.getXpath_mostrar_comments())).click();
+				pub.findElement(By.xpath(ps.getXpath_mostrar_comments())).click();
 				// Poner un wait after click. (sumar al de extracción de comments...)
-				this.waitUntilMoreCommentsClickLoad();
+				this.waitUntilShowPublicationsCommentsClickLoad(pub, ps);
 			} catch (Exception e) {
-				throw e;
+				if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					//do nothing
+				}else {
+					throw e;
+				}
+				
 			}
 		}
 	}
@@ -979,7 +1002,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	}
 	
 	
-	/*private boolean overlayHandler() {
+	private boolean overlayHandler() {
 		ExpectedCondition<Boolean> overlayClosed = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
 				if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
@@ -992,7 +1015,7 @@ public class FacebookNewUsersExtract extends Scrap {
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
 		return wait.until(overlayClosed);
-	}*/
+	}
 
 	
 	
@@ -1129,6 +1152,25 @@ public class FacebookNewUsersExtract extends Scrap {
 		jsx.executeScript("window.scrollTo(0, document.body.scrollHeight)");
 	}
 	
+	
+	
+	
+	public void waitForPageLoaded() {
+		ExpectedCondition<Boolean> pageLoadCondition = new
+                ExpectedCondition<Boolean>() {
+                    public Boolean apply(WebDriver driver) {
+                        return ((JavascriptExecutor)driver).executeScript("return document.readyState").equals("complete");
+                    }
+                };
+        WebDriverWait wait = new WebDriverWait(this.getDriver(), 30);
+        wait.until(pageLoadCondition);
+    }
+	
+	
+	
+	
+	
+	
 	/**
 	 * 
 	 * @return las queries xpath que se deben ejecutar según el tipo de post.
@@ -1137,7 +1179,9 @@ public class FacebookNewUsersExtract extends Scrap {
 	private PublicationScrapper xpathPublicationQueries() throws Exception{
 		PublicationScrapper ps = new PublicationScrapper();
 		try {
+			this.waitForPageLoaded();
 			this.waitUntilContentLoad();
+			
 		}catch(Exception e) {
 			if(e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 				//do nothing
@@ -1146,7 +1190,18 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 		}
 		//Según el tipo de container, extraigo todos los XPATH a utulizar.
-		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'Popup')]")).size() == 1) {
+		if(this.getDriver().findElements(By.xpath("//div[contains(@class,'fbPhotoSnowliftContainer snowliftPayloadRoot uiContextualLayerParent')]")).size() > 0 &&
+				this.getDriver().findElements(By.xpath("//div[contains(@class,'_3ixn')]")).size() > 0){
+			ps.setXpath_publication_container("//div[contains(@class,'fbPhotoSnowliftContainer snowliftPayloadRoot uiContextualLayerParent')]");
+			//ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
+			ps.setXpath_all_comments("//div[contains(@data-testid, 'UFI2Comment/body') and not(contains(@style,'hidden'))]");
+			//ps.setXpath_ver_mas_comments(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+			ps.setXpath_ver_mas_comments("//div[@class='_6iiz _77br']//a[@class='_4sxc _42ft']");
+			//Por lo general hay que pedirle que muestre los comentarios.
+			ps.setXpath_mostrar_comments(null);
+			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			ps.setXpath_publication_loaded("//form[contains(@class,'commentable_item')]");
+		}else if(this.getDriver().findElements(By.xpath("//div[contains(@class,'Popup')]")).size() == 1) {
 			ps.setXpath_publication_container("//div[contains(@class,'Popup')]");
 			ps.setXpath_all_comments("//div[@class='_6iiv _6r_e']//div[@class=' _4eek _6ijk clearfix clearfix' and not(contains(@style,'hidden'))]"); // or contains(data-testid, UFI2CommentsList/root_depth_0)
 			ps.setXpath_ver_mas_comments("//div[@class='_4swz _6ijj']/a[@class='_4sxc _42ft']");
@@ -1161,7 +1216,8 @@ public class FacebookNewUsersExtract extends Scrap {
 			ps.setXpath_ver_mas_comments("//a[contains(@class,'_4sxc _42ft')]");//--> si no aparecen comentarios, hacer click en all comments.
 			//Por lo general hay que pedirle que muestre los comentarios.
 			ps.setXpath_mostrar_comments("//a[contains(@class,'_3hg- _42ft')]"); //--->Devuelve más de 1, tomar el primero.
-			ps.setXpath_publication_spinner_loader("//span[@role='progressbar']");
+			ps.setXpath_publication_spinner_loader("//div[@class='_7gpu _7gpv']//span[@role='progressbar']");
+			ps.setXpath_publication_loaded("//a[contains(@class,'_666h  _18vj _18vk _42ft')]");
 		}else if(this.getDriver().findElements(By.xpath("//div[@class='_5-g-']")).size()==1) {
 			ps.setXpath_publication_container("//div[@class='_5-g-']");
 			ps.setXpath_all_comments(FacebookConfig.XPATH_COMMENTS); // or contains(data-testid, UFI2CommentsList/root_depth_0)
