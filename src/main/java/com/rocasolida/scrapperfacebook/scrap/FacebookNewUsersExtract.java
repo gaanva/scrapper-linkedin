@@ -776,6 +776,9 @@ public class FacebookNewUsersExtract extends Scrap {
 				this.clickOnViewAllPublicationComments(pub, ps);
 			}
 			
+			//al hacer click en ver mas comentarios, carga todos los comentarios.
+			//this.pubShowAllComments(pub);
+			
 			//this.listAllPubComments(pub);
 			do {
 				if (pub.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
@@ -891,8 +894,8 @@ public class FacebookNewUsersExtract extends Scrap {
 				this.clickOnViewAllPublicationComments(publication, ps);
 			}
 			
-			//Retormarlo luego de que el scrapeo general esté ok.
-			//this.listAllPubComments(publication);
+			//Mostrar TODOS los comentarios y no solo los relevantes...
+			//this.pubShowAllComments(publication);
 			
 			do {
 				if (publication.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
@@ -1342,4 +1345,39 @@ public class FacebookNewUsersExtract extends Scrap {
 		//_48gf fbDockWrapper fbDockWrapperRight
 	}
 
+	/**
+	 * Recibe la publicación y le da click en el mostrar todos los comentarios. (si no, quedan solo los más relevantes).
+	 * @param publication
+	 */
+	private void pubShowAllComments(WebElement pub) throws Exception{
+		try {
+			if(pub.findElements(By.xpath("//a[@data-testid='UFI2ViewOptionsSelector/link']")).size()>0) {
+				pub.findElements(By.xpath("//a[@data-testid='UFI2ViewOptionsSelector/link']")).get(0).click();
+			}else if(pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).size()>0) {
+				pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0).click();
+			}
+			//Espero a que cargue las opciones del menu y le hago click a la ultima opcion.
+			this.waitUntilMenuOptionsAppear();
+		}catch(Exception e) {
+			throw e;
+		}
+	}
+	
+	private boolean waitUntilMenuOptionsAppear() {
+		ExpectedCondition<Boolean> pubOptionsLoad = new ExpectedCondition<Boolean>() {
+			public Boolean apply(WebDriver driver) {
+				if (driver.findElements(By.xpath("//ul[@class='_54nf']")).size() >0) {
+					//tomo el ultimo item...
+					driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).size()-1).click();
+					return true;
+				} else {
+					return false;
+				}
+			}
+		};
+		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
+		return wait.until(pubOptionsLoad);
+	}
+	
+	
 }
