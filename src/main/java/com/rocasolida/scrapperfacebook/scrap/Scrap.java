@@ -106,8 +106,7 @@ public class Scrap {
       }
 
       if (driver.getType().equals(DriverType.FIREFOX_HEADLESS)) {
-        //firefoxBinary.addCommandLineOptions("--headless");
-    	 
+        firefoxBinary.addCommandLineOptions("--headless"); 
       }
 
       FirefoxOptions firefoxOptions = new FirefoxOptions();

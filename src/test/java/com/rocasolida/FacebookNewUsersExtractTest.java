@@ -36,7 +36,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void PageTinelli_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 800;
+		int CANT_USERS = 100;
 		//pagina donde buscar usuarios.
 		String page = "marcelotinelli";
 		//String page = "DUKISSJ";
@@ -50,7 +50,7 @@ public class FacebookNewUsersExtractTest {
 		try {
 			fu.login(access);
 			users = fu.obtainUsersInformationFromComment(page, null, CANT_USERS);
-			/*usuarios = fu.obtainUserProfileInformation(users);
+			/*usuarios = fu.obtainUserProfileInformation(users, 10);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
 			}*/
@@ -73,7 +73,7 @@ public class FacebookNewUsersExtractTest {
 	 */
 	public void PageDuki_con_cantUsuarios_objetivo() throws MalformedURLException {
 		//Cantidad de usuarios a extraer...
-		int CANT_USERS = 800;
+		int CANT_USERS = 100;
 		//pagina donde buscar usuarios.
 		//String page = "marcelotinelli";
 		String page = "DUKISSJ";
@@ -87,7 +87,7 @@ public class FacebookNewUsersExtractTest {
 		try {
 			fu.login(access);
 			users = fu.obtainUsersInformationFromComment(page, null, CANT_USERS);
-			/*usuarios = fu.obtainUserProfileInformation(users);
+			/*usuarios = fu.obtainUserProfileInformation(users, 10);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
 			}*/
@@ -128,7 +128,7 @@ public class FacebookNewUsersExtractTest {
 		try {
 			fu.login(access);
 			users = fu.obtainUsersInformationFromComment(null,URL_POST, CANT_USERS);
-			/*usuarios = fu.obtainUserProfileInformation(users);
+			/*usuarios = fu.obtainUserProfileInformation(users,10);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
 			}*/
@@ -183,10 +183,10 @@ public class FacebookNewUsersExtractTest {
 				}
 			}
 			//Paso la lista de encontrados para obtener el profile info:
-			/*usuarios = fu.obtainUserProfileInformation(usersFound);
+			usuarios = fu.obtainUserProfileInformation(usersFound,10);
 			for (int i = 0; i < usuarios.size(); i++) {
 				System.out.println("USUARIO"+(i+1)+"): " + usuarios.get(i).toString());
-			}*/
+			}
 			
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -94,7 +94,7 @@ public class FacebookNewUsersExtract extends Scrap {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<User> obtainUserProfileInformation(List<String> profilesUrl) throws Exception{
+	public List<User> obtainUserProfileInformation(List<String> profilesUrl, int sleepSecondsTime) throws Exception{
 		long tardo = System.currentTimeMillis();
 		try {
 			User auxUser;
@@ -136,8 +136,10 @@ public class FacebookNewUsersExtract extends Scrap {
 						}
 					}
 					*/
-					///////////////////////////////////////////////////////////TimeSleep de 10 segundos./////////////////////////////////////////////////////////////
-					Thread.sleep(10000);
+					///////////////////////////////////////////////////////////TimeSleep segun lo ingresado por parametro./////////////////////////////////////////////////////////////
+					if(debug)
+						System.out.println("[INFO] SLEEP TIME DE " + sleepSecondsTime + " SEGUNDOS.");
+					Thread.sleep(sleepSecondsTime*1000);
 					if(!profilesUrl.get(i).contains("?")) {
 						this.navigateTo(profilesUrl.get(i)+FacebookConfig.URL_ABOUT_INFO_BASICA);
 					}else {
@@ -777,7 +779,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 			
 			//al hacer click en ver mas comentarios, carga todos los comentarios.
-			//this.pubShowAllComments(pub);
+			this.pubShowAllComments(pub);
 			
 			//this.listAllPubComments(pub);
 			do {
@@ -895,7 +897,7 @@ public class FacebookNewUsersExtract extends Scrap {
 			}
 			
 			//Mostrar TODOS los comentarios y no solo los relevantes...
-			//this.pubShowAllComments(publication);
+			this.pubShowAllComments(publication);
 			
 			do {
 				if (publication.findElements(By.xpath(ps.getXpath_all_comments())).size() > 0) {
@@ -1354,7 +1356,20 @@ public class FacebookNewUsersExtract extends Scrap {
 			if(pub.findElements(By.xpath("//a[@data-testid='UFI2ViewOptionsSelector/link']")).size()>0) {
 				pub.findElements(By.xpath("//a[@data-testid='UFI2ViewOptionsSelector/link']")).get(0).click();
 			}else if(pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).size()>0) {
-				pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0).click();
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0));
+				try {
+					if (this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+						(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
+					}
+					Thread.sleep(500);
+					this.overlayHandler();
+					pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0).click();
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 			}
 			//Espero a que cargue las opciones del menu y le hago click a la ultima opcion.
 			this.waitUntilMenuOptionsAppear();
@@ -1366,9 +1381,23 @@ public class FacebookNewUsersExtract extends Scrap {
 	private boolean waitUntilMenuOptionsAppear() {
 		ExpectedCondition<Boolean> pubOptionsLoad = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
+				
 				if (driver.findElements(By.xpath("//ul[@class='_54nf']")).size() >0) {
+					WebElement link = driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).size()-1);
 					//tomo el ultimo item...
-					driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).size()-1).click();
+					((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(false);", link);
+					try {
+						if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+							(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
+							return false;
+						}
+						Thread.sleep(500);
+						link.click();
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					return true;
 				} else {
 					return false;
