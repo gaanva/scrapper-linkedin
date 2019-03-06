@@ -186,6 +186,7 @@ public final class FacebookConfig {
 	 * COMENTARIOS
 	 */
 	public static String XPATH_COMMENTS_CONTAINER = ".//div[contains(@class,'UFIContainer')]"; // Esto agrupa a TODOS los comentarios/Replies
+	public static String XPATH_COMMENTS_CONTAINER2 = ".//form[contains(@class,'commentable_item')]//div"; // Esto agrupa a TODOS los comentarios/Replies
 	public static String XPATH_COMMENTS_CONTAINER_NL = ".//a[contains(@href,'comment_tracking')]";
 	//// div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]
 	// public static String XPATH_COMMENT_ROOT_DIV = "//div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]"; // Esto agrupa el Comentario. Es el RAIZ del comentario
