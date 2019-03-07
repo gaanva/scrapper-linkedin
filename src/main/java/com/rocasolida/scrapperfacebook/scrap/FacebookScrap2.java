@@ -250,7 +250,7 @@ public class FacebookScrap2 extends Scrap {
 				int prevPostSize = 0;
 				int retriesMax = 3;
 				int retriesCount = 0;
-				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax) {
+				do {
 					saveScreenShot("a1-" + System.currentTimeMillis());
 					waitUntilShowMorePubsAppears(this);
 					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
@@ -288,7 +288,7 @@ public class FacebookScrap2 extends Scrap {
 							System.out.println(pub);
 							publicationsImpl.add(pub);
 							((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", publicationsElements.get(i));
-							return publicationsImpl;
+							// return publicationsImpl;
 						} else {
 							System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
 							this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
@@ -300,14 +300,14 @@ public class FacebookScrap2 extends Scrap {
 					prevPostSize = lastPostSize;
 					lastPostSize = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size();
 					System.out.println("last post size: " + lastPostSize);
-					// if (lastPostSize == prevPostSize) {
-					retriesCount++;
-					retriesCount++;
-					retriesCount++;
-					retriesCount++;
-					retriesCount++;
-					// }
-				}
+					if (lastPostSize == prevPostSize) {
+						retriesCount++;
+						// retriesCount++;
+						// retriesCount++;
+						// retriesCount++;
+						// retriesCount++;
+					}
+				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax);
 				if (debug)
 					System.out.println("|FIN|");
 			} else {
@@ -549,6 +549,11 @@ public class FacebookScrap2 extends Scrap {
 		} catch (Exception ex) {
 		}
 		try {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].parentNode.removeChild(arguments[0])", this.getDriver().findElement(By.xpath("//div[@class='generic_dialog pop_dialog generic_dialog_modal']")));
+		} catch (Exception ex) {
+
+		}
+		try {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_4-u2 _hoc clearfix _4-u8']")));
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_3d9q fixed_elem']")));
 		} catch (Exception ex) {
@@ -720,10 +725,10 @@ public class FacebookScrap2 extends Scrap {
 
 	private Publication obtainPostTypeOtherInformation(String pageName, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub, WebElement pubWeb) throws Exception {
 		WebElement pubsNew = pubWeb;
-		if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER2) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
+		if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER3)) {
 			if (debug)
 				System.out.println("[INFO] EXTRAYENDO DATOS DE COMENTARIOS DE LA PUBLICACION " + ": " + FacebookConfig.URL + pub.getId());
-			pub.setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments));
+			pub.setComments(this.extractPubComments(pubsNew, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs));
 		} else {
 			if (debug)
 				System.out.println("[WARN] LA PUBLICACION NO TIENE COMENTARIOS");
@@ -967,136 +972,66 @@ public class FacebookScrap2 extends Scrap {
 		}
 	}
 
-	// "opt=1: Comentarios Relevantes" --> Es el filtro por default que tienen todos
-	// los posts de Facebook.
-	// "opt=2: Más Recientes" --> Cuando se actualice un post
-	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
-	private boolean tipoCargaComentarios(WebElement post, int option) throws Exception {
+	private boolean tipoCargaComentarios(WebElement pub, CommentsSort cs) throws Exception {
 		try {
-			ocultarBannersLogin();
-			/*
-			 * if(this.getAccess() == null) { this.scrollDown(); }
-			 */
-			// Puede que se abra automáticamente el Enviar mensajes al dueño de la página.
-			if (this.getAccess() != null) {
-				if (this.getDriver().findElements(By.xpath("//a[@class='_3olu _3olv close button _4vu4']")).size() > 0) {
-					this.getDriver().findElement(By.xpath("//a[@class='_3olu _3olv close button _4vu4']")).click();
+			List<WebElement> elements = pub.findElements(By.xpath(".//a[@data-testid='UFI2ViewOptionsSelector/link']"));
+			if (elements.size() > 0) {
+				elements.get(0).click();
+			} else if (pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).size() > 0) {
+				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView(false);", pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0));
+				try {
+					if (this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+						(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
+					}
+					Thread.sleep(500);
+					this.overlayHandler();
+					pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0).click();
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
 			}
-
-			/*
-			 * if (this.getAccess() == null) { this.checkAndClosePopupLogin(); }
-			 */
-			try {
-				try {
-					this.waitUntilMenuOptionAppears(this, post);
-				} catch (Exception e) {
-					if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) { // Si la publicación no tiene ningun tipo de actividad...
-						if (debug) {
-							System.out.println("[WARN] TIEMPO DE ESPERA A QUE APAREZCA LINK TIPO CARGA AGOTADO");
-							this.saveScreenShot("waitUntilMenuOptionAppears");
+			// Espero a que cargue las opciones del menu y le hago click a la ultima opcion.
+			ExpectedCondition<Boolean> pubOptionsLoad = new ExpectedCondition<Boolean>() {
+				public Boolean apply(WebDriver driver) {
+					if (driver.findElements(By.xpath("//ul[@class='_54nf']")).size() > 0) {
+						int index = 0;
+						switch (cs) {
+						case ALL:
+							index = 2;
+							break;
+						case NEW:
+							index = 1;
+							break;
+						case RELEVANCE:
+							index = 0;
+							break;
 						}
+						WebElement link = driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(index);
+						// tomo el ultimo item...
+						((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(false);", link);
+						try {
+							if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+								(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
+								return false;
+							}
+							Thread.sleep(500);
+							link.click();
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						return true;
+					} else {
 						return false;
-					} else {
-						throw e;
 					}
 				}
-				if (this.getAccess() != null) {
-					this.moveTo(post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")));
-				}
-
-				try {
-					if (debug)
-						this.saveScreenShot("Antes_Sel_TipoCargAComentarios");
-					post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
-					if (debug)
-						this.saveScreenShot("Despues_Sel_TipoCargAComentarios");
-				} catch (Exception e) {
-					if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException") || e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
-						this.overlayHandler();
-						this.checkAndClosePopupLogin();
-						this.scrollDown();
-						if (this.getDriver().findElements(By.xpath("//span[@role='progressbar']")).size() > 0 && this.getDriver().findElement(By.xpath("//span[@role='progressbar']")).isDisplayed()) {
-							try {
-								if (debug)
-									System.out.println("[INFO] SPINNER ACTIVE?...");
-								this.waitUntilNotSpinnerLoading();
-								this.scrollDown();
-							} catch (Exception e1) {
-								if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-									if (debug)
-										System.out.println("[WARN] TIEMPO ESPERA NOT SPINNER EXCEEDED (Tipo De Carga)");
-								}
-								throw e;
-							}
-						}
-						post.findElement(By.xpath(".//div[contains(@class, 'UFIRow UFILikeSentence')]/descendant::a[@class='_p']")).click();
-						if (debug)
-							this.saveScreenShot("Despues_Sel_TipoCargAComentarios");
-					} else {
-						if (debug)
-							this.saveScreenShot("ERR_Sel_OptionPpal");
-						throw e;
-					}
-				}
-
-				/*
-				 * if(this.getAccess()==null) { this.scrollDown(); }
-				 */
-				// this.saveScreenShot("Sccrolldown");
-				if (this.waitUntilMenuAppears()) {
-					WebElement menuOption = null;
-					try {
-						menuOption = this.getDriver().findElement(By.xpath("//div[@class='uiContextualLayer uiContextualLayerBelowRight']/descendant::ul[@role='menu']/li[" + option + "]"));
-						menuOption.click();
-					} catch (Exception e) {
-						if (e.getClass().getSimpleName().equalsIgnoreCase("ElementClickInterceptedException") || e.getClass().getSimpleName().equalsIgnoreCase("ElementNotInteractableException")) {
-							this.overlayHandler();
-							this.checkAndClosePopupLogin();
-							this.scrollDown();
-							if (debug)
-								this.saveScreenShot("ListOpt_TIPOCARGA");
-							// Post.findElement(By.xpath(".//div[contains(@class, 'UFIRow
-							// UFILikeSentence')]/descendant::a[@class='_p']")).click();
-							try {
-								this.waitUntilMenuAppears();
-								this.scrollDown();
-								if (debug)
-									this.saveScreenShot("opt_TIPOCARGA");
-								ocultarBannersLogin();
-								menuOption.click();
-							} catch (Exception e1) {
-								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-									if (debug)
-										System.out.println("[WARN] no se mostraron las opciones de tipo carga");
-								} else {
-									throw e1;
-								}
-							}
-
-						} else if (e.getClass().getSimpleName().equalsIgnoreCase("NoSuchElementException")) {
-							// puede ser que no tenga la opción... caso
-							// Curne.(https://www.facebook.com/2018054074880609)
-							return true;
-						} else {
-							if (debug)
-								this.saveScreenShot("ERR_Sel_menuOption");
-							throw e;
-						}
-					}
-				}
-			} catch (Exception e) {
-				if (debug) {
-					System.err.println("[ERROR] ERROR SELECCIONANDO EL TIPO DE CARGA");
-					this.saveScreenShot("ERROR_TIPOCARGA");
-				}
-				// e.printStackTrace();
-				throw e;
-			}
-
-			this.waitForJStoLoad();
-			return true;
+			};
+			Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(15)).pollingEvery(Duration.ofSeconds(1));
+			return wait.until(pubOptionsLoad);
 		} catch (Exception e) {
+			e.printStackTrace();
 			if (debug) {
 				System.err.println("[ERROR] NO SE PUDO HACER EL CLICK EN MOSTRAR TODOS LOS MENSAJES, SIN ORDENAMIENTO");
 				this.saveScreenShot("ERR_NO_SELECCIONO_MOSTRAR_MENSAJES");
@@ -1152,11 +1087,11 @@ public class FacebookScrap2 extends Scrap {
 		return wait.until(menuAppears);
 	}
 
-	private List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments) throws Exception {
+	private List<Comment> extractPubComments(WebElement pub, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
 		long tardo = System.currentTimeMillis();
 		try {
 			if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER2 + "//*")) {
-				// this.TipoCargaComentarios(pub, 3);
+				this.tipoCargaComentarios(pub, cs);
 				if (debug)
 					System.out.println("[INFO] OBTENIENDO LOS COMENTARIOS DEL POST: ");
 				return this.obtainAllPublicationComments(pub.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER2)), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments);
