@@ -177,6 +177,7 @@ public final class FacebookConfig {
 	public static String XP_GROUPPUBLICATION_CANT_LIKES = ".//div[@class='UFILikeSentenceText']/span";
 
 	public static String XPATH_PUBLICATION_VER_MAS_MSJS = ".//div[contains(@class,'UFILastCommentComponent')]//a[contains(@class,'UFIPagerLink')]";
+	public static String XPATH_PUBLICATION_VER_MAS_MSJS2 = ".//a[contains(@data-testid,'UFI2CommentsPagerRenderer/pager_depth_0')]";
 	public static String XP_GROUPPUBLICATION_VER_MAS_MSJS = "//a[contains(@class,'UFIPagerLink')]";
 
 	public static String XPATH_PUBLICATION_VER_RESPUESTAS = ".//a[contains(@class,'UFICommentLink')]";
@@ -210,11 +211,16 @@ public final class FacebookConfig {
 
 	public static String XPATH_USER_ID_COMMENT = ".//span[contains(@class,' UFICommentActorName')]"; // getAttribute("data-hovercard")
 	public static String XPATH_USER_ID_COMMENT2 = ".//*[@class=' UFICommentActorName']"; // getAttribute("data-hovercard")
+	public static String XPATH_USER_NAME_COMMENT = ".//div[contains(@data-testid,'UFI2Comment/body')]/div/*[1]"; // getAttribute("data-hovercard")
 
 	//public static String XPATH_USER_COMMENT = ".//span[contains(@class,'UFICommentBody')]/node()";
 	public static String XPATH_USER_COMMENT = "./descendant::span[contains(@class,'UFICommentBody')]/node()";
+	public static String XPATH_USER_COMMENT2 = ".//div[contains(@data-testid,'UFI2Comment/body')]/div/*[2]/span/span";
+	public static String XPATH_SEE_MORE_COMMENT_TEXT = ".//div[contains(@data-testid,'UFI2Comment/body')]//a[@class='_5v47 fss']";
 	public static String XPATH_COMMENT_UTIME = ".//abbr[contains(@class,'UFISutroCommentTimestamp livetimestamp')]";
+	public static String XPATH_COMMENT_UTIME2 = ".//abbr[contains(@class,'livetimestamp')]";
 	public static String XPATH_COMMENT_ID = ".//a[contains(@class,'uiLinkSubtle')]";
+	public static String XPATH_COMMENT_ID2 = ".//ul[contains(@data-testid,'UFI2CommentActionLinks/root')]//a";
 	public static String XPATH_USER_COMMENT_ACTIONS = ".//div[cont ains(@class,'UFICommentActions')].//abbr";//// getAttribute("data-utime")
 
 	public static String XPATH_COMMENT_REPLY_LINKS = "//span[@class='UFIReplySocialSentenceLinkText UFIReplySocialSentenceVerified']";

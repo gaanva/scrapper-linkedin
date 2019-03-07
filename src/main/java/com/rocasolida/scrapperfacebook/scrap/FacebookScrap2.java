@@ -54,7 +54,6 @@ public class FacebookScrap2 extends Scrap {
 		try {
 			Page page = new Page();
 			page.setName(facebookPage);
-			long aux = System.currentTimeMillis();
 			// vas a la pagina de face
 			List<Publication> publications = null;
 			if (this.navigateTo(FacebookConfig.URL + facebookPage)) { // SI NO TIRA ERROR DE CONEXIÓN O DE PAGINA INEXISTENTE...
@@ -72,6 +71,7 @@ public class FacebookScrap2 extends Scrap {
 					if (debug)
 						System.out.println("[INFO] Es una Página.");
 					publications = this.processPagePosts(facebookPage, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
+					break;
 				default:
 					if (debug)
 						System.out.println("[WARNING] No se reconoce el tipo de página para hacer SCRAP");
@@ -80,32 +80,6 @@ public class FacebookScrap2 extends Scrap {
 			}
 			page.setPublications(publications);
 			return page;
-//			List<WebElement> publicationsElements = this.inicializePublicationsToBeLoad(facebookPage, uTIME_INI, uTIME_FIN, page);
-//			if (publicationsElements != null) {
-//				List<Publication> publicationsImpl = new ArrayList<Publication>();
-//				for (int i = 0; i < publicationsElements.size(); i++) {
-//					if (this.waitForJStoLoad()) {
-//						this.moveTo(publicationsElements.get(i));
-//						publicationsImpl.add(this.extractPublicationData(facebookPage, publicationsElements.get(i)));
-//					} else {
-//						System.out.println("[ERROR] PROBLEMAS AL EXTRAER DATOS DEL POST.");
-//						this.saveScreenShot("PROBLEMA_EXTRAER_DATOSPOST");
-//					}
-//
-//				}
-//				// Recorro publicaciones encontradas
-//				Publication result = null;
-//				for (int i = 0; i < publicationsImpl.size(); i++) {
-//					result = obtainPostInformation(facebookPage, publicationsImpl.get(i).getId(), COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, null, null);
-//					merge(publicationsImpl.get(i), result);
-//				}
-//				page.setPublications(publicationsImpl);
-//				return page;
-//			} else {
-//				if (debug)
-//					System.out.println("[INFO] NO SE ENCONTRARON PUBLICACIONES PARA PROCESAR.");
-//				return null;
-//			}
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("obtainPageInformation tardo: " + tardo);
@@ -127,8 +101,7 @@ public class FacebookScrap2 extends Scrap {
 			}
 			if (this.existElement(null, "//div[contains(@id,'globalContainer')]//a[contains(@href,'ref=404')]")) {
 				/**
-				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente
-				 * https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
+				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 				 */
 				if (debug) {
 					System.out.println("[ERROR] NO EXISTE LINK " + URL + ": " + this.getDriver().findElement(By.xpath("//div[contains(@id,'globalContainer')]//h2")).getText());
@@ -257,40 +230,18 @@ public class FacebookScrap2 extends Scrap {
 		Publication pub;
 		try {
 			long aux = System.currentTimeMillis();
-			this.overlayHandler();
-			aux = System.currentTimeMillis() - aux;
-			System.out.println("overlayHandler: " + aux);
+			// this.overlayHandler();
+			// aux = System.currentTimeMillis() - aux;
+			// System.out.println("overlayHandler: " + aux);
 			aux = System.currentTimeMillis();
-			this.goToPublicationsSection();
+			goToPublicationsSection();
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("goToPublicationsSection: " + aux);
 			aux = System.currentTimeMillis();
-			try {
-				try {
-					if (debug)
-						System.out.println("[INFO] SPINNER ACTIVE?...");
-					this.waitUntilNotSpinnerLoading();
-				} catch (Exception e1) {
-					if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-						if (debug)
-							System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
-					}
-				}
-				this.waitForPublicationsLoaded(this);
-			} catch (Exception e) {
-				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-					if (debug) {
-						System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
-						this.saveScreenShot("ERR_ESPERA_CARGA_PUBS");
-					}
-					throw e;
-				} else {
-					throw e;
-				}
-			}
+			waitUntilNotSpinnerLoadingAndWaitForPublicationsLoaded();
 			aux = System.currentTimeMillis() - aux;
 			System.out.println("otra parte: " + aux);
-			this.checkAndClosePopupLogin();
+			checkAndClosePopupLogin();
 			aux = System.currentTimeMillis();
 			if (debug)
 				System.out.println("[INFO] BUSCANDO PUBLICACIONES ENTRE EL RANGO DE FEHCAS DADA....");
@@ -300,27 +251,17 @@ public class FacebookScrap2 extends Scrap {
 				int retriesMax = 3;
 				int retriesCount = 0;
 				while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax) {
-					this.saveScreenShot("a1-" + System.currentTimeMillis());
-					try {
-						this.waitUntilShowMorePubsAppears(this);
-					} catch (Exception e) {
-						if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
-							if (debug)
-								System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
-						} else {
-							e.printStackTrace();
-							throw e;
-						}
-					}
+					saveScreenShot("a1-" + System.currentTimeMillis());
+					waitUntilShowMorePubsAppears(this);
 					if ((this.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE))) {
-						this.scrollMainPublicationsPage();
-						this.checkAndClosePopupLogin();
+						scrollMainPublicationsPage();
+						checkAndClosePopupLogin();
 						try {
 							if (debug) {
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 								this.saveScreenShot("SPINNER ACTIVE");
 							}
-							this.waitUntilNotSpinnerLoading();
+							waitUntilNotSpinnerLoading();
 						} catch (Exception e1) {
 							if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 								if (debug)
@@ -359,13 +300,13 @@ public class FacebookScrap2 extends Scrap {
 					prevPostSize = lastPostSize;
 					lastPostSize = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size();
 					System.out.println("last post size: " + lastPostSize);
-//					if (lastPostSize == prevPostSize) {
+					// if (lastPostSize == prevPostSize) {
 					retriesCount++;
 					retriesCount++;
 					retriesCount++;
 					retriesCount++;
 					retriesCount++;
-//					}
+					// }
 				}
 				if (debug)
 					System.out.println("|FIN|");
@@ -388,6 +329,32 @@ public class FacebookScrap2 extends Scrap {
 		}
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return publicationsImpl;
+	}
+
+	private void waitUntilNotSpinnerLoadingAndWaitForPublicationsLoaded() throws Exception {
+		try {
+			try {
+				if (debug)
+					System.out.println("[INFO] SPINNER ACTIVE?...");
+				this.waitUntilNotSpinnerLoading();
+			} catch (Exception e1) {
+				if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+					if (debug)
+						System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
+				}
+			}
+			this.waitForPublicationsLoaded(this);
+		} catch (Exception e) {
+			if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+				if (debug) {
+					System.out.println("[WARN]Tiempo espera carga publicaciones agotado");
+					this.saveScreenShot("ERR_ESPERA_CARGA_PUBS");
+				}
+				throw e;
+			} else {
+				throw e;
+			}
+		}
 	}
 
 	private boolean overlayHandler() {
@@ -512,19 +479,31 @@ public class FacebookScrap2 extends Scrap {
 	}
 
 	private boolean waitUntilShowMorePubsAppears(final FacebookScrap2 fs) {
-		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
-			public Boolean apply(WebDriver driver) {
-				if (fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
-					// System.out.println("true");
-					return true;
-				} else {
-					fs.scrollMainPublicationsPage();
-					return false;
+		boolean result = false;
+		try {
+			ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
+				public Boolean apply(WebDriver driver) {
+					if (fs.existElement(null, FacebookConfig.XPATH_PPAL_BUTTON_SHOW_MORE)) {
+						// System.out.println("true");
+						return true;
+					} else {
+						fs.scrollMainPublicationsPage();
+						return false;
+					}
 				}
+			};
+			Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
+			result = wait.until(morePubsLink);
+		} catch (Exception e) {
+			if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
+				if (debug)
+					System.out.println("[WARN] TimeoutException. Waiting ShowmorePublications button");
+			} else {
+				e.printStackTrace();
+				throw e;
 			}
-		};
-		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
-		return wait.until(morePubsLink);
+		}
+		return result;
 	}
 
 	private void checkAndClosePopupLogin() {
@@ -549,10 +528,10 @@ public class FacebookScrap2 extends Scrap {
 		// }
 		// }
 		// }
-		ocultarBannerLogin();
+		ocultarBannersLogin();
 	}
 
-	private void ocultarBannerLogin() {
+	private void ocultarBannersLogin() {
 		try {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_67m7']")));
 		} catch (Exception ex) {
@@ -567,6 +546,11 @@ public class FacebookScrap2 extends Scrap {
 		}
 		try {
 			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='generic_dialog pop_dialog generic_dialog_modal']")));
+		} catch (Exception ex) {
+		}
+		try {
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_4-u2 _hoc clearfix _4-u8']")));
+			((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", this.getDriver().findElement(By.xpath("//div[@class='_3d9q fixed_elem']")));
 		} catch (Exception ex) {
 		}
 	}
@@ -593,8 +577,7 @@ public class FacebookScrap2 extends Scrap {
 			 */
 
 			/*
-			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr
-			 * data-utime=''><span class='timestamp'>
+			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr data-utime=''><span class='timestamp'>
 			 */
 
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
@@ -630,9 +613,7 @@ public class FacebookScrap2 extends Scrap {
 			 * DATETIME
 			 */
 			/*
-			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.
-			 * XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
-			 * aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
+			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
 			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
@@ -738,68 +719,6 @@ public class FacebookScrap2 extends Scrap {
 	}
 
 	private Publication obtainPostTypeOtherInformation(String pageName, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Publication pub, WebElement pubWeb) throws Exception {
-//		WebElement pubsNew;
-//		pubsNew = this.publicationCommentSectionClick();
-//		if (pubsNew == null) {
-//			for (int h = 0; h < 3; h++) {
-//				if (debug)
-//					System.out.println("[INFO]recargando el post... no tiene más scroll.");
-//				this.getDriver().navigate().refresh();
-//				this.ctrlLoadPost();
-//				pubsNew = this.publicationCommentSectionClick();
-//				if (pubsNew != null) {
-//					break;
-//				}
-//			}
-//		}
-//		Publication p = this.extractPublicationData(pageName, pubsNew);
-//		merge(pub, p);
-//		extractPublicationDataFromDivOnPublicationPage(pub, pubsNew);
-//		if (cs == null || cs.equals(CommentsSort.NEW)) {
-//			try {
-//				if (debug)
-//					System.out.println("[INFO] SPINNER ACTIVE?...");
-//				this.waitUntilNotSpinnerLoading();
-//				if (!this.tipoCargaComentarios(pubsNew, 2)) {
-//					pub.setComments(null);
-//					return pub;
-//				}
-//			} catch (Exception e) {
-//				if (e.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-//					if (debug) {
-//						System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-//						this.saveScreenShot("WARN_SPINNERLOAD");
-//					}
-//					for (int j = 0; j < 3; j++) {
-//						if (debug)
-//							System.out.println("[INFO] INTENTO " + (j + 1) + " PARA QUE EL SPINNER NO SE MUESTRE.");
-//						try {
-//							this.navigateTo(FacebookConfig.URL + postId);
-//							this.ctrlLoadPost();
-//							pubsNew = this.publicationCommentSectionClick();
-//							if (debug)
-//								System.out.println("[INFO] SPINNER ACTIVE?...");
-//							this.waitUntilNotSpinnerLoading();
-//							this.tipoCargaComentarios(pubsNew, 2);
-//							break;
-//						} catch (Exception e1) {
-//							if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
-//								if (debug) {
-//									System.out.println("[WARN] NO SE CARGÓ LA SECCIÓN COMENTARIOS! SPINNER ACTIVE!");
-//									this.saveScreenShot("WARN_SPINNERLOAD");
-//								}
-//							} else {
-//								e1.printStackTrace();
-//								throw e;
-//							}
-//						}
-//
-//					}
-//				} else {
-//					throw e;
-//				}
-//			}
-//		}
 		WebElement pubsNew = pubWeb;
 		if (this.existElement(pubsNew, FacebookConfig.XPATH_COMMENTS_CONTAINER2) || (pubsNew.findElement(By.xpath(FacebookConfig.XPATH_COMMENTS_CONTAINER_NL)).isDisplayed())) {
 			if (debug)
@@ -1054,7 +973,7 @@ public class FacebookScrap2 extends Scrap {
 	// "opt=3: Comentarios Relevantes(no filtrados)" --> TODOS los comentarios
 	private boolean tipoCargaComentarios(WebElement post, int option) throws Exception {
 		try {
-			ocultarBannerLogin();
+			ocultarBannersLogin();
 			/*
 			 * if(this.getAccess() == null) { this.scrollDown(); }
 			 */
@@ -1144,7 +1063,7 @@ public class FacebookScrap2 extends Scrap {
 								this.scrollDown();
 								if (debug)
 									this.saveScreenShot("opt_TIPOCARGA");
-								ocultarBannerLogin();
+								ocultarBannersLogin();
 								menuOption.click();
 							} catch (Exception e1) {
 								if (e1.getClass().getSimpleName().equalsIgnoreCase("timeoutexception")) {
@@ -1255,8 +1174,7 @@ public class FacebookScrap2 extends Scrap {
 	}
 
 	/**
-	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los
-	 * comentarios.
+	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los comentarios.
 	 * 
 	 * @param cantComments
 	 * @param cs
@@ -1269,11 +1187,16 @@ public class FacebookScrap2 extends Scrap {
 				cantComments = MAX_COMMENTS_PER_POST;
 			}
 			List<Comment> comments = new ArrayList<Comment>();
-//			if (container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size() > 0) {
+			// if (container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size() > 0) {
 			if (this.existElement(container, "//a[@data-testid='UFI2CommentsCount/root']")) {
 				if (debug)
-//					System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
+					// System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
 					System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//a[@data-testid='UFI2CommentsCount/root']")).getText());
+			}
+			if (this.existElement(container, "//a[@data-testid='UFI2SharesCount/root']")) {
+				if (debug)
+					// System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
+					System.out.println("COMPARTIDOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//a[@data-testid='UFI2SharesCount/root']")).getText());
 			}
 			// Si existe el botón de "Ver Más mensajes"
 			try {
@@ -1287,8 +1210,6 @@ public class FacebookScrap2 extends Scrap {
 							System.out.println("[WARN] TIEMPO ESPERA NOTSPINNER EXCEEDED");
 					}
 				}
-				// this.waitUntilShowMoreCommAppears(this, container,
-				// FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
 			} catch (Exception e) {
 				if (e.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 					if (debug)
@@ -1307,7 +1228,7 @@ public class FacebookScrap2 extends Scrap {
 				// Comentarios anteriores a la fecha inicial del filtro
 				ctrlCommentsOutIniFilter = ".//abbr[@data-utime<" + String.valueOf(COMMENTS_uTIME_INI) + "]//ancestor::div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
 			} else {
-				commentsFilter = ".//div[contains(@class,'UFICommentContentBlock') and not(ancestor::div[@class=' UFIReplyList']) and not(contains(@style,'hidden'))]";
+				commentsFilter = ".//div[contains(@data-testid,'UFI2Comment/root_depth_0') and not(contains(@style,'hidden'))]";
 			}
 			if (debug)
 				System.out.println("FILTRO XPATH-COMMENTS APLICADO: " + commentsFilter);
@@ -1357,10 +1278,10 @@ public class FacebookScrap2 extends Scrap {
 							break;
 						}
 					}
-					if (!existElement(container, FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS)) {
+					if (!existElement(container, FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS2)) {
 						break;
 					}
-					showMoreLink = container.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS));
+					showMoreLink = container.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS2));
 					try {
 						showMoreLink.click();
 					} catch (Exception e) {
@@ -1373,7 +1294,7 @@ public class FacebookScrap2 extends Scrap {
 								System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.waitUntilNotSpinnerLoading();
 							this.scrollDown();
-							this.waitUntilShowMoreCommAppears(this, container, FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS);
+							this.waitUntilShowMoreCommAppears(this, container, FacebookConfig.XPATH_PUBLICATION_VER_MAS_MSJS2);
 							showMoreLink.click();
 						} else if (e.getClass().getSimpleName().equalsIgnoreCase("StaleElementReferenceException")) {
 							if (debug)
@@ -1427,14 +1348,14 @@ public class FacebookScrap2 extends Scrap {
 	 */
 	private Comment extractCommentData(WebElement comentario) throws Exception {
 		Comment auxComment = new Comment();
-		// Mensaje
+		// Mensaje primero se fija si tiene los tres puntitos o el leer mas y lo expande
 		long a = System.currentTimeMillis();
-		if (this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
+		if (this.existElement(comentario, FacebookConfig.XPATH_SEE_MORE_COMMENT_TEXT)) {
 			WebElement aux;
-			while (this.existElement(comentario, ".//a[@class='_5v47 fss']")) {
-				aux = comentario.findElement(By.xpath(".//a[@class='_5v47 fss']"));
+			while (this.existElement(comentario, FacebookConfig.XPATH_SEE_MORE_COMMENT_TEXT)) {
+				aux = comentario.findElement(By.xpath(FacebookConfig.XPATH_SEE_MORE_COMMENT_TEXT));
 				try {
-					this.moveTo(aux);
+					moveTo(aux);
 					aux.click();
 					try {
 						this.waitForMoreTextInCommentMessageLink(this, comentario);
@@ -1454,10 +1375,11 @@ public class FacebookScrap2 extends Scrap {
 		}
 		a = System.currentTimeMillis() - a;
 		System.out.println("ver mas texto del comentario tardo: " + a);
-		if (this.existElement(comentario, FacebookConfig.XPATH_USER_COMMENT)) {
+		if (this.existElement(comentario, FacebookConfig.XPATH_USER_COMMENT2)) {
 			String aux = "";
-			for (int i = 0; i < comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).size(); i++) {
-				aux += comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT)).get(i).getText();
+			List<WebElement> comment_parts = comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT2));
+			for (int i = 0; i < comment_parts.size(); i++) {
+				aux += comment_parts.get(i).getText();
 			}
 			auxComment.setMensaje(aux);
 		} else {
@@ -1472,13 +1394,13 @@ public class FacebookScrap2 extends Scrap {
 			auxComment.setUserId(pathUserID.substring(pathUserID.indexOf(ini) + (ini.length() + 1), pathUserID.indexOf(fin)));
 		}
 		// Usuario name
-		auxComment.setUserName(comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_ID_COMMENT2)).getText());
+		auxComment.setUserName(comentario.findElement(By.xpath(FacebookConfig.XPATH_USER_NAME_COMMENT)).getText());
 
 		// Utime
-		auxComment.setUTime(Long.valueOf(comentario.findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME)).getAttribute("data-utime")));
+		auxComment.setUTime(Long.valueOf(comentario.findElement(By.xpath(FacebookConfig.XPATH_COMMENT_UTIME2)).getAttribute("data-utime")));
 		try {
 			// https://www.facebook.com/mauriciomacri/videos/10156570748083478/?comment_id=10156570873778478&comment_tracking=%7B%22tn%22%3A%22R9%22%7D
-			String href = comentario.findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID)).getAttribute("href");
+			String href = comentario.findElement(By.xpath(FacebookConfig.XPATH_COMMENT_ID2)).getAttribute("href");
 			String commentId = href.split("\\?")[1].split("&")[0].split("=")[1];
 			auxComment.setId(commentId);
 		} catch (Exception ex) {
