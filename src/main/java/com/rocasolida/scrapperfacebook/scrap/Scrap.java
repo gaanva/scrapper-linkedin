@@ -113,7 +113,9 @@ public class Scrap {
       firefoxOptions.setBinary(firefoxBinary);
       FirefoxProfile firefoxProfile = new FirefoxProfile();
       firefoxProfile.setPreference("media.volume_scale", "0.0");
+      
       firefoxProfile.setPreference("dom.webnotifications.enabled", false);
+      
       firefoxOptions.setProfile(firefoxProfile);      
       firefoxOptions.setCapability("permissions.default.image", 2);
       this.driver = new FirefoxDriver(firefoxOptions);
