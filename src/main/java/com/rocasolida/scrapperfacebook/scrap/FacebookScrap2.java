@@ -983,18 +983,19 @@ public class FacebookScrap2 extends Scrap {
 					if (this.getDriver().findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
 						(new Actions(this.getDriver())).sendKeys(Keys.ESCAPE).perform();
 					}
-					Thread.sleep(500);
+					Thread.sleep(1000);
 					this.overlayHandler();
 					pub.findElements(By.xpath("//div[@class='_3scs uiPopover _6a _6b']/a")).get(0).click();
-					Thread.sleep(500);
+					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
+			Thread.sleep(1000);
 			// Espero a que cargue las opciones del menu y le hago click a la ultima opcion.
 			ExpectedCondition<Boolean> pubOptionsLoad = new ExpectedCondition<Boolean>() {
 				public Boolean apply(WebDriver driver) {
-					if (driver.findElements(By.xpath("//ul[@class='_54nf']")).size() > 0) {
+					if (pub.findElements(By.xpath("//ul[@class='_54nf']")).size() > 0) {
 						int index = 0;
 						switch (cs) {
 						case ALL:
@@ -1007,17 +1008,16 @@ public class FacebookScrap2 extends Scrap {
 							index = 0;
 							break;
 						}
-						WebElement link = driver.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(index);
+						WebElement link = pub.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(index);
 						// tomo el ultimo item...
-						((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(false);", link);
 						try {
-							if (driver.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
+							if (pub.findElements(By.xpath("//div[@class='_3ixn']")).size() > 0) {
 								(new Actions(driver)).sendKeys(Keys.ESCAPE).perform();
 								return false;
 							}
-							Thread.sleep(500);
+							Thread.sleep(1000);
 							link.click();
-							Thread.sleep(500);
+							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -1091,6 +1091,7 @@ public class FacebookScrap2 extends Scrap {
 		long tardo = System.currentTimeMillis();
 		try {
 			if (this.existElement(pub, FacebookConfig.XPATH_COMMENTS_CONTAINER2 + "//*")) {
+				Thread.sleep(5000);
 				moveTo(pub);
 				this.tipoCargaComentarios(pub, cs);
 				if (debug)
