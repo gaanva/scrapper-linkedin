@@ -49,10 +49,11 @@ public class FacebookScrap2 extends Scrap {
 		super(driver, debug);
 	}
 
-	public Page scrapePage(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
+	public Page scrapePage(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) {
 		long tardo = System.currentTimeMillis();
+		Page page = null;
 		try {
-			Page page = new Page();
+			page = new Page();
 			page.setName(facebookPage);
 			// vas a la pagina de face
 			List<Publication> publications = null;
@@ -79,11 +80,13 @@ public class FacebookScrap2 extends Scrap {
 				}
 			}
 			page.setPublications(publications);
-			return page;
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("obtainPageInformation tardo: " + tardo);
 		}
+		return page;
 	}
 
 	private boolean navigateTo(String URL) {
@@ -101,7 +104,8 @@ public class FacebookScrap2 extends Scrap {
 			}
 			if (this.existElement(null, "//div[contains(@id,'globalContainer')]//a[contains(@href,'ref=404')]")) {
 				/**
-				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
+				 * Este IF captura estos errores: - Si entra a un perfil inválido o inexistente, ej: https://www.facebook.com/slkndfskldnfsdnfl - a un post inválido o inexistente
+				 * https://www.facebook.com/HerbalifeLatino/posts/123123123 (idpost inexistente) - id post válido, pero URL inválida https://www.facebook.com/herbalife/posts/1960450554267390 (idpost válido)
 				 */
 				if (debug) {
 					System.out.println("[ERROR] NO EXISTE LINK " + URL + ": " + this.getDriver().findElement(By.xpath("//div[contains(@id,'globalContainer')]//h2")).getText());
@@ -225,7 +229,7 @@ public class FacebookScrap2 extends Scrap {
 		return "";
 	}
 
-	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) throws Exception {
+	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) {
 		List<Publication> publicationsImpl = new ArrayList<Publication>();
 		Publication pub;
 		try {
@@ -315,11 +319,11 @@ public class FacebookScrap2 extends Scrap {
 			System.out.println("otra parte2: " + aux);
 			aux = System.currentTimeMillis();
 		} catch (Exception e) {
+			e.printStackTrace();
 			if (debug) {
 				System.err.println("[ERROR] EN LA CARGA DE PUBLICACIONES.");
 				this.saveScreenShot("ERR_CARGA_PUBS");
 			}
-			throw e;
 		}
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return publicationsImpl;
@@ -571,7 +575,8 @@ public class FacebookScrap2 extends Scrap {
 			 */
 
 			/*
-			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr data-utime=''><span class='timestamp'>
+			 * Hay dos casos (necesito saber el abbr que contiene un timestamp, sino se confunde cuando comparten un post de otra cuenta de facebook): <abbr data-utime='' class='timestamp'> <abbr
+			 * data-utime=''><span class='timestamp'>
 			 */
 
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) {
@@ -607,7 +612,9 @@ public class FacebookScrap2 extends Scrap {
 			 * DATETIME
 			 */
 			/*
-			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
+			 * Usaremos siempre el UTC. if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP)) { aux.setDateTime((publication.findElement(By.xpath(FacebookConfig.
+			 * XPATH_PUBLICATION_TIMESTAMP))).getAttribute("title")); } else if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_1)) {
+			 * aux.setDateTime((publication.findElement(By.xpath(FacebookConfig. XPATH_PUBLICATION_TIMESTAMP_1))).getAttribute("title")); }
 			 */
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
@@ -1103,7 +1110,8 @@ public class FacebookScrap2 extends Scrap {
 	}
 
 	/**
-	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los comentarios.
+	 * Si existe el botón de show more, entonces lo clickea, hasta que se cargaron todos los mensajes para luego obtenerlos con un XPATH query y extraerle los datos. Me servirá para las replies y para los
+	 * comentarios.
 	 * 
 	 * @param cantComments
 	 * @param cs
@@ -1296,6 +1304,7 @@ public class FacebookScrap2 extends Scrap {
 						}
 					}
 				} catch (Exception e) {
+					e.printStackTrace();
 					if (debug)
 						this.saveScreenShot("Error VerMasContenidoMensaje");
 					throw e;
