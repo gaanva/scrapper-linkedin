@@ -1,7 +1,6 @@
 package com.rocasolida.scrapperfacebook.scrap;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -134,14 +133,14 @@ public class FacebookScrap2 extends Scrap {
 	}
 
 	private void saveScreenShot(String name) {
-		if (debug) {
-			Path path = Paths.get("", "screenshots", name);
-			File scrFile = ((TakesScreenshot) this.getDriver()).getScreenshotAs(OutputType.FILE);
-			try {
+		try {
+			if (debug) {
+				Path path = Paths.get("", "screenshots", name);
+				File scrFile = ((TakesScreenshot) this.getDriver()).getScreenshotAs(OutputType.FILE);
 				FileUtils.copyFile(scrFile, new File(path.toString() + System.currentTimeMillis() + ".png"));
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
