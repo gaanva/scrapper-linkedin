@@ -18,7 +18,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookPageTest {
 	private static String OS = ScrapUtils.getOSName();
 	private static final boolean DEBUG = true;
-	private static DriverType dt = DriverType.FIREFOX;
+	private static DriverType dt = DriverType.FIREFOX_HEADLESS;
 
 	@BeforeClass
 	public static void loadOs() {
