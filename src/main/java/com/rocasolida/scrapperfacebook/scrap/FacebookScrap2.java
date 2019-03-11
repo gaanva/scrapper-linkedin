@@ -1006,7 +1006,20 @@ public class FacebookScrap2 extends Scrap {
 								return false;
 							}
 							Thread.sleep(1000);
-							link.click();
+							
+							boolean result = false;
+						    int attempts = 0;
+						    while(attempts < 2) {
+						        try {
+						        	link.click();
+						            result = true;
+						            break;
+						        } catch(Exception e) {
+						        	System.err.println("[INFO] CLICK FALLÓ. ATTEMP 1. " + e.getClass().getSimpleName());
+						        }
+						        attempts++;
+						    }
+							
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block

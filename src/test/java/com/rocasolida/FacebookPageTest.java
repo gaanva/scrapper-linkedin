@@ -93,6 +93,22 @@ public class FacebookPageTest {
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 		assertTrue(page.getPublications().size() > 0);
 	}
+	
+	@Test
+	public void todonoticiasPage_allComments() throws Exception {
+		FacebookScrap2 fs = new FacebookScrap2(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("todonoticias", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.ALL);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+		assertTrue(page.getPublications().size() > 0);
+	}
 
 	@Test
 	public void dembattlesclPage() throws Exception {
