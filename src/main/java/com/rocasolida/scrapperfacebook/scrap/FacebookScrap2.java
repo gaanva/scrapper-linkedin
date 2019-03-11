@@ -49,7 +49,7 @@ public class FacebookScrap2 extends Scrap {
 		super(driver, debug);
 	}
 
-	public Page scrapePage(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) {
+	public Page scrapePage(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
 		long tardo = System.currentTimeMillis();
 		Page page = null;
 		try {
@@ -71,7 +71,7 @@ public class FacebookScrap2 extends Scrap {
 				case "PAGE":
 					if (debug)
 						System.out.println("[INFO] Es una Página.");
-					publications = this.processPagePosts(facebookPage, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs);
+					publications = this.processPagePosts(facebookPage, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, cantPosts);
 					break;
 				default:
 					if (debug)
@@ -229,7 +229,7 @@ public class FacebookScrap2 extends Scrap {
 		return "";
 	}
 
-	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs) {
+	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
 		List<Publication> publicationsImpl = new ArrayList<Publication>();
 		Publication pub;
 		try {
@@ -304,6 +304,9 @@ public class FacebookScrap2 extends Scrap {
 					System.out.println("last post size: " + lastPostSize);
 					if (lastPostSize == prevPostSize) {
 						retriesCount++;
+					}
+					if (cantPosts != null && publicationsImpl.size() >= cantPosts) {
+						break;
 					}
 				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax);
 				if (debug)

@@ -67,7 +67,7 @@ public class FacebookPageTest {
 		cal.add(Calendar.DAY_OF_MONTH, -1);
 		Long minPostUtime = cal.getTimeInMillis() / 1000;
 		Long maxPostUtime = System.currentTimeMillis() / 1000;
-		Page page = fs.scrapePage("mauriciomacri", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.NEW);
+		Page page = fs.scrapePage("mauriciomacri", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.NEW, 10);
 		fs.quit();
 
 		assertNotNull(page);
@@ -85,7 +85,7 @@ public class FacebookPageTest {
 		cal.add(Calendar.DAY_OF_MONTH, -1);
 		Long minPostUtime = cal.getTimeInMillis() / 1000;
 		Long maxPostUtime = System.currentTimeMillis() / 1000;
-		Page page = fs.scrapePage("todonoticias", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.RELEVANCE);
+		Page page = fs.scrapePage("todonoticias", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.RELEVANCE, 10);
 		fs.quit();
 
 		assertNotNull(page);
@@ -104,7 +104,7 @@ public class FacebookPageTest {
 		Long maxCommentUtime = System.currentTimeMillis() / 1000;
 		Long minCommentUtime = maxCommentUtime - 60 * 60 * 8;
 
-		Page page = fs.scrapePage("dembattlescl", minPostUtime, maxPostUtime, minCommentUtime, maxCommentUtime, 200, CommentsSort.RELEVANCE);
+		Page page = fs.scrapePage("dembattlescl", minPostUtime, maxPostUtime, minCommentUtime, maxCommentUtime, 200, CommentsSort.RELEVANCE, 10);
 		fs.quit();
 
 		assertNotNull(page);
