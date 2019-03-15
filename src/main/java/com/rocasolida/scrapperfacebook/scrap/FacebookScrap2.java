@@ -1508,7 +1508,7 @@ public class FacebookScrap2 extends Scrap {
 						}
 					}
 					// Obtengo los comentarios según el filtro de fechas...
-					Thread.sleep(1000);
+					Thread.sleep(3000);
 					comentarios = container.findElements(By.xpath(commentsFilter));
 					if (debug)
 						System.out.println("CANT COMENTARIOS: " + comentarios.size());
