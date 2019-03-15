@@ -1007,18 +1007,19 @@ public class FacebookScrap2 extends Scrap {
 							}
 							Thread.sleep(1000);
 							
-							boolean result = false;
-						    int attempts = 0;
-						    while(attempts < 2) {
-						        try {
-						        	link.click();
-						            result = true;
-						            break;
-						        } catch(Exception e) {
-						        	System.err.println("[INFO] CLICK FALLÓ. ATTEMP 1. " + e.getClass().getSimpleName());
-						        }
-						        attempts++;
-						    }
+//							boolean result = false;
+//						    int attempts = 0;
+//						    while(attempts < 2) {
+//						        try {
+//						        	link.click();
+						        	pub.findElements(By.xpath("//ul[@class='_54nf']//a[@class='_54nc']")).get(index).click();
+//						            result = true;
+//						            break;
+//						        } catch(Exception e) {
+//						        	System.err.println("[INFO] CLICK FALLÓ. ATTEMP 1. " + e.getClass().getSimpleName());
+//						        }
+//						        attempts++;
+//						    }
 							
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
