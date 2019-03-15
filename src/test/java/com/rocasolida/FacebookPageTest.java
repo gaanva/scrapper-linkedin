@@ -77,6 +77,29 @@ public class FacebookPageTest {
 			assertTrue(page.getPublications().get(i).getComments().size() > 0);
 		}
 	}
+	
+	@Test
+	public void mauriciomacriPage_allComments() throws Exception {
+		FacebookScrap2 fs = new FacebookScrap2(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("mauriciomacri", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.ALL);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+		for (int i = 0; i < page.getPublications().size(); i++) {
+			if(page.getPublications().get(i).getComments() != null) {
+				assertTrue(page.getPublications().get(i).getComments().size() > 0);
+			}else {
+				System.out.println("La publicación no tiene comentarios. URL: " + page.getPublications().get(i).getUrl());
+			}
+			
+		}
+	}
 
 	@Test
 	public void todonoticiasPage() throws Exception {
@@ -121,6 +144,24 @@ public class FacebookPageTest {
 		Long minCommentUtime = maxCommentUtime - 60 * 60 * 8;
 
 		Page page = fs.scrapePage("dembattlescl", minPostUtime, maxPostUtime, minCommentUtime, maxCommentUtime, 200, CommentsSort.RELEVANCE);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+	}
+	
+	@Test
+	public void dembattlesclPage_allComments() throws Exception {
+		FacebookScrap2 fs = new FacebookScrap2(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Long maxCommentUtime = System.currentTimeMillis() / 1000;
+		Long minCommentUtime = maxCommentUtime - 60 * 60 * 8;
+
+		Page page = fs.scrapePage("dembattlescl", minPostUtime, maxPostUtime, minCommentUtime, maxCommentUtime, 200, CommentsSort.ALL);
 		fs.quit();
 
 		assertNotNull(page);
