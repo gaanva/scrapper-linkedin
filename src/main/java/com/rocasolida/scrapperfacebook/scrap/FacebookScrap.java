@@ -111,9 +111,7 @@ public class FacebookScrap extends Scrap {
 			System.out.println("[ERROR] AL COMPROBAR TIPO DE LINK (PAGINA | PERFIL)");
 			this.saveScreenShot("ERR_COMPR_LINK");
 		}
-
 		return "";
-
 	}
 
 	public Page obtainPageInformation(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN) throws Exception {
