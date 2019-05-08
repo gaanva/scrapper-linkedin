@@ -73,9 +73,6 @@ public class FacebookPostsTest {
 		assertNotNull(page);
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
-		for (int i = 0; i < page.getPublications().size(); i++) {
-			assertTrue(page.getPublications().get(i).getComments().size() > 0);
-		}
 	}
 
 	@Test
@@ -91,13 +88,7 @@ public class FacebookPostsTest {
 		assertNotNull(page);
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
-		for (int i = 0; i < page.getPublications().size(); i++) {
-			if (page.getPublications().get(i).getComments() != null) {
-				assertTrue(page.getPublications().get(i).getComments().size() > 0);
-			} else {
-				System.out.println("La publicación no tiene comentarios. URL: " + page.getPublications().get(i).getUrl());
-			}
-		}
+		
 	}
 
 	@Test
