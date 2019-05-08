@@ -15,7 +15,7 @@ public final class FacebookConfig {
 	public static String XP_HAS_LIKES_CONTENT = "//div[contains(@class,'_5h60 _30f')]";
 	public static String XP_USER_LIKES = "//li[contains(@class,'_5rz _5k3a _5rz3 _153f') and not(contains(@style,'hidden'))]";
 	public static String XP_LIKES_LOADING = "//div[contains(@class,'_5h60 _30f')]/img[contains(@class, '_359')]";
-
+	
 	//// title[@lang='en']
 	public static Integer CANT_PUBLICATIONS_TO_BE_LOAD = 10;
 
@@ -40,6 +40,20 @@ public final class FacebookConfig {
 
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
+	public static String XP_POST_TOTALREACTIONS = "./descendant::a[contains(@data-testid,'UFI2ReactionsCount/root')]";
+	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
+	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
+	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";
+	public static String XP_POST_LOVES = "./descendant::span[contains(@data-testid,'_LOVE')]";
+	public static String XP_POST_LIKES = "./descendant::span[contains(@data-testid,'_LIKE')]";
+	public static String XP_POST_HAHA = "./descendant::span[contains(@data-testid,'_HAHA')]";
+	public static String XP_POST_WOW = "./descendant::span[contains(@data-testid,'_WOW')]";
+	public static String XP_POST_SORRY = "./descendant::span[contains(@data-testid,'_SORRY')]";
+	public static String XP_POST_GRRR = "./descendant::span[contains(@data-testid,'_GRRR')]";
+	/*
+	 * Hacer el hover en cada elemento y luego consultar este tag:
+	 * /descendant::span[contains(@data-testid,'_LOVE')]
+	 */
 	
 	/**
 	 * DATOS DEL POST

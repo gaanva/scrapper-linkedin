@@ -19,14 +19,30 @@ public class Publication {
 	/** TODO
 	 * agregar: like, love, haha, wow, sad, angry 
 	 */
+	
+	/**
+	 * new.add_xpath('likes',"//a[contains(@href,'reaction_type=1')]/span/text()")
+        new.add_xpath('ahah',"//a[contains(@href,'reaction_type=4')]/span/text()")
+        new.add_xpath('love',"//a[contains(@href,'reaction_type=2')]/span/text()")
+        new.add_xpath('wow',"//a[contains(@href,'reaction_type=3')]/span/text()")
+        new.add_xpath('sigh',"//a[contains(@href,'reaction_type=7')]/span/text()")
+        new.add_xpath('grrr',"//a[contains(@href,'reaction_type=8')]/span/text()")     
+	 */
 	private Integer cantLikes;
+	private Integer cantLoves;
+	private Integer cantHahas;
+	private Integer cantWows;
+	private Integer cantSads;
+	private Integer cantAngries;	
 	private Integer cantComments;
+	
 	private List<Comment> comments;
 	
 	/*
 	 * cacmpos nuevos agregados para los reportes
 	 */
 	private FacebookPostType type;
+	
 	/** TODO
 	 * agregar:
 	 * 
