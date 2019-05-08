@@ -298,7 +298,10 @@ public class FacebookPostScrap extends Scrap {
 							this.moveTo(publicationsElements.get(i));
 							//extraigo datos de la publicacion
 							pub = this.extractPublicationData(facebookPage, publicationsElements.get(i));
-							System.out.println(pub);
+							if(debug) {
+								System.out.println(pub);
+								System.out.println("*********************************************************************************************");
+							}
 							//Extrae los comentarios...
 							/*
 							pub = obtainPostTypeOtherInformation(facebookPage, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub, publicationsElements.get(i));
@@ -634,39 +637,22 @@ public class FacebookPostScrap extends Scrap {
 			/**
 			 * CANTIDAD DE REPRODUCCIONES
 			 */
+			
 			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)) {
 				aux.setCantReproducciones(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)).getText().replaceAll("\\D+", "")));
 			} else {
 				aux.setCantReproducciones(null);
 			}
+			
 			/**
 			 * CANTIDAD DE SHARES
 			 */
-			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)) {
-				aux.setCantShare(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_SHARE)).getText().replaceAll("\\D+", "")));
-			} else {
-				aux.setCantShare(0);
+			if(this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARES)) {
+				int totalShares = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARES)).getText());
+				aux.setCantShare(totalShares);
+				if(debug)
+					System.out.println("Total Shares: " + totalShares);						
 			}
-			/**
-			 * CANTIDAD DE LIKES
-			 */
-			try {
-				if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)) {
-					String auxLikes = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_LIKE)).findElement(By.xpath("//span[contains(@class,'_3chu')]")).getAttribute("innerHTML");
-					if (auxLikes.contains("&nbsp;mil")) {
-						auxLikes = auxLikes.replaceAll("&nbsp;mil", "000");
-						if (auxLikes.contains(",")) {
-							auxLikes = auxLikes.replaceAll(",", "");
-						}
-					}
-					aux.setCantLikes(Integer.valueOf(auxLikes));
-				} else {
-					aux.setCantLikes(0);
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			
 			
 			/**
 			 * Tipo de post (link, video, live video, photo)
@@ -678,7 +664,7 @@ public class FacebookPostScrap extends Scrap {
 				if(match.matches()) {
 					//es foto
 					if(debug)
-						System.out.println("[POST TYPE] SET AS 'PHOTO'!: " + url);
+						System.out.println("[POST TYPE] SET AS 'PHOTO'!");
 					aux.setType(FacebookPostType.PHOTO);
 				}
 				
@@ -688,11 +674,11 @@ public class FacebookPostScrap extends Scrap {
 					//es video, falta definir si es live_video.
 					if(publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
 						if(debug)
-							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!: " + url);
+							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!");
 						aux.setType(FacebookPostType.LIVE_VIDEO);
 					}else {
 						if(debug) 
-							System.out.println("[POST TYPE] SET AS 'VIDEO'!: " + url);
+							System.out.println("[POST TYPE] SET AS 'VIDEO'!");
 						aux.setType(FacebookPostType.VIDEO);
 					}
 				}
@@ -701,10 +687,10 @@ public class FacebookPostScrap extends Scrap {
 				if(aux.getType()==null) {
 					if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_LINK)) {
 						if(debug)
-							System.out.println("[POST TYPE] SET AS 'LINK'!: " + url);
+							System.out.println("[POST TYPE] SET AS 'LINK'!");
 						aux.setType(FacebookPostType.LINK);
 					}else {
-						System.out.println("[POST TYPE] SET AS 'OTHER'!: " + url);
+						System.out.println("[POST TYPE] SET AS 'OTHER'!");
 						aux.setType(FacebookPostType.OTHER);
 					}
 				}
@@ -764,7 +750,9 @@ public class FacebookPostScrap extends Scrap {
 					}
 					
 				}else {
-					System.out.println("[INFO] El post no tiene reacciones.");
+					if(debug)
+						System.out.println("[INFO] El post no tiene reacciones.");
+					
 					aux.setCantReactions(0);
 					aux.setCantLikes(0);
 					aux.setCantLoves(0);
@@ -790,9 +778,12 @@ public class FacebookPostScrap extends Scrap {
 	
 	private int formatStringToNumber(String text) {
 		int number = this.extractNumberFromString(text).intValue();
-		
 		if (text.contains("mil")) {
-			number = number * 1000;
+			if(text.contains(",")) {
+				number = number * 100;
+			}else {
+				number = number * 1000;
+			}
 		}
 		return number;
 	}
@@ -823,7 +814,7 @@ public class FacebookPostScrap extends Scrap {
 				if (mat.matches()) {
 					// System.out.println("[INFO] Post ID: " + stringArray[i]);
 					// return stringArray[i];
-					System.out.println("Valor macheado: " + stringArray[i]);
+					//System.out.println("Valor macheado: " + stringArray[i]);
 					lastMatched = stringArray[i];
 				}
 			}
