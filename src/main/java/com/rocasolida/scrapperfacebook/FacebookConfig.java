@@ -45,7 +45,7 @@ public final class FacebookConfig {
 	 * DATOS DEL POST
 	 */
 	//busco si el post tiene un 'livevideo'
-	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span";
+	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span/span";
 	//busco si el post tiene un 'link'
 	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@data-lynx-uri, 'l.php')]";
 

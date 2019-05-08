@@ -672,7 +672,7 @@ public class FacebookPostScrap extends Scrap {
 			 * Tipo de post (link, video, live video, photo)
 			 */
 			try {
-				String url = aux.getUrl();
+				String url = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
 				Matcher match = this.ptURLPostTypePhotos.matcher(url);
 				
 				if(match.matches()) {
@@ -682,10 +682,11 @@ public class FacebookPostScrap extends Scrap {
 					aux.setType(FacebookPostType.PHOTO);
 				}
 				
+				//System.out.println("GETTEXT: " + publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)));
 				match = this.ptURLPostTypeVideos.matcher(url);
 				if(match.matches() && aux.getType()==null) {
 					//es video, falta definir si es live_video.
-					if(publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).getText()!=null) {
+					if(publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
 						if(debug)
 							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!: " + url);
 						aux.setType(FacebookPostType.LIVE_VIDEO);
