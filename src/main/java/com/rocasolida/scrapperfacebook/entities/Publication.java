@@ -2,6 +2,8 @@ package com.rocasolida.scrapperfacebook.entities;
 
 import java.util.List;
 
+import com.rocasolida.scrapperfacebook.scrap.util.FacebookPostType;
+
 import lombok.Data;
 
 @Data
@@ -20,9 +22,14 @@ public class Publication {
 	private Integer cantLikes;
 	private Integer cantComments;
 	private List<Comment> comments;
+	
+	/*
+	 * cacmpos nuevos agregados para los reportes
+	 */
+	private FacebookPostType type;
 	/** TODO
 	 * agregar:
-	 * Post_type: link, photo, video, live video.
+	 * 
 	 * cant_reactions
 	 * negative_reactions
 	 * sponsored? => ver como lo extraemos...
