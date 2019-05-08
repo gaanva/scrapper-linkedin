@@ -33,7 +33,8 @@ public class Publication {
 	private Integer cantHahas;
 	private Integer cantWows;
 	private Integer cantSads;
-	private Integer cantAngries;	
+	private Integer cantAngries;
+	private Integer cantReactions;
 	private Integer cantComments;
 	
 	private List<Comment> comments;

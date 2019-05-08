@@ -44,16 +44,12 @@ public final class FacebookConfig {
 	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
 	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
 	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";
-	public static String XP_POST_LOVES = "./descendant::span[contains(@data-testid,'_LOVE')]";
-	public static String XP_POST_LIKES = "./descendant::span[contains(@data-testid,'_LIKE')]";
-	public static String XP_POST_HAHA = "./descendant::span[contains(@data-testid,'_HAHA')]";
-	public static String XP_POST_WOW = "./descendant::span[contains(@data-testid,'_WOW')]";
-	public static String XP_POST_SORRY = "./descendant::span[contains(@data-testid,'_SORRY')]";
-	public static String XP_POST_GRRR = "./descendant::span[contains(@data-testid,'_GRRR')]";
-	/*
-	 * Hacer el hover en cada elemento y luego consultar este tag:
-	 * /descendant::span[contains(@data-testid,'_LOVE')]
-	 */
+	public static String XP_POST_LOVES = "./descendant::span[contains(@data-testid,'_LOVE')]/a"; //getAttribute('aria-label')
+	public static String XP_POST_LIKES = "./descendant::span[contains(@data-testid,'_LIKE')]/a";
+	public static String XP_POST_HAHA = "./descendant::span[contains(@data-testid,'_HAHA')]/a";
+	public static String XP_POST_WOW = "./descendant::span[contains(@data-testid,'_WOW')]/a";
+	public static String XP_POST_SORRY = "./descendant::span[contains(@data-testid,'_SORRY')]/a";
+	public static String XP_POST_ANGRY = "./descendant::span[contains(@data-testid,'_ANGER')]/a";
 	
 	/**
 	 * DATOS DEL POST
