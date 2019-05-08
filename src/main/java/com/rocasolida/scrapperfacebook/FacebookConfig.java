@@ -40,6 +40,14 @@ public final class FacebookConfig {
 
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
+	
+	/**
+	 * DATOS DEL POST
+	 */
+	//busco si el post tiene un 'livevideo'
+	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span";
+	//busco si el post tiene un 'link'
+	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@data-lynx-uri, 'l.php')]";
 
 	/**
 	 * La búsqueda para grupos la tengo que hacer en dos secciones...

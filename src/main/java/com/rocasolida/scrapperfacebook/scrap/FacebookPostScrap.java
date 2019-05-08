@@ -32,6 +32,7 @@ import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.entities.Publication;
 import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
+import com.rocasolida.scrapperfacebook.scrap.util.FacebookPostType;
 import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 
 public class FacebookPostScrap extends Scrap {
@@ -432,7 +433,7 @@ public class FacebookPostScrap extends Scrap {
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200)).ignoring(TimeoutException.class);
 		return wait.until(commentLink);
 	}
-
+ 
 	private boolean waitUntilNotSpinnerLoading() {
 		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 			public Boolean apply(WebDriver driver) {
@@ -665,6 +666,52 @@ public class FacebookPostScrap extends Scrap {
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
+			
+			
+			/**
+			 * Tipo de post (link, video, live video, photo)
+			 */
+			try {
+				String url = aux.getUrl();
+				Matcher match = this.ptURLPostTypePhotos.matcher(url);
+				
+				if(match.matches()) {
+					//es foto
+					if(debug)
+						System.out.println("[POST TYPE] SET AS 'PHOTO'!: " + url);
+					aux.setType(FacebookPostType.PHOTO);
+				}
+				
+				match = this.ptURLPostTypeVideos.matcher(url);
+				if(match.matches() && aux.getType()==null) {
+					//es video, falta definir si es live_video.
+					if(publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).getText()!=null) {
+						if(debug)
+							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!: " + url);
+						aux.setType(FacebookPostType.LIVE_VIDEO);
+					}else {
+						if(debug) 
+							System.out.println("[POST TYPE] SET AS 'VIDEO'!: " + url);
+						aux.setType(FacebookPostType.VIDEO);
+					}
+				}
+				
+				//Agregar el tipo de post LINK. en el data-lynx-uri -> aparece el valor l.facebook.com/l.php
+				if(aux.getType()==null) {
+					if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_LINK)) {
+						if(debug)
+							System.out.println("[POST TYPE] SET AS 'LINK'!: " + url);
+						aux.setType(FacebookPostType.LINK);
+					}else {
+						System.out.println("[POST TYPE] SET AS 'OTHER'!: " + url);
+						aux.setType(FacebookPostType.OTHER);
+					}
+				}
+				
+			}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			
 			return aux;
 		} finally {
 			tardo = System.currentTimeMillis() - tardo;
