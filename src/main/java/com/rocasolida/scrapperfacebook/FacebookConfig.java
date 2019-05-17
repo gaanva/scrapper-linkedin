@@ -60,6 +60,8 @@ public final class FacebookConfig {
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XP_POST_TOTALREACTIONS = "./descendant::a[contains(@data-testid,'UFI2ReactionsCount/root')]";
+	public static String XP_POST_TOTALREACTIONS_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFILikeSentence _4204']";
+	public static String XP_POST_TOTALSHARED_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFIShareRow']/a";
 	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
 	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
 	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";

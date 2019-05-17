@@ -759,52 +759,19 @@ public class FacebookPostScrap extends Scrap {
 			}
 			
 			
-			/**
-			 * Captura de reactions
-			 */
-			try {
-				
-				if(this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS)) {
-					int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS)).getText());
+			if(aux.getType()==FacebookPostType.LIVE_VIDEO) {
+				if(this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS)) {
+					int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS)).getText());
 					aux.setCantReactions(totalReactions);
 					if(debug)
 						System.out.println("Total Reacciones: " + totalReactions);
 					
-					if(this.existElement(publication, FacebookConfig.XP_POST_LIKES)) {
-						int likes = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_LIKES)).getAttribute("aria-label"));
-						aux.setCantLikes(Integer.valueOf(likes));
+					
+					if(this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS)) {
+						int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS)).getText());
+						aux.setCantLikes(Integer.valueOf(totalShared));
 						if(debug)
-							System.out.println("POST LIKEs: " + likes);						
-					}
-					if(this.existElement(publication, FacebookConfig.XP_POST_LOVES)) {
-						int loves = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_LOVES)).getAttribute("aria-label"));
-						aux.setCantLoves(Integer.valueOf(loves));
-						if(debug)
-							System.out.println("POST LOVEs: " + loves);
-					}
-					if(this.existElement(publication, FacebookConfig.XP_POST_WOW)) {
-						int wow = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_WOW)).getAttribute("aria-label"));
-						aux.setCantWows(Integer.valueOf(wow));
-						if(debug)
-							System.out.println("POST WOWs: " + wow);
-					}
-					if(this.existElement(publication, FacebookConfig.XP_POST_ANGRY)) {
-						int angry = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_ANGRY)).getAttribute("aria-label"));
-						aux.setCantAngries(Integer.valueOf(angry));
-						if(debug)
-							System.out.println("POST ANGRIEs: " + angry);
-					}
-					if(this.existElement(publication, FacebookConfig.XP_POST_HAHA)) {
-						int haha = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_HAHA)).getAttribute("aria-label"));
-						aux.setCantHahas(Integer.valueOf(haha));
-						if(debug)
-							System.out.println("POST HAHAs: " + haha);
-					}
-					if(this.existElement(publication, FacebookConfig.XP_POST_SORRY)) {
-						int sorry = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_SORRY)).getAttribute("aria-label"));
-						aux.setCantSads(Integer.valueOf(sorry));
-						if(debug)
-							System.out.println("POST SORRYs: " + sorry);
+							System.out.println("POST SHAREs: " + totalShared);						
 					}
 					
 				}else {
@@ -819,7 +786,69 @@ public class FacebookPostScrap extends Scrap {
 					aux.setCantHahas(0);
 					aux.setCantSads(0);
 				}
-				
+			}
+			
+			/**
+			 * Captura de reactions
+			 */
+			try {
+				if(aux.getType()!=FacebookPostType.LIVE_VIDEO) {
+					if(this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS)) {
+						int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS)).getText());
+						aux.setCantReactions(totalReactions);
+						if(debug)
+							System.out.println("Total Reacciones: " + totalReactions);
+						
+						if(this.existElement(publication, FacebookConfig.XP_POST_LIKES)) {
+							int likes = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_LIKES)).getAttribute("aria-label"));
+							aux.setCantLikes(Integer.valueOf(likes));
+							if(debug)
+								System.out.println("POST LIKEs: " + likes);						
+						}
+						if(this.existElement(publication, FacebookConfig.XP_POST_LOVES)) {
+							int loves = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_LOVES)).getAttribute("aria-label"));
+							aux.setCantLoves(Integer.valueOf(loves));
+							if(debug)
+								System.out.println("POST LOVEs: " + loves);
+						}
+						if(this.existElement(publication, FacebookConfig.XP_POST_WOW)) {
+							int wow = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_WOW)).getAttribute("aria-label"));
+							aux.setCantWows(Integer.valueOf(wow));
+							if(debug)
+								System.out.println("POST WOWs: " + wow);
+						}
+						if(this.existElement(publication, FacebookConfig.XP_POST_ANGRY)) {
+							int angry = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_ANGRY)).getAttribute("aria-label"));
+							aux.setCantAngries(Integer.valueOf(angry));
+							if(debug)
+								System.out.println("POST ANGRIEs: " + angry);
+						}
+						if(this.existElement(publication, FacebookConfig.XP_POST_HAHA)) {
+							int haha = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_HAHA)).getAttribute("aria-label"));
+							aux.setCantHahas(Integer.valueOf(haha));
+							if(debug)
+								System.out.println("POST HAHAs: " + haha);
+						}
+						if(this.existElement(publication, FacebookConfig.XP_POST_SORRY)) {
+							int sorry = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_SORRY)).getAttribute("aria-label"));
+							aux.setCantSads(Integer.valueOf(sorry));
+							if(debug)
+								System.out.println("POST SORRYs: " + sorry);
+						}
+						
+					}else{
+						if(debug)
+							System.out.println("[INFO] El post no tiene reacciones.");
+						
+						aux.setCantReactions(0);
+						aux.setCantLikes(0);
+						aux.setCantLoves(0);
+						aux.setCantWows(0);
+						aux.setCantAngries(0);
+						aux.setCantHahas(0);
+						aux.setCantSads(0);
+					}
+				}				
 				
 			}catch(Exception ex) {
 				ex.printStackTrace();

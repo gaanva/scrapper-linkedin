@@ -27,16 +27,13 @@ public class Publication {
 	
 	private List<Comment> comments;
 	
-	/*
-	 * cacmpos nuevos agregados para los reportes
-	 */
 	private FacebookPostType type;
+	private boolean sponsored;
 	
 	/** TODO
 	 * agregar:
 	 * 
-	 * negative_reactions
-	 * sponsored? => ver como lo extraemos...
+	 * negative_reactions?
 	 */
 
 }
