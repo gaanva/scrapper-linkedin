@@ -49,6 +49,7 @@ public class FacebookPostScrap extends Scrap {
 		super(driver, debug);
 	}
 
+	
 	public Page scrapePage(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
 		long tardo = System.currentTimeMillis();
 		Page page = null;
@@ -71,6 +72,7 @@ public class FacebookPostScrap extends Scrap {
 				case "PAGE":
 					if (debug)
 						System.out.println("[INFO] Es una Página.");
+					page = this.scrapCommunityPageInfo(page);
 					publications = this.processPagePosts(facebookPage, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, cantPosts);
 					break;
 				default:
@@ -88,6 +90,8 @@ public class FacebookPostScrap extends Scrap {
 		}
 		return page;
 	}
+	
+	
 
 	private boolean navigateTo(String URL) {
 		long aux = System.currentTimeMillis();
@@ -238,6 +242,41 @@ public class FacebookPostScrap extends Scrap {
 		return "";
 	}
 	
+	
+	private Page scrapCommunityPageInfo(Page page) {
+		System.out.println("***********************************************************");
+		System.out.println("Processing community info.");
+		System.out.println("***********************************************************");
+		if ((this.existElement(null, FacebookConfig.PAGE_COMMUNITY_INFO))) {
+			List<WebElement> listOfCommunityInfo = this.getDriver().findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_INFO));
+			for(int i =0; i<listOfCommunityInfo.size(); i++) {
+				if(listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_LIKES)).size()>0) {
+					int likes = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_LIKES)).getText());
+					System.out.println("LIKES: " + likes);
+					page.setLikes(Integer.toUnsignedLong(likes));
+				}
+				if(listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_FOLLOWERS)).size()>0) {
+					int followers = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_FOLLOWERS)).getText()); 
+					System.out.println("FOLLOWERS: " + followers);
+					page.setFollowers(Integer.toUnsignedLong(followers));
+				}
+				
+				if(listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_VISITS)).size()>0) {
+					int visits = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_VISITS)).getText()); 
+					System.out.println("VISITS: " + visits);
+					page.setVisits(Integer.toUnsignedLong(visits));
+				}	
+				
+				
+			}
+		}else {
+			System.out.println("No existe información de Comunidad!");
+		}
+		System.out.println("***********************************************************");
+		System.out.println("Ending community info.");
+		System.out.println("***********************************************************");
+		return page;
+	}
 	
 	
 	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
@@ -578,9 +617,59 @@ public class FacebookPostScrap extends Scrap {
 
 	private Publication extractPublicationData(String pageName, WebElement publication) {
 		long tardo = System.currentTimeMillis();
+		System.out.println("***********************************Extracting post info*****************************************");
 		try {
+			
+			
 			Publication aux = new Publication();
 
+			
+			
+			/**
+			 * Tipo de post (link, video, live video, photo)
+			 */
+			try {
+				String url = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
+				Matcher match = this.ptURLPostTypePhotos.matcher(url);
+				
+				if(match.matches()) {
+					//es foto
+					if(debug)
+						System.out.println("[POST TYPE] SET AS 'PHOTO'!");
+					aux.setType(FacebookPostType.PHOTO);
+				}
+				
+				//System.out.println("GETTEXT: " + publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)));
+				match = this.ptURLPostTypeVideos.matcher(url);
+				if(match.matches() && aux.getType()==null) {
+					//es video, falta definir si es live_video.
+					if(publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
+						if(debug)
+							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!");
+						aux.setType(FacebookPostType.LIVE_VIDEO);
+					}else {
+						if(debug) 
+							System.out.println("[POST TYPE] SET AS 'VIDEO'!");
+						aux.setType(FacebookPostType.VIDEO);
+					}
+				}
+				
+				//Agregar el tipo de post LINK. en el data-lynx-uri -> aparece el valor l.facebook.com/l.php
+				if(aux.getType()==null) {
+					if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_LINK)) {
+						if(debug)
+							System.out.println("[POST TYPE] SET AS 'LINK'!");
+						aux.setType(FacebookPostType.LINK);
+					}else {
+						System.out.println("[POST TYPE] SET AS 'OTHER'!");
+						aux.setType(FacebookPostType.OTHER);
+					}
+				}
+				
+			}catch(Exception ex) {
+				ex.printStackTrace();
+			}
+			
 			/**
 			 * Extraigo LINK del post, que es su ID.
 			 */
@@ -640,8 +729,11 @@ public class FacebookPostScrap extends Scrap {
 			 * CANTIDAD DE REPRODUCCIONES
 			 */
 			
-			if (this.existElement(publication, FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)) {
-				aux.setCantReproducciones(Integer.parseInt(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_CANT_REPRO)).getText().replaceAll("\\D+", "")));
+			if (this.existElement(publication, FacebookConfig.XP_POST_TOTALREPRODUCTIONS)) {
+				int totalRepro = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREPRODUCTIONS)).getText());
+				aux.setCantReproducciones(totalRepro);
+				if(debug)
+					System.out.println("Total Reproducciones: " + totalRepro);
 			} else {
 				aux.setCantReproducciones(null);
 			}
@@ -657,50 +749,14 @@ public class FacebookPostScrap extends Scrap {
 			}
 			
 			/**
-			 * Tipo de post (link, video, live video, photo)
+			 * CANTIDAD DE COMMENTS
 			 */
-			try {
-				String url = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
-				Matcher match = this.ptURLPostTypePhotos.matcher(url);
-				
-				if(match.matches()) {
-					//es foto
-					if(debug)
-						System.out.println("[POST TYPE] SET AS 'PHOTO'!");
-					aux.setType(FacebookPostType.PHOTO);
-				}
-				
-				//System.out.println("GETTEXT: " + publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)));
-				match = this.ptURLPostTypeVideos.matcher(url);
-				if(match.matches() && aux.getType()==null) {
-					//es video, falta definir si es live_video.
-					if(publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
-						if(debug)
-							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!");
-						aux.setType(FacebookPostType.LIVE_VIDEO);
-					}else {
-						if(debug) 
-							System.out.println("[POST TYPE] SET AS 'VIDEO'!");
-						aux.setType(FacebookPostType.VIDEO);
-					}
-				}
-				
-				//Agregar el tipo de post LINK. en el data-lynx-uri -> aparece el valor l.facebook.com/l.php
-				if(aux.getType()==null) {
-					if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_LINK)) {
-						if(debug)
-							System.out.println("[POST TYPE] SET AS 'LINK'!");
-						aux.setType(FacebookPostType.LINK);
-					}else {
-						System.out.println("[POST TYPE] SET AS 'OTHER'!");
-						aux.setType(FacebookPostType.OTHER);
-					}
-				}
-				
-			}catch(Exception ex) {
-				ex.printStackTrace();
+			if(this.existElement(publication, FacebookConfig.XP_POST_TOTALCOMMENTS)) {
+				int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS)).getText());
+				aux.setCantComments(totalComments);
+				if(debug)
+					System.out.println("Total Comments: " + totalComments);						
 			}
-			
 			
 			
 			/**

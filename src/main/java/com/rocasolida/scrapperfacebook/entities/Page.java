@@ -10,5 +10,6 @@ public class Page {
 	private List<Publication> publications;
 	private Long likes;
 	private Long followers; //fans
+	private Long visits;
 	private long lastUpdated_utime; //last updated utime.
 }

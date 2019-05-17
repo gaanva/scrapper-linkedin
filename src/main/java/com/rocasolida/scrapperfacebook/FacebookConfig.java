@@ -4,12 +4,22 @@ public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
 	public static String URL_GROUP = "groups/";
+	//Par la comunity page info
+	//public static String URL_PAGE_COMM = "/community/";
+	//sección de comunidad
+	public static String PAGE_COMMUNITY_INFO ="//div[@class='_4-u2 _6590 _3xaf _4-u8']/descendant::div[@class='_2pi9 _2pi2']";
+	public static String PAGE_COMMUNITY_LIKES = "./div/div[@class='_4bl7']/img[contains(@src,'AT9YNs6Rbpt.png')]/parent::div/following-sibling::div";
+	public static String PAGE_COMMUNITY_FOLLOWERS = "./div/div[@class='_4bl7']/img[contains(@src,'PL1sMLehMAU.png')]/parent::div/following-sibling::div";
+	public static String PAGE_COMMUNITY_VISITS = "./div/div[@class='_4bl7']/img[contains(@src,'DiD8WSePDTj.png')]/parent::div/following-sibling::div";
+	
 	//para page information
 	public static String URL_INFO_PAGE ="/about/?ref=page_internal";
 	
 	public static String URL_INFO_PAGE_SECTIONS = "//div[@class='_4-u2 _3xaf _3-95 _4-u8']";
 	public static String URL_INFO_PAGE_TITLES = "./descendant::div[@class='_50f7']";
 	public static String URL_INFO_PAGE_CONTENT= "./descendant::div[@class='_4bl9']";
+	
+	//Para page 
 	//separar titulo  y contenido:
 	
 	//para presonas...
@@ -66,7 +76,7 @@ public final class FacebookConfig {
 	//busco si el post tiene un 'livevideo'
 	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span/span";
 	//busco si el post tiene un 'link'
-	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@data-lynx-uri, 'l.php')]";
+	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@href, 'l.php')]";
 
 	/**
 	 * La búsqueda para grupos la tengo que hacer en dos secciones...
