@@ -4,6 +4,15 @@ public final class FacebookConfig {
 	public static String URL = "https://www.facebook.com/";
 	public static String URL_POST = "/posts/";
 	public static String URL_GROUP = "groups/";
+	//para page information
+	public static String URL_INFO_PAGE ="/about/?ref=page_internal";
+	
+	public static String URL_INFO_PAGE_SECTIONS = "//div[@class='_4-u2 _3xaf _3-95 _4-u8']";
+	public static String URL_INFO_PAGE_TITLES = "./descendant::div[@class='_50f7']";
+	public static String URL_INFO_PAGE_CONTENT= "./descendant::div[@class='_4bl9']";
+	//separar titulo  y contenido:
+	
+	//para presonas...
 	public static String URL_ABOUT_INFO_BASICA = "/about?section=contact-info";
 	public static String URL_ABOUT_INFO_BASICA_1 = "&sk=about&section=contact-info";
 	public static String URL_ABOUT_INFO_EDUCACION = "/about?section=education";

@@ -237,7 +237,9 @@ public class FacebookPostScrap extends Scrap {
 		}
 		return "";
 	}
-
+	
+	
+	
 	private List<Publication> processPagePosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
 		List<Publication> publicationsImpl = new ArrayList<Publication>();
 		Publication pub;
