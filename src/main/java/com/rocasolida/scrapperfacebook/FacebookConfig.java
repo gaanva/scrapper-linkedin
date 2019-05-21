@@ -79,7 +79,9 @@ public final class FacebookConfig {
 	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span/span";
 	//busco si el post tiene un 'link'
 	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@href, 'l.php')]";
-
+	//devuelve el link del contenido compartido: post, photo, albun
+	public static String XP_PUBLICATION_CONTENTSHARED = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span/span/following-sibling::a";
+	public static String XP_PUBLICATION_PINEADA = "./descendant::div[@class='_449j']";
 	/**
 	 * La búsqueda para grupos la tengo que hacer en dos secciones...
 	 */
@@ -166,7 +168,8 @@ public final class FacebookConfig {
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
 	// }
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = XPATH_PUBLICATIONS_CONTAINER + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
+	//Agregando para que deje afuera de la condicion a los pineados...
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = "//div[contains(@class,'userContentWrapper') and not (descendant::div[@class='_449j'])]" + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
 
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
