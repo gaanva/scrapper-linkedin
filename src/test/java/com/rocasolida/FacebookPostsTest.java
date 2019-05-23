@@ -61,6 +61,41 @@ public class FacebookPostsTest {
 	//
 	// }
 	
+	@Test
+	public void SchiaretiPage() throws Exception {
+		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("SchiarettiOk", minPostUtime, maxPostUtime, null, null, null, null, null);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+	}
+	/**
+	 * canalseisposadas
+	 */
+	@Test
+	public void canalSeisPosadasPage() throws Exception {
+		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
+//		Calendar cal = Calendar.getInstance();
+//		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = 1558051200L; //17/05
+		//28/04 00:00-->1556409600
+				//28/04 23:59-->1556495999
+		//Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = 1558137599L;
+		//Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("canalseisposadas", minPostUtime, maxPostUtime, null, null, null, null, null);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+	}
 	
 	/**
 	 * QUINTLY PROFILE TESTS:

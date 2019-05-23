@@ -43,7 +43,9 @@ public class FacebookPostScrap extends Scrap {
 	private static Integer WAIT_UNTIL_SPINNER = 10;
 	private static Integer MAX_COMMENTS_PER_POST = 200;
 	private static final Pattern ptURLPostTypePhotos = Pattern.compile("^.*\\/photos\\/.*$");
+	private static final Pattern ptURLPostTypePhotos_album = Pattern.compile("^.*\\/set\\/.*$");
 	private static final Pattern ptURLPostTypeVideos = Pattern.compile("^.*\\/videos\\/.*$");
+	private static final Pattern ptHashtagDetector = Pattern.compile("\\B#\\w*[a-zA-Z]+\\w*");
 
 	public FacebookPostScrap(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -369,7 +371,7 @@ public class FacebookPostScrap extends Scrap {
 					}
 				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax);
 				if (debug)
-					System.out.println("|FIN|");
+					System.out.println("|FIN| " + retriesCount);
 			} else {
 				if (debug) {
 					System.err.println("[INFO] LA PAGINA NO TIENE NUNGUNA PUBLICACION o NO TUVO EL TIEMPO PARA CARGARSE");
@@ -626,24 +628,41 @@ public class FacebookPostScrap extends Scrap {
 			
 			
 			/**
-			 * Tipo de post (link, video, live video, photo)
+			 * Tipo de post (link, video, live video, youtube_video, photo)
 			 */
 			try {
-				String url = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
-				Matcher match = this.ptURLPostTypePhotos.matcher(url);
+				String url="";
+				if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_CONTENTSHARED)) {
+					url = publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_CONTENTSHARED)).getAttribute("href");
+					System.out.println("URL shared: " + url);
+				}else {
+					url = publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_ID_1)).getAttribute("href");
+					System.out.println("URL post: " + url);
+				}
 				
+				
+				//puede estar en la url o en el mismo que el FacebookConfig.XP_PUBLICATION_LIVEVIDEO
+				Matcher match = this.ptURLPostTypePhotos.matcher(url);
 				if(match.matches()) {
 					//es foto
 					if(debug)
-						System.out.println("[POST TYPE] SET AS 'PHOTO'!");
+						System.out.println("[POST TYPE] SET AS 'PHOTO'!"); //o album
+					aux.setType(FacebookPostType.PHOTO);
+				}
+				
+				match = this.ptURLPostTypePhotos_album.matcher(url);
+				if(match.matches()) {
+					//es foto
+					if(debug)
+						System.out.println("[POST TYPE] SET AS 'PHOTO'!"); //o album
 					aux.setType(FacebookPostType.PHOTO);
 				}
 				
 				//System.out.println("GETTEXT: " + publication.findElement(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)));
 				match = this.ptURLPostTypeVideos.matcher(url);
-				if(match.matches() && aux.getType()==null) {
+				if(aux.getType()==null && match.matches()) {
 					//es video, falta definir si es live_video.
-					if(publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
+					if(!this.existElement(publication, FacebookConfig.XP_PUBLICATION_CONTENTSHARED) && publication.findElements(By.xpath(FacebookConfig.XP_PUBLICATION_LIVEVIDEO)).size()>0) {
 						if(debug)
 							System.out.println("[POST TYPE] SET AS 'LIVE VIDEO'!");
 						aux.setType(FacebookPostType.LIVE_VIDEO);
@@ -661,8 +680,14 @@ public class FacebookPostScrap extends Scrap {
 							System.out.println("[POST TYPE] SET AS 'LINK'!");
 						aux.setType(FacebookPostType.LINK);
 					}else {
-						System.out.println("[POST TYPE] SET AS 'OTHER'!");
-						aux.setType(FacebookPostType.OTHER);
+						if(this.existElement(publication, FacebookConfig.XP_PUBLICATION_POST_YOUTUBE)) {
+							if(debug)
+								System.out.println("[POST TYPE] SET AS 'YOUTUBE VIDEO'!");
+							aux.setType(FacebookPostType.YOUTUBE_VIDEO);
+						}else {
+							System.out.println("[POST TYPE] SET AS 'OTHER'!");
+							aux.setType(FacebookPostType.OTHER);
+						}
 					}
 				}
 				
@@ -708,6 +733,15 @@ public class FacebookPostScrap extends Scrap {
 				aux.setTitulo(null);
 			}
 
+			/**
+			 * HASHTAG DETECTION
+			 */
+			if (aux.getTitulo()!=null) {
+				this.clickViewMoreTextContent(publication, FacebookConfig.XPATH_PUBLICATION_TITLE_VER_MAS);
+				aux.setTitulo(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TITLE)).getText());
+			} else {
+				aux.setTitulo(null);
+			}
 			/**
 			 * OWNER La pubicación siempre tiene un OWNER.
 			 */
@@ -760,19 +794,30 @@ public class FacebookPostScrap extends Scrap {
 			
 			
 			if(aux.getType()==FacebookPostType.LIVE_VIDEO) {
-				if(this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS)) {
-					int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS)).getText());
+				if(debug)
+					System.out.println("LIVE VIDEO WITH NO LOGIN!, only can be extracted: TOTAL Reactions(not each type of reaction), Shares and Total Comments.");
+				
+				if(this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)) {
+					int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText());
 					aux.setCantReactions(totalReactions);
 					if(debug)
 						System.out.println("Total Reacciones: " + totalReactions);
 					
 					
-					if(this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS)) {
-						int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS)).getText());
-						aux.setCantLikes(Integer.valueOf(totalShared));
+					if(this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)) {
+						int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText());
+						aux.setCantShare(Integer.valueOf(totalShared));
 						if(debug)
 							System.out.println("POST SHAREs: " + totalShared);						
 					}
+					
+					if(this.existElement(publication, FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)) {
+						int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText());
+						aux.setCantComments(Integer.valueOf(totalComments));
+						if(debug)
+							System.out.println("POST Comments: " + totalComments);						
+					}
+					
 					
 				}else {
 					if(debug)
@@ -840,7 +885,6 @@ public class FacebookPostScrap extends Scrap {
 						if(debug)
 							System.out.println("[INFO] El post no tiene reacciones.");
 						
-						aux.setCantReactions(0);
 						aux.setCantLikes(0);
 						aux.setCantLoves(0);
 						aux.setCantWows(0);
@@ -861,6 +905,14 @@ public class FacebookPostScrap extends Scrap {
 			tardo = System.currentTimeMillis() - tardo;
 			System.out.println("extractPublicationData tardo: " + tardo);
 		}
+	}
+	
+	private String[] postHashTags(String message) {
+		Matcher match = this.ptHashtagDetector.matcher(message);
+		if(match.matches()) {
+			
+		}
+		return null;
 	}
 	
 	private int formatStringToNumber(String text) {

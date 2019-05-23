@@ -60,10 +60,20 @@ public final class FacebookConfig {
 	/** DATOS DE LA PUBLICACIÓN **/
 	public static String XP_GROUP_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XP_POST_TOTALREACTIONS = "./descendant::a[contains(@data-testid,'UFI2ReactionsCount/root')]";
+	//Loged in:
 	public static String XP_POST_TOTALREACTIONS_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFILikeSentence _4204']";
+	//NL=Not Loggedin
+	public static String XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL = "./descendant::div[@class='UFILikeSentenceText']";
+	//logged In
 	public static String XP_POST_TOTALSHARED_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFIShareRow']/a";
+	//NL=not logged in
+	public static String XP_POST_TOTALSHARED_LIVEVIDEOS_NL = "./descendant::a[contains(@class,'UFIShareLink')]";
+	public static String XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL = "./descendant::a[@class='UFIPagerLink']";
 	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
+	
+	
 	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
+	
 	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";
 	public static String XP_POST_LOVES = "./descendant::span[contains(@data-testid,'_LOVE')]/a"; //getAttribute('aria-label')
 	public static String XP_POST_LIKES = "./descendant::span[contains(@data-testid,'_LIKE')]/a";
@@ -77,6 +87,8 @@ public final class FacebookConfig {
 	 */
 	//busco si el post tiene un 'livevideo'
 	public static String XP_PUBLICATION_LIVEVIDEO = "./descendant::div[@class='_6a _6b']/following-sibling::div/h5/span/span/span";
+	//filtro el tipo de video youtube:
+	public static String XP_PUBLICATION_POST_YOUTUBE = "./descendant::a[contains(@*, 'youtu')]";
 	//busco si el post tiene un 'link'
 	public static String XP_PUBLICATION_LINK = "./descendant::*[contains(@href, 'l.php')]";
 	//devuelve el link del contenido compartido: post, photo, albun
