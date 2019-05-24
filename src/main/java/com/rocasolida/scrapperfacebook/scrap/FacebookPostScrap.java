@@ -45,7 +45,6 @@ public class FacebookPostScrap extends Scrap {
 	private static final Pattern ptURLPostTypePhotos = Pattern.compile("^.*\\/photos\\/.*$");
 	private static final Pattern ptURLPostTypePhotos_album = Pattern.compile("^.*\\/set\\/.*$");
 	private static final Pattern ptURLPostTypeVideos = Pattern.compile("^.*\\/videos\\/.*$");
-	private static final Pattern ptHashtagDetector = Pattern.compile("\\B#\\w*[a-zA-Z]+\\w*");
 
 	public FacebookPostScrap(Driver driver, boolean debug) throws MalformedURLException {
 		super(driver, debug);
@@ -907,13 +906,6 @@ public class FacebookPostScrap extends Scrap {
 		}
 	}
 	
-	private String[] postHashTags(String message) {
-		Matcher match = this.ptHashtagDetector.matcher(message);
-		if(match.matches()) {
-			
-		}
-		return null;
-	}
 	
 	private int formatStringToNumber(String text) {
 		int number = this.extractNumberFromString(text).intValue();
