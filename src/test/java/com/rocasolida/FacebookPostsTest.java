@@ -18,7 +18,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookPostsTest {
 	private static String OS = ScrapUtils.getOSName();
 	private static final boolean DEBUG = true;
-	private static DriverType dt = DriverType.FIREFOX_HEADLESS;
+	private static DriverType dt = DriverType.FIREFOX;
 
 	@BeforeClass
 	public static void loadOs() {
@@ -90,6 +90,25 @@ public class FacebookPostsTest {
 		Long maxPostUtime = 1558137599L;
 		//Long maxPostUtime = System.currentTimeMillis() / 1000;
 		Page page = fs.scrapePage("canalseisposadas", minPostUtime, maxPostUtime, null, null, null, null, null);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+	}
+	
+	@Test
+	public void CentraldenoticiasmisionessPage() throws Exception {
+		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
+//		Calendar cal = Calendar.getInstance();
+//		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = 1559433600L; //17/05
+		//28/04 00:00-->1556409600
+				//28/04 23:59-->1556495999
+		//Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = 1559520000L;
+		//Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("Centraldenoticiasmisiones", minPostUtime, maxPostUtime, null, null, null, null, null);
 		fs.quit();
 
 		assertNotNull(page);
