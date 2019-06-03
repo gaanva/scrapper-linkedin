@@ -18,7 +18,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookPostsTest {
 	private static String OS = ScrapUtils.getOSName();
 	private static final boolean DEBUG = true;
-	private static DriverType dt = DriverType.FIREFOX;
+	private static DriverType dt = DriverType.FIREFOX_HEADLESS;
 
 	@BeforeClass
 	public static void loadOs() {
@@ -60,7 +60,7 @@ public class FacebookPostsTest {
 	// assertTrue(pub.getComments().size() > 50);
 	//
 	// }
-	
+
 	@Test
 	public void SchiaretiPage() throws Exception {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
@@ -75,20 +75,21 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
+
 	/**
 	 * canalseisposadas
 	 */
 	@Test
 	public void canalSeisPosadasPage() throws Exception {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
-//		Calendar cal = Calendar.getInstance();
-//		cal.add(Calendar.DAY_OF_MONTH, -1);
-		Long minPostUtime = 1558051200L; //17/05
-		//28/04 00:00-->1556409600
-				//28/04 23:59-->1556495999
-		//Long minPostUtime = cal.getTimeInMillis() / 1000;
+		// Calendar cal = Calendar.getInstance();
+		// cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = 1558051200L; // 17/05
+		// 28/04 00:00-->1556409600
+		// 28/04 23:59-->1556495999
+		// Long minPostUtime = cal.getTimeInMillis() / 1000;
 		Long maxPostUtime = 1558137599L;
-		//Long maxPostUtime = System.currentTimeMillis() / 1000;
+		// Long maxPostUtime = System.currentTimeMillis() / 1000;
 		Page page = fs.scrapePage("canalseisposadas", minPostUtime, maxPostUtime, null, null, null, null, null);
 		fs.quit();
 
@@ -96,18 +97,18 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
+
 	@Test
 	public void CentraldenoticiasmisionessPage() throws Exception {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
-//		Calendar cal = Calendar.getInstance();
-//		cal.add(Calendar.DAY_OF_MONTH, -1);
-		Long minPostUtime = 1559433600L; //17/05
-		//28/04 00:00-->1556409600
-				//28/04 23:59-->1556495999
-		//Long minPostUtime = cal.getTimeInMillis() / 1000;
+		// Calendar cal = Calendar.getInstance();
+		// cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = 1559433600L; // 17/05
+		// 28/04 00:00-->1556409600
+		// 28/04 23:59-->1556495999
+		// Long minPostUtime = cal.getTimeInMillis() / 1000;
 		Long maxPostUtime = 1559520000L;
-		//Long maxPostUtime = System.currentTimeMillis() / 1000;
+		// Long maxPostUtime = System.currentTimeMillis() / 1000;
 		Page page = fs.scrapePage("Centraldenoticiasmisiones", minPostUtime, maxPostUtime, null, null, null, null, null);
 		fs.quit();
 
@@ -115,10 +116,10 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
+
 	/**
-	 * QUINTLY PROFILE TESTS:
-	 * misionesonline
+	 * QUINTLY PROFILE TESTS: misionesonline
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -135,11 +136,11 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
-	//giselamarziottaperiodista
+
+	// giselamarziottaperiodista
 	/**
-	 * QUINTLY PROFILE TESTS:
-	 * giselamarziottaperiodista
+	 * QUINTLY PROFILE TESTS: giselamarziottaperiodista
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -156,11 +157,10 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
-	
+
 	/**
-	 * QUINTLY PROFILE TESTS:
-	 * vsm2.0 (victor santamaria)
+	 * QUINTLY PROFILE TESTS: vsm2.0 (victor santamaria)
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -168,13 +168,13 @@ public class FacebookPostsTest {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DAY_OF_MONTH, -1);
-		//04/28/2019 00:00:00: 1556409600
-		//04/28/2019 23:59:59: 1556495999
-		//post to test: https://www.facebook.com/permalink.php?story_fbid=10156265872779142&id=45177919141
-		
-		//Long minPostUtime = cal.getTimeInMillis() / 1000;
+		// 04/28/2019 00:00:00: 1556409600
+		// 04/28/2019 23:59:59: 1556495999
+		// post to test: https://www.facebook.com/permalink.php?story_fbid=10156265872779142&id=45177919141
+
+		// Long minPostUtime = cal.getTimeInMillis() / 1000;
 		Long minPostUtime = 1556409600L;
-		//Long maxPostUtime = System.currentTimeMillis() / 1000;
+		// Long maxPostUtime = System.currentTimeMillis() / 1000;
 		Long maxPostUtime = 1556495999L;
 		Page page = fs.scrapePage("vsm2.0", minPostUtime, maxPostUtime, null, null, 200, CommentsSort.RELEVANCE, 10);
 		fs.quit();
@@ -183,11 +183,7 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
-	
-	
-	
-	
+
 	@Test
 	public void mauriciomacriPage() throws Exception {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
@@ -216,7 +212,7 @@ public class FacebookPostsTest {
 		assertNotNull(page);
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
-		
+
 	}
 
 	@Test
@@ -286,9 +282,5 @@ public class FacebookPostsTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
-	
-	
-	
-	
+
 }
