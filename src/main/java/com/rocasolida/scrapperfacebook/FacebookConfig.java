@@ -70,8 +70,7 @@ public final class FacebookConfig {
 	public static String XP_POST_TOTALSHARED_LIVEVIDEOS_NL = "./descendant::a[contains(@class,'UFIShareLink')]";
 	public static String XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL = "./descendant::a[@class='UFIPagerLink']";
 	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
-	
-	
+	////a[@class='UFIPagerLink' or contains(@href, 'comment_tracking')]
 	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
 	
 	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";
