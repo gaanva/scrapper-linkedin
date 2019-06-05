@@ -719,12 +719,14 @@ public class FacebookPostScrap extends Scrap {
 			/**
 			 * HASHTAG DETECTION
 			 */
+			/*
 			if (aux.getTitulo() != null) {
 				this.clickViewMoreTextContent(publication, FacebookConfig.XPATH_PUBLICATION_TITLE_VER_MAS);
 				aux.setTitulo(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TITLE)).getText());
 			} else {
 				aux.setTitulo(null);
 			}
+			*/
 			/**
 			 * OWNER La pubicación siempre tiene un OWNER.
 			 */
@@ -785,20 +787,23 @@ public class FacebookPostScrap extends Scrap {
 					System.out.println("LIVE VIDEO WITH NO LOGIN!, only can be extracted: TOTAL Reactions(not each type of reaction), Shares and Total Comments.");
 
 				if (this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)) {
-					int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText());
+					//int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText());
+					int totalReactions = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText()).toString());
 					aux.setCantReactions(totalReactions);
 					if (debug)
 						System.out.println("Total Reacciones: " + totalReactions);
 
 					if (this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)) {
-						int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText());
+						//int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText());
+						int totalShared = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText()).toString());
 						aux.setCantShare(Integer.valueOf(totalShared));
 						if (debug)
 							System.out.println("POST SHAREs: " + totalShared);
 					}
 
 					if (this.existElement(publication, FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)) {
-						int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText());
+						//int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText());
+						int totalComments = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText()).toString());
 						aux.setCantComments(Integer.valueOf(totalComments));
 						if (debug)
 							System.out.println("POST Comments: " + totalComments);
@@ -980,7 +985,7 @@ public class FacebookPostScrap extends Scrap {
 		int max_count = 3;
 		while (this.existElement(element, xpathExpression) && (!verMasClicked)) {
 			try {
-				WebElement we = element.findElement(By.xpath(xpathExpression));
+				WebElement we = element.findElements(By.xpath(xpathExpression)).get(0);
 				((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].scrollIntoView({block: \"start\"});", element);
 				if (we.isDisplayed()) {
 					we.click();

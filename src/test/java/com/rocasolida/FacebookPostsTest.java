@@ -66,8 +66,9 @@ public class FacebookPostsTest {
 		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
 		Calendar cal = Calendar.getInstance();
 		cal.add(Calendar.DAY_OF_MONTH, -1);
-		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long minPostUtime = 1559681900L; //desde este momento hay 1 live... para probar.
 		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		//Long maxPostUtime = 1559681910L;
 		Page page = fs.scrapePage("RosanaBertoneTDF", minPostUtime, maxPostUtime, null, null, null, null, null);
 		fs.quit();
 

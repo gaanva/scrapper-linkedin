@@ -233,7 +233,7 @@ public final class FacebookConfig {
 	// DATE_TIME: PONE HUSO HORARIO ARGENTINA (GMT+4). Diff de 4hs.
 	public static String XPATH_PUBLICATION_DATE_TIME = ".//abbr[contains(@class,'livetimestamp')]"; // getAttribute("title")
 	public static String XPATH_PUBLICATION_TITLE = ".//div[contains(@class,'_5pbx userContent')]";
-	public static String XPATH_PUBLICATION_TITLE_VER_MAS = ".//div[contains(@class,'_5pbx userContent')]//a[contains(@class,'see_more_link')]";
+	public static String XPATH_PUBLICATION_TITLE_VER_MAS = "./descendant::div[contains(@class,'_5pbx userContent')]/descendant::a[contains(@class,'see_more_link')]";
 
 	public static String XPATH_PUBLICATION_CANT_REPRO = ".//div[contains(@class,'_1t6k')]";
 
