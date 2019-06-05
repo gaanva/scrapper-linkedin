@@ -64,16 +64,19 @@ public final class FacebookConfig {
 	public static String XP_POST_TOTALREACTIONS_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFILikeSentence _4204']";
 	//NL=Not Loggedin
 	public static String XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL = "./descendant::div[@class='UFILikeSentenceText']";
+	
 	//logged In
 	public static String XP_POST_TOTALSHARED_LIVEVIDEOS = "./descendant::div[@class='UFIRow UFIShareRow']/a";
 	//NL=not logged in
 	public static String XP_POST_TOTALSHARED_LIVEVIDEOS_NL = "./descendant::a[contains(@class,'UFIShareLink')]";
 	public static String XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL = "./descendant::a[@class='UFIPagerLink']";
 	public static String XP_POST_TOTALCOMMENTS = "./descendant::a[contains(@data-testid,'UFI2CommentsCount/root')]";
-	////a[@class='UFIPagerLink' or contains(@href, 'comment_tracking')]
-	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
 	
-	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";
+	public static String XP_POST_TOTALSHARES = "./descendant::a[contains(@data-testid,'UFI2SharesCount/root')]";
+	public static String XP_POST_INTERACTIONS_SENTENCE = "//a[contains(@href, 'comment_tracking')]";
+	
+	public static String XP_POST_TOTALREPRODUCTIONS = "./descendant::span[contains(@data-testid,'UFI2ViewCount/root')]";//div[@class='_1t6k']/descendant::span[@class='fcg']
+	public static String XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS = "./descendant::div[@class='_1t6k']/span";
 	public static String XP_POST_LOVES = "./descendant::span[contains(@data-testid,'_LOVE')]/a"; //getAttribute('aria-label')
 	public static String XP_POST_LIKES = "./descendant::span[contains(@data-testid,'_LIKE')]/a";
 	public static String XP_POST_HAHA = "./descendant::span[contains(@data-testid,'_HAHA')]/a";
@@ -98,7 +101,7 @@ public final class FacebookConfig {
 	 */
 	public static String XP_GROUP_PUBLICATIONS_LASTNEWS_CONTAINER = "//div[@role='feed']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']" + XP_GROUP_PUBLICATIONS_CONTAINER;
 	public static String XP_GROUP_PUBLICATIONS_OLD_CONTAINER = "//div[@class='_5pcb']/div[@class='_4-u2 mbm _4mrt _5jmm _5pat _5v3q _4-u8']" + XP_GROUP_PUBLICATIONS_CONTAINER;
-
+// or @class='fcg'/ancestor::div[@class='_1t6k']
 	public static String XPATH_PUBLICATIONS_CONTAINER = "//div[contains(@class,'userContentWrapper')]";
 	public static String XPATH_PUBLICATIONS_TYPE_PHOTO_CONTAINER = "//div[contains(@class,'uiScrollableAreaBody')]";
 
@@ -254,6 +257,7 @@ public final class FacebookConfig {
 	public static String XPATH_COMMENTS_CONTAINER2 = ".//form[contains(@class,'commentable_item')]//div"; // Esto agrupa a TODOS los comentarios/Replies
 	public static String XPATH_COMMENTS_CONTAINER3 = ".//div[contains(@data-testid,'UFI2CommentsList/root_depth_0')]"; // Esto agrupa a TODOS los comentarios/Replies
 	public static String XPATH_COMMENTS_CONTAINER4 = ".//div[contains(@class,'_3b-9 _j6a')]"; // Esto agrupa a TODOS los comentarios/Replies
+	//--->
 	public static String XPATH_COMMENTS_CONTAINER_NL = ".//a[contains(@href,'comment_tracking')]";
 	
 	//// div[@class='UFIList']/node()[last()]/node()/node()[starts-with(@id,'comment_js')]

@@ -746,14 +746,19 @@ public class FacebookPostScrap extends Scrap {
 			 * CANTIDAD DE REPRODUCCIONES
 			 */
 
+			int totalRepro = 0;
 			if (this.existElement(publication, FacebookConfig.XP_POST_TOTALREPRODUCTIONS)) {
-				int totalRepro = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREPRODUCTIONS)).getText());
+				totalRepro = ScrapUtils.parseCount(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREPRODUCTIONS)).getText());
 				aux.setCantReproducciones(totalRepro);
-				if (debug)
-					System.out.println("Total Reproducciones: " + totalRepro);
+			} else if(this.existElement(publication, FacebookConfig.XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS)){  //si es live video se saca de otra parte....
+				totalRepro = ScrapUtils.parseCount(publication.findElement(By.xpath(FacebookConfig.XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS)).getText());
+				aux.setCantReproducciones(totalRepro);
 			} else {
 				aux.setCantReproducciones(null);
 			}
+			
+			if (debug)
+				System.out.println("Total Reproducciones: " + totalRepro);
 
 			/**
 			 * CANTIDAD DE SHARES
@@ -799,7 +804,39 @@ public class FacebookPostScrap extends Scrap {
 							System.out.println("POST Comments: " + totalComments);
 					}
 
-				} else {
+				} else if(this.existElement(publication, FacebookConfig.XP_POST_INTERACTIONS_SENTENCE)){
+					//separar las cantidades por "251 likes 61 comments 82 shares" del atributo 'aria-label'
+					String interaction_sentence = publication.findElement(By.xpath(FacebookConfig.XP_POST_INTERACTIONS_SENTENCE)).getAttribute("aria-label");
+					if(debug)
+						System.out.println("INTERACTION SENTENCE: " + interaction_sentence);
+					String[] s = interaction_sentence.split(" ");
+					if(s.length > 0) {
+						for(int k=0; k<s.length; k++) {
+							if(k % 2 != 0) {//posicion impar
+								switch(s[k]) {
+								case "likes": 
+									int totalReactions = ScrapUtils.parseCount(s[k-1]);
+									aux.setCantReactions(totalReactions);
+									if (debug)
+										System.out.println("Total Reacciones: " + totalReactions);
+								case "comments":
+									int totalComments = ScrapUtils.parseCount(s[k-1]);
+									aux.setCantComments(Integer.valueOf(totalComments));
+									if (debug)
+										System.out.println("POST Comments: " + totalComments);
+									
+								case "shares":
+									int totalShared = ScrapUtils.parseCount(s[k-1]);
+									aux.setCantShare(Integer.valueOf(totalShared));
+									if (debug)
+										System.out.println("POST SHAREs: " + totalShared);
+								}
+							}
+							
+						}
+					}
+					
+				} else{
 					if (debug)
 						System.out.println("[INFO] El post no tiene reacciones.");
 
@@ -887,7 +924,7 @@ public class FacebookPostScrap extends Scrap {
 
 	private int formatStringToNumber(String text) {
 		int number = this.extractNumberFromString(text).intValue();
-		if (text.contains("mil")) {
+		if (text.contains("mil") || text.contains("k")) {
 			if (text.contains(",")) {
 				number = number * 100;
 			} else {

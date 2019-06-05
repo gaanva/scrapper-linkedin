@@ -60,6 +60,22 @@ public class FacebookPostsTest {
 	// assertTrue(pub.getComments().size() > 50);
 	//
 	// }
+	
+	@Test
+	public void RosanaBertoneTDFPage() throws Exception {
+		FacebookPostScrap fs = new FacebookPostScrap(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Page page = fs.scrapePage("RosanaBertoneTDF", minPostUtime, maxPostUtime, null, null, null, null, null);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+	}
+	
 
 	@Test
 	public void SchiaretiPage() throws Exception {
