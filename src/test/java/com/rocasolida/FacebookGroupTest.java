@@ -1,16 +1,13 @@
 package com.rocasolida;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Calendar;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.rocasolida.scrapperfacebook.entities.Comment;
 import com.rocasolida.scrapperfacebook.entities.Group;
-import com.rocasolida.scrapperfacebook.entities.GroupPublication;
 import com.rocasolida.scrapperfacebook.entities.Page;
-import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap;
+import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap2;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
 import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
@@ -284,23 +281,23 @@ public class FacebookGroupTest {
 	// }
 
 	@Test
-	public void test1() throws Exception {
+	public void MunicipioNecocheaQuejas() throws Exception {
 		System.out.println("-----> groupPublicationsByUTime");
-		FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
-		String postId = "10156753094823850";
-
-		Page page = null;
-		// Si no, se extrae la cantidad máxima que se encuentra en el grupo.
-		int CANTPUBS = 0;
-		// Long UTIMEFROM = 1536105600L;//05092018 00:00
-		// Long UTIMETO = 1536174000L;//05092018 19:00 (Conte 11 pubs en este rango)
-		Long UTIMEFROM = 1540080000L;// 05092018 00:00
-		Long UTIMETO = 1540173498L;// 05092018 19:00 (Conte 11 pubs en este rango)
-		Group resultPage = null;
+		//FacebookGroupScrap fg = new FacebookGroupScrap(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		FacebookGroupScrap2 fg = new FacebookGroupScrap2(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
+		
+		// Saco las publicaciones de 1 día atras...
+		Calendar cal = Calendar.getInstance();	
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		
+		
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
-			resultPage = fg.obtainGroupPubsWithoutComments("cristinapresidenta", 0, UTIMEFROM, UTIMETO);
+			Page page = fg.scrapePage("1752433618412532", minPostUtime, maxPostUtime, null, null, null, null, null);
+			//resultPage = fg.obtainGroupPubsWithoutComments("1752433618412532", 0, minPostUtime, maxPostUtime);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
