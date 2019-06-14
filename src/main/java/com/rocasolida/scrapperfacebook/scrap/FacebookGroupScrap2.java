@@ -354,9 +354,8 @@ public class FacebookGroupScrap2 extends Scrap {
 								System.out.println("*********************************************************************************************");
 							}
 							// Extrae los comentarios...
-							/*
-							 * pub = obtainPostTypeOtherInformation(facebookPage, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub, publicationsElements.get(i)); System.out.println(pub);
-							 */
+							pub = obtainPostTypeOtherInformation(facebookPage, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, pub, publicationsElements.get(i)); //System.out.println(pub);
+							
 							publicationsImpl.add(pub);
 							// oculto la publicacion
 							((JavascriptExecutor) this.getDriver()).executeScript("arguments[0].setAttribute('style', 'visibility:hidden')", publicationsElements.get(i));
@@ -887,6 +886,7 @@ public class FacebookGroupScrap2 extends Scrap {
 							System.out.println("Total Reacciones: " + totalReactions);
 
 						if (this.existElement(publication, FacebookConfig.XP_POST_LIKES)) {
+							System.out.println("LIKES BEFORE: " + publication.findElement(By.xpath(FacebookConfig.XP_POST_LIKES)).getAttribute("aria-label"));
 							int likes = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_LIKES)).getAttribute("aria-label"));
 							aux.setCantLikes(Integer.valueOf(likes));
 							if (debug)
@@ -949,6 +949,7 @@ public class FacebookGroupScrap2 extends Scrap {
 
 	private int formatStringToNumber(String text) {
 		int number = this.extractNumberFromString(text).intValue();
+		text = text.split(" ")[0];
 		if (text.contains("mil") || text.contains("k")) {
 			if (text.contains(",")) {
 				number = number * 100;
@@ -965,8 +966,13 @@ public class FacebookGroupScrap2 extends Scrap {
 		// https://www.facebook.com/permalink.php?story_fbid=1428319533981557&id=323063621173826
 		// https://www.facebook.com/154152138076469/videos/972094692948872/
 		// https://www.facebook.com/horaciorodriguezlarreta/posts/10156882613511019?__xts__%5B0%5D=68.ARBj2C-5qrcHODKpyJCUTm1TDe10fEsZMrPUhkrbkT41H42Jt2optgAlDRvZeJ2mbmyviQ-wIt3KnfMbpRG6u18nufB-fo42wL06yCvYdmyFl33YI_hi849HNgVKw3Ez6W2-kXeaeR3IRoXu7SXIzLroVH1Tawc1wyHFSTzSp-SqYAQWl2h8pR0&__tn__=-R
+		
+		//para groups:
+		//https://www.facebook.com/groups/1752433618412532/permalink/2360051460984075/
 		String lastMatched = "";
-		if (link.contains("permalink")) {
+		//System.out.println("LINK " + link);
+		
+		if (link.contains("permalink") && link.contains("&")) {  //--> Validacion para groups.
 			String[] a = link.split("\\?")[1].split("&");
 			for (String b : a) {
 				if (b.contains("story_fbid=")) {
@@ -1118,7 +1124,6 @@ public class FacebookGroupScrap2 extends Scrap {
 				// Obtengo los comentarios según el filtro de fechas...
 				Thread.sleep(1000);
 				List<WebElement> comentarios = container.findElements(By.xpath(commentsFilter));
-				System.out.println(comentarios);
 				if (comentarios.isEmpty()) {
 					System.out.println("no comments");
 				}
@@ -1705,17 +1710,7 @@ public class FacebookGroupScrap2 extends Scrap {
 				cantComments = MAX_COMMENTS_PER_POST;
 			}
 			List<Comment> comments = new ArrayList<Comment>();
-			// if (container.findElements(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).size() > 0) {
-			if (this.existElement(container, "//a[@data-testid='UFI2CommentsCount/root']")) {
-				if (debug)
-					// System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
-					System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//a[@data-testid='UFI2CommentsCount/root']")).getText());
-			}
-			if (this.existElement(container, "//a[@data-testid='UFI2SharesCount/root']")) {
-				if (debug)
-					// System.out.println("COMENTARIOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//div[@class='UFIRow UFIShareRow']/node()/node()[2]/span")).getText());
-					System.out.println("COMPARTIDOS QUE SE INDICA EN EL POST:" + container.findElement(By.xpath("//a[@data-testid='UFI2SharesCount/root']")).getText());
-			}
+			
 			// Si existe el botón de "Ver Más mensajes"
 			try {
 				try {
@@ -1750,8 +1745,6 @@ public class FacebookGroupScrap2 extends Scrap {
 			}
 			if (debug)
 				System.out.println("FILTRO XPATH-COMMENTS APLICADO: " + commentsFilter);
-			a1 = System.currentTimeMillis() - a1;
-			System.out.println("a1: " + a1);
 			long a3 = System.currentTimeMillis();
 			int retries_max = 3;
 			int retries = 0;
@@ -1760,8 +1753,6 @@ public class FacebookGroupScrap2 extends Scrap {
 				// Obtengo los comentarios según el filtro de fechas...
 				Thread.sleep(1000);
 				List<WebElement> comentarios = container.findElements(By.xpath(commentsFilter));
-				System.out.println(comentarios);
-				System.out.println(comentarios);
 				if (comentarios.isEmpty()) {
 					System.out.println("no comments");
 				}
@@ -1879,7 +1870,6 @@ public class FacebookGroupScrap2 extends Scrap {
 	private Comment extractCommentData(WebElement comentario) throws Exception {
 		Comment auxComment = new Comment();
 		// Mensaje primero se fija si tiene los tres puntitos o el leer mas y lo expande
-		long a = System.currentTimeMillis();
 		if (this.existElement(comentario, FacebookConfig.XPATH_SEE_MORE_COMMENT_TEXT)) {
 			WebElement aux;
 			while (this.existElement(comentario, FacebookConfig.XPATH_SEE_MORE_COMMENT_TEXT)) {
@@ -1904,8 +1894,7 @@ public class FacebookGroupScrap2 extends Scrap {
 				}
 			}
 		}
-		a = System.currentTimeMillis() - a;
-		System.out.println("ver mas texto del comentario tardo: " + a);
+		
 		if (this.existElement(comentario, FacebookConfig.XPATH_USER_COMMENT2)) {
 			String aux = "";
 			List<WebElement> comment_parts = comentario.findElements(By.xpath(FacebookConfig.XPATH_USER_COMMENT2));
@@ -1972,5 +1961,44 @@ public class FacebookGroupScrap2 extends Scrap {
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SECONDS)).pollingEvery(Duration.ofMillis(200));
 		return wait.until(commentLink);
+	}
+	
+	public void printPage(Page page) {
+		if (page != null) {
+			//System.out.println(":::::::::::::::::::::PAGE LIKES: " + page.getLikes());
+			//System.out.println(":::::::::::::::::::::PAGE FOLLOWERS: " + page.getFollowers());
+			if (page.getPublications() != null) {
+				System.err.println("SE ENCONTRARON UN TOTAL DE " + page.getPublications().size() + " PUBLICACIONES");
+				/*
+				 * for (int j = 0; j < page.getPublications().size(); j++) { System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	==============="); System.out.println(page.getPublications().get(j).toString()); System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************"); }
+				 */
+				for (int j = 0; j < page.getPublications().size(); j++) {
+					System.out.println("============== PUBLICATION " + (j + 1) + " INICIO	===============");
+					System.out.println("TITULO: " + page.getPublications().get(j).getTitulo());
+					System.out.println("OWNER: " + page.getPublications().get(j).getOwner());
+					System.out.println("URL: " + page.getPublications().get(j).getUrl());
+					System.out.println("CANT ANGRIES: " + page.getPublications().get(j).getCantAngries());
+					System.out.println("CANT HAHAS: " + page.getPublications().get(j).getCantHahas());
+					System.out.println("CANT LIKES: " + page.getPublications().get(j).getCantLikes());
+					System.out.println("CANT LOVES: " + page.getPublications().get(j).getCantLoves());
+					System.out.println("CANT SADS: " + page.getPublications().get(j).getCantSads());
+					System.out.println("CANT SHARES: " + page.getPublications().get(j).getCantShare());
+					System.out.println("CANT WOWS: " + page.getPublications().get(j).getCantWows());
+					System.out.println("TOTAL REPROD: " + page.getPublications().get(j).getCantReproducciones());
+					System.out.println("TOTAL REACTIONS: " + page.getPublications().get(j).getCantReactions());
+					System.out.println("TOTAL COMENTARIOS: " + page.getPublications().get(j).getComments().size());
+					for(int k=0; k<page.getPublications().get(j).getComments().size(); k++) {
+						System.out.println("**COMENTARIO #" + Integer.toString(k+1));
+						System.out.println("**COMENTARIO owner: " + page.getPublications().get(j).getComments().get(k).getUserName());
+						System.out.println("**COMENTARIO: " + page.getPublications().get(j).getComments().get(k).getMensaje());
+						System.out.println("***************************************************************************************");
+					}
+					System.out.println("************** PUBLICATION " + (j + 1) + " FIN	***************");
+
+				}
+			} else {
+				System.out.println("[INFO] PrintPage():LA LISTA DE PUBLICACIONES PARA IMPRIMIR ESTÁ VACÍA.");
+			}
+		}
 	}
 }

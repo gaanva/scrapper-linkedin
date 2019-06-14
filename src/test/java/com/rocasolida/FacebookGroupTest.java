@@ -1,13 +1,16 @@
 package com.rocasolida;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Calendar;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.rocasolida.scrapperfacebook.entities.Group;
 import com.rocasolida.scrapperfacebook.entities.Page;
 import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap2;
+import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
 import com.rocasolida.scrapperfacebook.scrap.util.DriverType;
 import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
@@ -287,23 +290,34 @@ public class FacebookGroupTest {
 		FacebookGroupScrap2 fg = new FacebookGroupScrap2(Driver.from(DriverType.FIREFOX_HEADLESS, OS), DEBUG);
 		
 		// Saco las publicaciones de 1 día atras...
-		Calendar cal = Calendar.getInstance();	
-		cal.add(Calendar.DAY_OF_MONTH, -1);
-		Long minPostUtime = cal.getTimeInMillis() / 1000;
-		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		//Calendar cal = Calendar.getInstance();	
+		//cal.add(Calendar.DAY_OF_MONTH, -1);
+		//Long minPostUtime = cal.getTimeInMillis() / 1000;//1560460368
+		Long minPostUtime = 1560460368L;//1560460368
+		//Long maxPostUtime = System.currentTimeMillis() / 1000;//1560546768
+		Long maxPostUtime = 1560546768L;
+		int cantComments = 200;
 		
 		
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
-			Page page = fg.scrapePage("1752433618412532", minPostUtime, maxPostUtime, null, null, null, null, null);
+			Page page = fg.scrapePage("1752433618412532", minPostUtime, maxPostUtime, null, null, cantComments, CommentsSort.RELEVANCE, null);
+			fg.printPage(page);
 			//resultPage = fg.obtainGroupPubsWithoutComments("1752433618412532", 0, minPostUtime, maxPostUtime);
+			assertNotNull(page);
+			assertNotNull(page.getPublications());
+			assertTrue("22 publicaciones o mas",page.getPublications().size()>=20);
+			assertTrue("18 comentarios o mas de las publicacion 7", page.getPublications().get(9).getComments().size()>=17);
+			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		
 
-		System.out.println("*****************************************************************************************");
-
+		
 		fg.quit();
 	}
 
