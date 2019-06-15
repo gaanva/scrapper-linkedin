@@ -342,6 +342,11 @@ public final class FacebookConfig {
 	//Ubicacion
 	public static String USER_PLACES = "//div[@data-overviewsection='places']/div//a";
 	public static String USER_EDUCATION = "//div[@data-overviewsection='education']";
+	
+	
+	public static String GROUP_NAME = "//a[contains(@href,'group_header')]"; //getText()
+	public static String GROUP_PRIVATE = "//i[@class='_3ph1 img sp_r88stLlPn45 sx_73e64b']";
+	
 	public FacebookConfig() {
 
 	}
