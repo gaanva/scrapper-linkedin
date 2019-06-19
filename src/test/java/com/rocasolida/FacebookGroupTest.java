@@ -3,12 +3,10 @@ package com.rocasolida;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Calendar;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.rocasolida.scrapperfacebook.entities.Page;
+import com.rocasolida.scrapperfacebook.entities.Group;
 import com.rocasolida.scrapperfacebook.scrap.FacebookGroupScrap2;
 import com.rocasolida.scrapperfacebook.scrap.util.CommentsSort;
 import com.rocasolida.scrapperfacebook.scrap.util.Driver;
@@ -302,8 +300,10 @@ public class FacebookGroupTest {
 		try {
 			// Paso 1) Extraigo las publicaciones[ID,URL y UTIME] de la página principal, en base a una cantidad.
 			// ACtualizar LIKES y ver por qué repite un mensaje 4 veceS?
-			Page page = fg.scrapePage("1752433618412532", minPostUtime, maxPostUtime, null, null, cantComments, CommentsSort.RELEVANCE, null);
-			fg.printPage(page);
+			Group page = fg.scrapeGroup("1752433618412532", minPostUtime, maxPostUtime, null, null, cantComments, CommentsSort.RELEVANCE, null);
+			
+			System.out.println("group: " + page.toString());
+			
 			//resultPage = fg.obtainGroupPubsWithoutComments("1752433618412532", 0, minPostUtime, maxPostUtime);
 			assertNotNull(page);
 			assertNotNull(page.getPublications());

@@ -18,4 +18,5 @@ public class Group {
 	//Si es privado o abierto
 	private boolean openGroup;
 	private List<Publication> publications;
+	
 }

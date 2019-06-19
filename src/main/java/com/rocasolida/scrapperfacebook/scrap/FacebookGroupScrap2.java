@@ -247,41 +247,7 @@ public class FacebookGroupScrap2 extends Scrap {
 		}
 		return "";
 	}
-/*
-	private Group scrapCommunityPageInfo(Group group) {
-		System.out.println("***********************************************************");
-		System.out.println("Processing community info.");
-		System.out.println("***********************************************************");
-		if ((this.existElement(null, FacebookConfig.PAGE_COMMUNITY_INFO))) {
-			List<WebElement> listOfCommunityInfo = this.getDriver().findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_INFO));
-			for (int i = 0; i < listOfCommunityInfo.size(); i++) {
-				if (listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_LIKES)).size() > 0) {
-					int likes = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_LIKES)).getText());
-					System.out.println("LIKES: " + likes);
-					group.setLikes(Integer.toUnsignedLong(likes));
-				}
-				if (listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_FOLLOWERS)).size() > 0) {
-					int followers = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_FOLLOWERS)).getText());
-					System.out.println("FOLLOWERS: " + followers);
-					group.setFollowers(Integer.toUnsignedLong(followers));
-				}
-
-				if (listOfCommunityInfo.get(i).findElements(By.xpath(FacebookConfig.PAGE_COMMUNITY_VISITS)).size() > 0) {
-					int visits = this.formatStringToNumber(listOfCommunityInfo.get(i).findElement(By.xpath(FacebookConfig.PAGE_COMMUNITY_VISITS)).getText());
-					System.out.println("VISITS: " + visits);
-					group.setVisits(Integer.toUnsignedLong(visits));
-				}
-
-			}
-		} else {
-			System.out.println("No existe información de Comunidad!");
-		}
-		System.out.println("***********************************************************");
-		System.out.println("Ending community info.");
-		System.out.println("***********************************************************");
-		return group;
-	}
-*/
+	
 	private List<Publication> processGroupPosts(String facebookPage, Long uTIME_INI, Long uTIME_FIN, Long COMMENTS_uTIME_INI, Long COMMENTS_uTIME_FIN, Integer cantComments, CommentsSort cs, Integer cantPosts) {
 		List<Publication> publicationsImpl = new ArrayList<Publication>();
 		Publication pub;
@@ -318,15 +284,11 @@ public class FacebookGroupScrap2 extends Scrap {
 					checkAndClosePopupLogin();
 					try {
 						if (debug) {
-							System.out.println("[INFO] LOADER ACTIVE?...");
-							this.saveScreenShot("LOADER ACTIVE");
+							System.out.println("[INFO] SPINNER ACTIVE?...");
+							this.saveScreenShot("SPINNER ACTIVE");
 						}
-						/**
-						 * TODO
-						 * Este sería el xpath que indica que esta cargando para grupos
-						 * //div[contains(@class,'_2iwq _6b5s')]
-						 */
-						waitUntilNewPublicationsLoad();
+						waitUntilNotSpinnerLoading();
+						//debería hacer una especie de waituntil cargue mas publicaciones....
 					} catch (Exception e1) {
 						if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
 							if (debug)
@@ -370,6 +332,7 @@ public class FacebookGroupScrap2 extends Scrap {
 					if (cantPosts != null && publicationsImpl.size() >= cantPosts) {
 						break;
 					}
+					System.out.println("WHILE CONDITION: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI));
 				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax);
 				if (debug)
 					System.out.println("|FIN| " + retriesCount);
@@ -435,6 +398,7 @@ public class FacebookGroupScrap2 extends Scrap {
 		return wait.until(overlayClosed);
 	}
 
+	
 	private void goToPublicationsSection() throws Exception {
 		try {
 			this.waitUntilPublicationsMenuOption();
