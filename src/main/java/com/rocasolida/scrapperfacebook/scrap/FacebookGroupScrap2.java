@@ -278,8 +278,11 @@ public class FacebookGroupScrap2 extends Scrap {
 				int prevPostSize = 0;
 				int retriesMax = 3;
 				int retriesCount = 0;
+				//guardo los webelements de todas las publicaciones visibles
+				List<WebElement> pubsAux;
 				do {
 					saveScreenShot("a1-" + System.currentTimeMillis());
+					System.out.println("Cantidad inicial posts: " + lastPostSize);
 					scrollMainPublicationsPage();
 					checkAndClosePopupLogin();
 					try {
@@ -287,7 +290,9 @@ public class FacebookGroupScrap2 extends Scrap {
 							System.out.println("[INFO] SPINNER ACTIVE?...");
 							this.saveScreenShot("SPINNER ACTIVE");
 						}
-						waitUntilNotSpinnerLoading();
+						
+						//waitUntilNotSpinnerLoading();
+						this.waitUntilNewPublicationsLoad(lastPostSize);
 						//debería hacer una especie de waituntil cargue mas publicaciones....
 					} catch (Exception e1) {
 						if (e1.getClass().getSimpleName().equalsIgnoreCase("TimeoutException")) {
@@ -299,6 +304,7 @@ public class FacebookGroupScrap2 extends Scrap {
 					if (debug)
 						System.out.print("...|");
 					// Obtengo posts
+					System.out.println("Extract publicaciones: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN));
 					List<WebElement> publicationsElements = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION(facebookPage, uTIME_INI, uTIME_FIN) + "//ancestor::div[contains(@class,'userContentWrapper') and not(contains(@style,'hidden'))]"));
 					// recorro los posts encontrados
 					for (int i = 0; i < publicationsElements.size(); i++) {
@@ -324,7 +330,8 @@ public class FacebookGroupScrap2 extends Scrap {
 					}
 
 					prevPostSize = lastPostSize;
-					lastPostSize = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size();
+					pubsAux = this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER));
+					lastPostSize = pubsAux.size();
 					System.out.println("last post size: " + lastPostSize);
 					if (lastPostSize == prevPostSize) {
 						retriesCount++;
@@ -332,8 +339,16 @@ public class FacebookGroupScrap2 extends Scrap {
 					if (cantPosts != null && publicationsImpl.size() >= cantPosts) {
 						break;
 					}
+					
 					System.out.println("WHILE CONDITION: " + FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI));
-				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) && retriesCount < retriesMax);
+					if((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) {
+						System.out.println("WHILE CONDITION TRUE!");
+					}else {
+						System.out.println("WHILE CONDITION FALSE!");
+					}
+				} while ((!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) 
+						&& !this.lastPublicationUtimeCondition(pubsAux.get(pubsAux.size()-1), Long.toString(uTIME_INI)))  
+						&& retriesCount < retriesMax);
 				if (debug)
 					System.out.println("|FIN| " + retriesCount);
 			} else {
@@ -355,6 +370,20 @@ public class FacebookGroupScrap2 extends Scrap {
 		}
 		// RETORNO SOLO LAS PUBLICACIONES QUE CUMPLIERON CON EL FILTRO.
 		return publicationsImpl;
+	}
+	
+	private boolean lastPublicationUtimeCondition(WebElement publication, String utimeIni) {
+		//En los grupos, se listan algunas publicaciones desordenadas...
+		//Si la ultima publicacion no tiene fecha menor al utime ini... entonces que siga scrolleando...
+		if(publication.findElements(By.xpath(".//div[@class='_6a _5u5j _6b']//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+utimeIni+"]")).size()>0) {
+			//La ultima publicacion de la lista es menor al utime ini
+			System.out.println("La ultima publicacion de la lista es menor al utime ini");
+			return true;
+		}
+		//la fecha de utime de la publicacion no es menor al utimeIni ingresado como parametro.
+		System.out.println("La ultima publicacion de la lista NO es menor al utime ini");
+		return false;
+		
 	}
 
 	private void waitUntilNotSpinnerLoadingAndWaitForPublicationsLoaded() throws Exception {
@@ -459,15 +488,22 @@ public class FacebookGroupScrap2 extends Scrap {
 		return wait.until(morePubsLink);
 	}
 	
-	private boolean waitUntilNewPublicationsLoad() {
+	private boolean waitUntilNewPublicationsLoad(final int cantPostsIni) {
 		ExpectedCondition<Boolean> morePubsLink = new ExpectedCondition<Boolean>() {
 			//cuando carga nuevas publicaciones no muestra un spinner... sino un card-post vacio.
 			public Boolean apply(WebDriver driver) {
-				if (driver.findElements(By.xpath("//div[contains(@class,'_2iwq _6b5s')]")).size() > 0 && driver.findElement(By.xpath("//div[contains(@class,'_2iwq _6b5s')]")).isDisplayed()) {
+				if(driver.findElements(By.xpath(FacebookConfig.XPATH_PUBLICATIONS_CONTAINER)).size()>cantPostsIni) {
+					System.out.println("CAMBIO la cantidad de publicaciones luego del scroll.");
+					return true;
+				}else {
+					System.out.println("NO cambio la cantidad de publicaciones luego del scroll.");
+					return false;
+				}
+				/*if (driver.findElements(By.xpath("//div[contains(@class,'_2iwq _6b5s')]")).size() > 0 && driver.findElement(By.xpath("//div[contains(@class,'_2iwq _6b5s')]")).isDisplayed()) {
 					return false;
 				} else {
 					return true;
-				}
+				}*/
 			}
 		};
 		Wait<WebDriver> wait = new FluentWait<WebDriver>(this.getDriver()).withTimeout(Duration.ofSeconds(WAIT_UNTIL_SPINNER)).pollingEvery(Duration.ofMillis(200)).ignoring(NoSuchElementException.class).ignoring(StaleElementReferenceException.class);

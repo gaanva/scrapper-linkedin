@@ -291,9 +291,9 @@ public class FacebookGroupTest {
 		//Calendar cal = Calendar.getInstance();	
 		//cal.add(Calendar.DAY_OF_MONTH, -1);
 		//Long minPostUtime = cal.getTimeInMillis() / 1000;//1560460368
-		Long minPostUtime = 1560460368L;//1560460368
+		Long minPostUtime = 1560124800L;//1560460368L;//1560460368
 		//Long maxPostUtime = System.currentTimeMillis() / 1000;//1560546768
-		Long maxPostUtime = 1560546768L;
+		Long maxPostUtime = 1560211199L;//1560546768L;
 		int cantComments = 200;
 		
 		
