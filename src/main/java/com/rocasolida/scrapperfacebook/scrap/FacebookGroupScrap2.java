@@ -346,8 +346,8 @@ public class FacebookGroupScrap2 extends Scrap {
 					}else {
 						System.out.println("WHILE CONDITION FALSE!");
 					}
-				} while ((!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) 
-						&& !this.lastPublicationUtimeCondition(pubsAux.get(pubsAux.size()-1), Long.toString(uTIME_INI)))  
+				} while (!((this.getDriver().findElements(By.xpath(FacebookConfig.XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(facebookPage, uTIME_INI))).size()) > 0) 
+						//&& !this.lastPublicationUtimeCondition(pubsAux.get(pubsAux.size()-1), Long.toString(uTIME_INI))) //las publicaciones se muestran desordenadas cuando la fecha filtro es más de 5 días para atras...  
 						&& retriesCount < retriesMax);
 				if (debug)
 					System.out.println("|FIN| " + retriesCount);
@@ -372,7 +372,7 @@ public class FacebookGroupScrap2 extends Scrap {
 		return publicationsImpl;
 	}
 	
-	private boolean lastPublicationUtimeCondition(WebElement publication, String utimeIni) {
+	/*private boolean lastPublicationUtimeCondition(WebElement publication, String utimeIni) {
 		//En los grupos, se listan algunas publicaciones desordenadas...
 		//Si la ultima publicacion no tiene fecha menor al utime ini... entonces que siga scrolleando...
 		if(publication.findElements(By.xpath(".//div[@class='_6a _5u5j _6b']//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<"+utimeIni+"]")).size()>0) {
@@ -384,7 +384,7 @@ public class FacebookGroupScrap2 extends Scrap {
 		System.out.println("La ultima publicacion de la lista NO es menor al utime ini");
 		return false;
 		
-	}
+	}*/
 
 	private void waitUntilNotSpinnerLoadingAndWaitForPublicationsLoaded() throws Exception {
 		try {
@@ -1148,10 +1148,11 @@ public class FacebookGroupScrap2 extends Scrap {
 							long a = System.currentTimeMillis();
 							comment = this.extractLiveCommentData(comentarios.get(j));
 							a = System.currentTimeMillis() - a;
-							System.out.println(comment + ". Tardo: " + a);
-							comments.add(comment);
 							if (debug)
 								System.out.print(j + "|");
+							System.out.println(comment + ". Tardo: " + a);
+							comments.add(comment);
+							
 						}
 						if (debug) {
 							System.out.println(" ");
