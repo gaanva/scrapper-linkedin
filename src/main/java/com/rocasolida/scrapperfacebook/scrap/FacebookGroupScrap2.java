@@ -77,6 +77,7 @@ public class FacebookGroupScrap2 extends Scrap {
 				case "GROUPS":
 					//group = this.scrapCommunityPageInfo(group);
 					if(this.checkGroupIsOpen()) {
+						group.setOpenGroup(true);
 						publications = this.processGroupPosts(facebookGroup, uTIME_INI, uTIME_FIN, COMMENTS_uTIME_INI, COMMENTS_uTIME_FIN, cantComments, cs, cantPosts);
 					}else {
 						return null;
