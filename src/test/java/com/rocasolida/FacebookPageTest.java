@@ -19,7 +19,7 @@ import com.rocasolida.scrapperfacebook.scrap.util.ScrapUtils;
 public class FacebookPageTest {
 	private static String OS = ScrapUtils.getOSName();
 	private static final boolean DEBUG = true;
-	private static DriverType dt = DriverType.FIREFOX;
+	private static DriverType dt = DriverType.FIREFOX_HEADLESS;
 
 	@BeforeClass
 	public static void loadOs() {
@@ -168,7 +168,7 @@ public class FacebookPageTest {
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
 	}
-	
+
 	@Test
 	public void RosanaBertoneTDFPage_allComments() throws Exception {
 		FacebookScrap2 fs = new FacebookScrap2(Driver.from(dt, OS), DEBUG);
@@ -185,8 +185,29 @@ public class FacebookPageTest {
 		assertNotNull(page);
 		assertNotNull(page.getPublications());
 		System.out.println("Cantidad de pubs: " + page.getPublications().size());
-		for(Publication p : page.getPublications()) {
-			System.out.println("coments: "+(p.getComments()==null?null:p.getComments().size()));
+		for (Publication p : page.getPublications()) {
+			System.out.println("coments: " + (p.getComments() == null ? null : p.getComments().size()));
+		}
+	}
+
+	@Test
+	public void alferdezok_allComments() throws Exception {
+		FacebookScrap2 fs = new FacebookScrap2(Driver.from(dt, OS), DEBUG);
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DAY_OF_MONTH, -1);
+		Long minPostUtime = cal.getTimeInMillis() / 1000;
+		Long maxPostUtime = System.currentTimeMillis() / 1000;
+		Long maxCommentUtime = null;
+		Long minCommentUtime = null;
+
+		Page page = fs.scrapePage("alferdezok", minPostUtime, maxPostUtime, minCommentUtime, maxCommentUtime, 200, CommentsSort.RELEVANCE, 10);
+		fs.quit();
+
+		assertNotNull(page);
+		assertNotNull(page.getPublications());
+		System.out.println("Cantidad de pubs: " + page.getPublications().size());
+		for (Publication p : page.getPublications()) {
+			System.out.println("coments: " + (p.getComments() == null ? null : p.getComments().size()));
 		}
 	}
 }
