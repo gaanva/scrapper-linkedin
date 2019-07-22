@@ -182,8 +182,8 @@ public final class FacebookConfig {
 	// public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
 	// return XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 + facebookPage + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 + String.valueOf(utimeINI) + XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART3;
 	// }
-	//Agregando para que deje afuera de la condicion a los pineados...
-	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = "//div[contains(@class,'userContentWrapper') and not (descendant::div[@class='_449j'])]" + "//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
+	//Agregando para que deje afuera de la condicion a los pineados...//div[contains(@class,'userContentWrapper') and not (descendant::div[@class='_449j'])]//div[@class='_6a _5u5j _6b']//descendant::div[contains(@id,'subtitle')]
+	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART1 = "//div[contains(@class,'userContentWrapper') and not (descendant::div[@class='_449j'])]//div[@class='_6a _5u5j _6b']//descendant::div[contains(@id,'subtitle')]//descendant::abbr[@data-utime<";
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED_PART2 = "]";
 
 	public static String XPATH_PUBLICATION_TIMESTAMP_CONDITION_SATISFIED(String facebookPage, Long utimeINI) {
@@ -342,6 +342,11 @@ public final class FacebookConfig {
 	//Ubicacion
 	public static String USER_PLACES = "//div[@data-overviewsection='places']/div//a";
 	public static String USER_EDUCATION = "//div[@data-overviewsection='education']";
+	
+	
+	public static String GROUP_NAME = "//a[contains(@href,'group_header')]"; //getText()
+	public static String GROUP_PRIVATE = "//i[@class='_3ph1 img sp_r88stLlPn45 sx_73e64b']";
+	
 	public FacebookConfig() {
 
 	}
