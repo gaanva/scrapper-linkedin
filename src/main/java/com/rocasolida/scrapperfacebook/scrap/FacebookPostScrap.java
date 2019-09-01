@@ -720,13 +720,8 @@ public class FacebookPostScrap extends Scrap {
 			 * HASHTAG DETECTION
 			 */
 			/*
-			if (aux.getTitulo() != null) {
-				this.clickViewMoreTextContent(publication, FacebookConfig.XPATH_PUBLICATION_TITLE_VER_MAS);
-				aux.setTitulo(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TITLE)).getText());
-			} else {
-				aux.setTitulo(null);
-			}
-			*/
+			 * if (aux.getTitulo() != null) { this.clickViewMoreTextContent(publication, FacebookConfig.XPATH_PUBLICATION_TITLE_VER_MAS); aux.setTitulo(publication.findElement(By.xpath(FacebookConfig.XPATH_PUBLICATION_TITLE)).getText()); } else { aux.setTitulo(null); }
+			 */
 			/**
 			 * OWNER La pubicación siempre tiene un OWNER.
 			 */
@@ -752,13 +747,13 @@ public class FacebookPostScrap extends Scrap {
 			if (this.existElement(publication, FacebookConfig.XP_POST_TOTALREPRODUCTIONS)) {
 				totalRepro = ScrapUtils.parseCount(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREPRODUCTIONS)).getText());
 				aux.setCantReproducciones(totalRepro);
-			} else if(this.existElement(publication, FacebookConfig.XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS)){  //si es live video se saca de otra parte....
+			} else if (this.existElement(publication, FacebookConfig.XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS)) { // si es live video se saca de otra parte....
 				totalRepro = ScrapUtils.parseCount(publication.findElement(By.xpath(FacebookConfig.XP_POST_LIVEVIDEO_TOTALREPRODUCTIONS)).getText());
 				aux.setCantReproducciones(totalRepro);
 			} else {
 				aux.setCantReproducciones(null);
 			}
-			
+
 			if (debug)
 				System.out.println("Total Reproducciones: " + totalRepro);
 
@@ -787,14 +782,14 @@ public class FacebookPostScrap extends Scrap {
 					System.out.println("LIVE VIDEO WITH NO LOGIN!, only can be extracted: TOTAL Reactions(not each type of reaction), Shares and Total Comments.");
 
 				if (this.existElement(publication, FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)) {
-					//int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText());
+					// int totalReactions = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText());
 					int totalReactions = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALREACTIONS_LIVEVIDEOS_NL)).getText()).toString());
 					aux.setCantReactions(totalReactions);
 					if (debug)
 						System.out.println("Total Reacciones: " + totalReactions);
 
 					if (this.existElement(publication, FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)) {
-						//int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText());
+						// int totalShared = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText());
 						int totalShared = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALSHARED_LIVEVIDEOS_NL)).getText()).toString());
 						aux.setCantShare(Integer.valueOf(totalShared));
 						if (debug)
@@ -802,46 +797,51 @@ public class FacebookPostScrap extends Scrap {
 					}
 
 					if (this.existElement(publication, FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)) {
-						//int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText());
-						int totalComments = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText()).toString());
-						aux.setCantComments(Integer.valueOf(totalComments));
-						if (debug)
-							System.out.println("POST Comments: " + totalComments);
+						try {
+							// int totalComments = this.formatStringToNumber(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText());
+							int totalComments = ScrapUtils.parseCount(this.extractNumberFromString(publication.findElement(By.xpath(FacebookConfig.XP_POST_TOTALCOMMENTS_LIVEVIDEOS_NL)).getText()).toString());
+							aux.setCantComments(Integer.valueOf(totalComments));
+							if (debug)
+								System.out.println("POST Comments: " + totalComments);
+						} catch (Exception ex) {
+							System.out.println("Picadura menor:");
+							ex.printStackTrace();
+						}
 					}
 
-				} else if(this.existElement(publication, FacebookConfig.XP_POST_INTERACTIONS_SENTENCE)){
-					//separar las cantidades por "251 likes 61 comments 82 shares" del atributo 'aria-label'
+				} else if (this.existElement(publication, FacebookConfig.XP_POST_INTERACTIONS_SENTENCE)) {
+					// separar las cantidades por "251 likes 61 comments 82 shares" del atributo 'aria-label'
 					String interaction_sentence = publication.findElement(By.xpath(FacebookConfig.XP_POST_INTERACTIONS_SENTENCE)).getAttribute("aria-label");
-					if(debug)
+					if (debug)
 						System.out.println("INTERACTION SENTENCE: " + interaction_sentence);
 					String[] s = interaction_sentence.split(" ");
-					if(s.length > 0) {
-						for(int k=0; k<s.length; k++) {
-							if(k % 2 != 0) {//posicion impar
-								switch(s[k]) {
-								case "likes": 
-									int totalReactions = ScrapUtils.parseCount(s[k-1]);
+					if (s.length > 0) {
+						for (int k = 0; k < s.length; k++) {
+							if (k % 2 != 0) {// posicion impar
+								switch (s[k]) {
+								case "likes":
+									int totalReactions = ScrapUtils.parseCount(s[k - 1]);
 									aux.setCantReactions(totalReactions);
 									if (debug)
 										System.out.println("Total Reacciones: " + totalReactions);
 								case "comments":
-									int totalComments = ScrapUtils.parseCount(s[k-1]);
+									int totalComments = ScrapUtils.parseCount(s[k - 1]);
 									aux.setCantComments(Integer.valueOf(totalComments));
 									if (debug)
 										System.out.println("POST Comments: " + totalComments);
-									
+
 								case "shares":
-									int totalShared = ScrapUtils.parseCount(s[k-1]);
+									int totalShared = ScrapUtils.parseCount(s[k - 1]);
 									aux.setCantShare(Integer.valueOf(totalShared));
 									if (debug)
 										System.out.println("POST SHAREs: " + totalShared);
 								}
 							}
-							
+
 						}
 					}
-					
-				} else{
+
+				} else {
 					if (debug)
 						System.out.println("[INFO] El post no tiene reacciones.");
 
