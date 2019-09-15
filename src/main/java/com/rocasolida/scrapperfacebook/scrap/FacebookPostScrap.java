@@ -928,6 +928,9 @@ public class FacebookPostScrap extends Scrap {
 	}
 
 	private int formatStringToNumber(String text) {
+		if (text.contains(" ")) {
+			text = text.split(" ")[0];
+		}
 		int number = this.extractNumberFromString(text).intValue();
 		if (text.contains("mil") || text.contains("k")) {
 			if (text.contains(",")) {
@@ -936,6 +939,7 @@ public class FacebookPostScrap extends Scrap {
 				number = number * 1000;
 			}
 		}
+		System.out.println("formatStringToNumber: " + text + ". " + number);
 		return number;
 	}
 
